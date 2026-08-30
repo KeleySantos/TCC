@@ -1,0 +1,263 @@
+generator cliente {
+  provider = "prisma-client"
+  output   = "../src/gerado/prisma"
+}
+
+datasource banco {
+  provider = "sqlite"
+}
+
+enum PapelUsuario {
+  ALUNO
+  PROFESSOR
+  ADMINISTRADOR
+}
+
+enum FormatoConteudo {
+  VIDEO
+  PDF
+  TEXTO
+  MAPA_MENTAL
+  PODCAST
+  QUIZ
+  EXERCICIO_PRATICO
+}
+
+enum SituacaoAprovacao {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+enum SituacaoSessao {
+  ATIVA
+  CONCLUIDA
+  ABANDONADA
+  INVALIDADA
+}
+
+enum NivelEvidencia {
+  INSUFICIENTE
+  INICIAL
+  MODERADA
+  FORTE
+}
+
+enum SituacaoRecomendacao {
+  PENDENTE
+  VISUALIZADA
+  ACEITA
+  DESCARTADA
+  EXPIRADA
+}
+
+model Usuario {
+  id               String            @id @default(cuid())
+  nome             String
+  nomeUsuario      String            @unique
+  senhaHash        String
+  papel            PapelUsuario
+  criadoEm         DateTime          @default(now())
+  atualizadoEm     DateTime          @updatedAt
+  perfilAluno      PerfilAluno?
+  perfilProfessor  PerfilProfessor?
+  eventosAuditoria EventoAuditoria[] @relation("AtorAuditoria")
+}
+
+model PerfilAluno {
+  id            String                @id @default(cuid())
+  usuarioId     String                @unique
+  pseudonimo    String                @unique
+  usuario       Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  matriculas    Matricula[]
+  sessoesEstudo SessaoEstudo[]
+  tentativas    TentativaAvaliacao[]
+  recomendacoes Recomendacao[]
+}
+
+model PerfilProfessor {
+  id         String              @id @default(cuid())
+  usuarioId  String              @unique
+  usuario    Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  turmas     Turma[]
+  aprovacoes AprovacaoRecurso[]
+}
+
+model Turma {
+  id          String          @id @default(cuid())
+  nome        String
+  periodo     String
+  professorId String
+  criadaEm    DateTime        @default(now())
+  professor   PerfilProfessor @relation(fields: [professorId], references: [id], onDelete: Restrict)
+  matriculas  Matricula[]
+
+  @@unique([nome, periodo])
+}
+
+model Matricula {
+  id       String      @id @default(cuid())
+  alunoId  String
+  turmaId  String
+  criadaEm DateTime    @default(now())
+  aluno    PerfilAluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  turma    Turma       @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([alunoId, turmaId])
+  @@index([turmaId])
+}
+
+model Topico {
+  id            String            @id @default(cuid())
+  identificador String            @unique
+  nome          String
+  descricao     String
+  ativo         Boolean           @default(true)
+  criadoEm      DateTime          @default(now())
+  recursos      RecursoConteudo[]
+  avaliacoes    Avaliacao[]
+  sessoes       SessaoEstudo[]
+}
+
+model RecursoConteudo {
+  id               String              @id @default(cuid())
+  identificador    String              @unique
+  titulo           String
+  descricao        String
+  formato          FormatoConteudo
+  minutosEstimados Int
+  topicoId         String
+  url              String?
+  ativo            Boolean             @default(true)
+  criadoEm         DateTime            @default(now())
+  atualizadoEm     DateTime            @updatedAt
+  topico           Topico              @relation(fields: [topicoId], references: [id], onDelete: Restrict)
+  aprovacoes       AprovacaoRecurso[]
+  sessoesEstudo    SessaoEstudo[]
+  recomendacoes    Recomendacao[]
+
+  @@index([topicoId, formato])
+}
+
+model AprovacaoRecurso {
+  id           String            @id @default(cuid())
+  recursoId    String
+  professorId  String
+  situacao     SituacaoAprovacao @default(PENDENTE)
+  observacao   String?
+  criadaEm     DateTime          @default(now())
+  atualizadaEm DateTime          @updatedAt
+  recurso      RecursoConteudo   @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  professor    PerfilProfessor   @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@unique([recursoId, professorId])
+  @@index([recursoId, situacao])
+}
+
+model SessaoEstudo {
+  id             String          @id @default(cuid())
+  alunoId        String
+  topicoId       String
+  recursoId      String
+  iniciadaEm     DateTime
+  encerradaEm    DateTime?
+  duracaoMinutos Int?
+  situacao       SituacaoSessao  @default(ATIVA)
+  criadaEm       DateTime        @default(now())
+  aluno          PerfilAluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  topico         Topico          @relation(fields: [topicoId], references: [id], onDelete: Restrict)
+  recurso        RecursoConteudo @relation(fields: [recursoId], references: [id], onDelete: Restrict)
+
+  @@index([alunoId, topicoId, situacao])
+  @@index([recursoId])
+}
+
+model Avaliacao {
+  id            String                @id @default(cuid())
+  identificador String                @unique
+  titulo        String
+  descricao     String
+  topicoId      String
+  ativa         Boolean               @default(true)
+  criadaEm      DateTime              @default(now())
+  topico        Topico                @relation(fields: [topicoId], references: [id], onDelete: Restrict)
+  questoes      Questao[]
+  tentativas    TentativaAvaliacao[]
+}
+
+model Questao {
+  id           String            @id @default(cuid())
+  avaliacaoId  String
+  enunciado    String
+  opcoesJson   String
+  opcaoCorreta String
+  posicao      Int
+  peso         Int               @default(1)
+  avaliacao    Avaliacao         @relation(fields: [avaliacaoId], references: [id], onDelete: Cascade)
+  respostas    RespostaQuestao[]
+
+  @@unique([avaliacaoId, posicao])
+}
+
+model TentativaAvaliacao {
+  id                String            @id @default(cuid())
+  alunoId           String
+  avaliacaoId       String
+  topicoId          String
+  iniciadaEm        DateTime          @default(now())
+  concluidaEm       DateTime?
+  respostasCorretas Int               @default(0)
+  totalQuestoes     Int               @default(0)
+  notaNormalizada   Float?
+  criadaEm          DateTime          @default(now())
+  aluno             PerfilAluno       @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  avaliacao         Avaliacao         @relation(fields: [avaliacaoId], references: [id], onDelete: Restrict)
+  respostas         RespostaQuestao[]
+
+  @@index([alunoId, topicoId, concluidaEm])
+}
+
+model RespostaQuestao {
+  id          String              @id @default(cuid())
+  tentativaId String
+  questaoId   String
+  resposta    String
+  correta     Boolean
+  pontos      Int                 @default(0)
+  tentativa   TentativaAvaliacao  @relation(fields: [tentativaId], references: [id], onDelete: Cascade)
+  questao     Questao             @relation(fields: [questaoId], references: [id], onDelete: Restrict)
+
+  @@unique([tentativaId, questaoId])
+}
+
+model Recomendacao {
+  id                   String                @id @default(cuid())
+  alunoId              String
+  topicoId             String
+  recursoId            String?
+  formatoSugerido      FormatoConteudo
+  justificativa        String
+  nivelEvidencia       NivelEvidencia
+  quantidadeEvidencias Int
+  notaComparada        Float?
+  versaoAlgoritmo      String
+  situacao             SituacaoRecomendacao @default(PENDENTE)
+  criadaEm             DateTime             @default(now())
+  expiraEm             DateTime?
+  aluno                PerfilAluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  recurso              RecursoConteudo?      @relation(fields: [recursoId], references: [id], onDelete: SetNull)
+
+  @@index([alunoId, topicoId, situacao])
+}
+
+model EventoAuditoria {
+  id        String   @id @default(cuid())
+  atorId    String?
+  acao      String
+  alvo      String
+  metadados String?
+  criadoEm  DateTime @default(now())
+  ator      Usuario? @relation("AtorAuditoria", fields: [atorId], references: [id], onDelete: SetNull)
+
+  @@index([atorId, criadoEm])
+}

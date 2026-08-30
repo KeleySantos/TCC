@@ -1,0 +1,27 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# local environment and database
+.env
+.env.local
+/prisma/*.db
+/prisma/*.db-journal
+
+# cliente Prisma gerado
+/src/gerado
+
+# tests
+/coverage
+/playwright-report
+/test-results
+
+# local operating system files
+.DS_Store
+Thumbs.db
+
+# cache incremental do TypeScript
+*.tsbuildinfo
