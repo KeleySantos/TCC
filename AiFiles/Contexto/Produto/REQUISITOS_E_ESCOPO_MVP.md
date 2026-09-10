@@ -111,4 +111,4 @@ Pré-condição: professor sintético autenticado e turma vinculada.
 
 ## 7. Critério de congelamento
 
-O escopo pode avançar para a Fase 3 quando autor e orientador confirmarem que os requisitos Must representam a demonstração pretendida. Alterações posteriores devem receber novo identificador em `DECISOES_PENDENTES.md` e atualizar a matriz de testes.
+O escopo pode avançar para a Fase 3 quando autor e orientador confirmarem que os requisitos Must representam a demonstração pretendida. Alterações posteriores devem receber novo identificador em `../../Memoria/DECISOES_DO_PROJETO.md` e atualizar a matriz de testes.

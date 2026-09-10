@@ -6,6 +6,6 @@
 - Regras de negócio ficam fora de componentes React e não acessam o banco diretamente.
 - Toda entrada de servidor é validada; autorização é conferida no servidor.
 - Dados sintéticos são obrigatórios nesta versão. Não inserir dados de pessoas reais.
-- Arquivos auxiliares de IA ficam exclusivamente em `AI Files/`.
+- Recursos destinados à IA ficam exclusivamente em `AiFiles/`, exceto o adaptador de descoberta `AGENTS.md` exigido na raiz.
 - Antes de concluir alteração: executar lint, typecheck, testes pertinentes e build quando o projeto estiver configurado.
 - Variáveis privadas ficam em `.env`; somente exemplos seguros ficam em `.env.example`.

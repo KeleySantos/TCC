@@ -14,6 +14,10 @@
 | D-010 | Dados reais e avaliação com usuários | Não executar nesta versão | Depende de protocolo e aprovações institucionais | BLOQUEADA EXTERNAMENTE | 2026-08-30 |
 | D-011 | Idioma de todo artefato próprio | Português do Brasil | Diretriz explícita do autor; inclui domínio, banco, rotas, páginas, código e interface | DECIDIDA | 2026-08-30 |
 | D-012 | Administração de professores | Administrador local pode cadastrar contas de professor sintéticas | Solicitação explícita do autor; a operação exige papel de administrador, valida dados e registra auditoria | DECIDIDA | 2026-08-30 |
+| D-013 | Arquitetura dos recursos de IA | Centralizar em `AiFiles/`, com índice curto, instruções, contexto temático, memória, agentes e relatórios; manter `AGENTS.md` raiz apenas como adaptador | Solicitação explícita do autor e pesquisa de práticas atuais; reduz contexto carregado por padrão, duplicação e dependência de uma única ferramenta | DECIDIDA | 2026-09-09 |
+| D-014 | Modelo de conta do Laboratório Pessoal de Aprendizagem | Pendente: área pessoal universal com professor/administrador como capacidades adicionais, ou substituição integral dos papéis atuais | O roadmap externo afirma que não há papéis fixos, mas escopo científico, autorização, seed e jornadas vigentes dependem deles | PENDENTE | 2026-09-09 |
+| D-015 | Uso de Gemini no MVP | Pendente: camada interpretativa opcional sobre métricas determinísticas, com validação e fallback, ou manutenção exclusiva do recomendador local | O roadmap inclui Gemini, enquanto D-009 e o escopo congelado adiam LLM e exigem recomendação determinística | PENDENTE | 2026-09-09 |
+| D-016 | Vínculo entre sessão e avaliação | Pendente: referência explícita opcional preservando a janela de sete dias, ou alteração do protocolo de atribuição | O roadmap liga avaliação à sessão; o método vigente infere o vínculo e exclui exposição mista | PENDENTE DE VALIDAÇÃO METODOLÓGICA | 2026-09-09 |
 
 ## Regra de alteração
 

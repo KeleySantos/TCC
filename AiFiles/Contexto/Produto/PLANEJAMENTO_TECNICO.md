@@ -19,20 +19,11 @@ Orientar a construção futura da plataforma de ponta a ponta, sem depender de i
 
 ### 1.2 Regra para arquivos auxiliares da IA
 
-Todo arquivo de planejamento, acompanhamento, relatório temporário, anotações, inventários, prompts, decisões provisórias e resultados de auditoria que não pertença ao produto deve ficar em `AI Files/`.
+Todo arquivo de planejamento, acompanhamento, relatório temporário, anotações, inventários, prompts, decisões provisórias e resultados de auditoria que não pertença ao produto deve ficar em `AiFiles/`.
 
 Estrutura recomendada para esses arquivos:
 
-```text
-AI Files/
-├── PLANEJAMENTO_TECNICO.md
-├── ACOMPANHAMENTO.md
-├── DECISOES_PENDENTES.md
-├── REGISTRO_DE_RISCOS.md
-├── MATRIZ_REQUISITOS_TESTES.md
-├── RELATORIOS/
-└── RASCUNHOS/
-```
+A estrutura vigente e as regras para novos arquivos estão em `../../INDICE.md`. Esse índice deve permanecer curto e apontar para instruções, contexto, memória, agentes e relatórios sem duplicar seus conteúdos.
 
 Não criar esses arquivos adicionais antes de serem necessários. Arquivos reais do produto — código, testes, documentação pública, migrações, assets e configurações — devem permanecer na estrutura normal do projeto.
 
@@ -40,7 +31,7 @@ Não criar esses arquivos adicionais antes de serem necessários. Arquivos reais
 
 Para cada tarefa futura:
 
-1. Ler este documento, `AI Files/ACOMPANHAMENTO.md` e os arquivos citados na fase atual.
+1. Ler `../../INDICE.md` e carregar este planejamento apenas quando a tarefa envolver roadmap, fase ou escopo; consultar também `../../Memoria/ACOMPANHAMENTO.md` e os arquivos citados na fase atual.
 2. Confirmar que as dependências da tarefa estão concluídas.
 3. Inspecionar o estado real do repositório antes de alterar qualquer arquivo.
 4. Implementar somente o escopo descrito na tarefa.
@@ -364,7 +355,7 @@ Uma funcionalidade só está pronta quando:
 - funciona nos breakpoints acordados;
 - usa linguagem não determinista e não estigmatizante;
 - atualiza documentação pública quando necessário;
-- não inclui segredos, dados pessoais reais ou arquivos auxiliares fora de `AI Files/`.
+- não inclui segredos, dados pessoais reais ou arquivos auxiliares fora de `AiFiles/`.
 
 ## 8. Fases de execução
 
@@ -393,10 +384,10 @@ Preparar os controles que impedem perda de contexto, alterações silenciosas de
 
 #### F0.2 — Criar controles auxiliares
 
-Criar dentro de `AI Files/`:
+Criar dentro de `AiFiles/Memoria/`:
 
 - `ACOMPANHAMENTO.md`: tabela com fase, tarefa, estado, evidência, data e observações;
-- `DECISOES_PENDENTES.md`: identificador, pergunta, impacto, opções, recomendação, responsável e decisão;
+- `DECISOES_DO_PROJETO.md`: identificador, pergunta, impacto, opções, recomendação, responsável e decisão;
 - `REGISTRO_DE_RISCOS.md`: probabilidade, impacto, mitigação, gatilho e responsável;
 - `MATRIZ_REQUISITOS_TESTES.md`: requisito, origem, prioridade, caso de teste e situação.
 
@@ -414,7 +405,7 @@ Registrar no repositório, em local de documentação apropriado:
 
 ### Validações
 
-- nenhum arquivo auxiliar da IA está fora de `AI Files/`;
+- nenhum recurso destinado à IA está fora de `AiFiles/`, exceto adaptadores obrigatórios de descoberta;
 - toda decisão ainda desconhecida possui identificador;
 - não houve alteração funcional.
 
@@ -1312,7 +1303,7 @@ Entregar uma versão estável, reproduzível e coerente com o texto acadêmico.
 8. arquivar resultados de testes;
 9. revisar licenças, créditos e referências;
 10. registrar limitações e backlog futuro;
-11. confirmar que arquivos da IA estão em `AI Files/` e não contaminam a documentação do produto;
+11. confirmar que arquivos da IA estão em `AiFiles/` e não contaminam a documentação do produto;
 12. remover somente artefatos temporários previamente identificados, sem apagar material do usuário.
 
 ### Critério de saída
@@ -1357,7 +1348,7 @@ Para cada incremento: schema/migração se necessário → domínio → reposit�
 
 ## 11. Decisões pendentes iniciais
 
-Estas decisões devem ser copiadas para `AI Files/DECISOES_PENDENTES.md` na Fase 0.
+Estas decisões devem ser registradas em `../../Memoria/DECISOES_DO_PROJETO.md` na Fase 0.
 
 | ID | Decisão | Opção recomendada para o MVP | Quem valida |
 |---|---|---|---|
@@ -1410,7 +1401,7 @@ Estas decisões devem ser copiadas para `AI Files/DECISOES_PENDENTES.md` na Fase
 - [ ] texto do TCC corresponde à versão entregue;
 - [ ] limitações estão explícitas;
 - [ ] nenhum dado pessoal real está no repositório;
-- [ ] todo material auxiliar da IA está em `AI Files/`.
+- [ ] todo material auxiliar da IA está em `AiFiles/`.
 
 ## 13. Protocolo de atualização deste plano
 
