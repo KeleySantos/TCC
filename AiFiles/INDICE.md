@@ -37,11 +37,18 @@ AiFiles/
 ├── Agentes/
 │   ├── CATALOGO.md
 │   ├── MODELO_DE_AGENTE.md
+│   ├── Araki/
+│   │   └── AGENT.md
 │   ├── Cebolinha/
 │   │   └── AGENT.md
 │   └── Guanabara/
 │       └── AGENT.md
 ├── Planos/
+│   ├── HANDOFF_GUANABARA_METRICAS_DASHBOARD.md
+│   ├── HANDOFF_GUANABARA_METODOS_DESAFIOS_BLOOM.md
+│   ├── HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md
+│   ├── HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md
+│   ├── HANDOFF_GUANABARA_RASCUNHO_MODULOS.md
 │   └── PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md
 └── RELATORIOS/
     ├── PESQUISA_ARQUITETURA_CONTEXTO_IA.md
@@ -56,6 +63,11 @@ AiFiles/
 | Entender estado atual e pendências | [`Memoria/ACOMPANHAMENTO.md`](Memoria/ACOMPANHAMENTO.md) | [`Memoria/DECISOES_DO_PROJETO.md`](Memoria/DECISOES_DO_PROJETO.md), [`Memoria/REGISTRO_DE_RISCOS.md`](Memoria/REGISTRO_DE_RISCOS.md) |
 | Planejar fase ou alterar escopo | [`Contexto/Produto/PLANEJAMENTO_TECNICO.md`](Contexto/Produto/PLANEJAMENTO_TECNICO.md) | [`Contexto/Produto/REQUISITOS_E_ESCOPO_MVP.md`](Contexto/Produto/REQUISITOS_E_ESCOPO_MVP.md), memória aplicável |
 | Executar a transição para laboratório pessoal | [`Planos/PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md`](Planos/PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md) | planejamento, requisitos, decisões e protocolo canônicos |
+| Implementar métricas gerais do Dashboard | [`Planos/HANDOFF_GUANABARA_METRICAS_DASHBOARD.md`](Planos/HANDOFF_GUANABARA_METRICAS_DASHBOARD.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), protocolo de medição, arquitetura e matriz |
+| Implementar métodos, desafios e Bloom da Entrega B | [`Planos/HANDOFF_GUANABARA_METODOS_DESAFIOS_BLOOM.md`](Planos/HANDOFF_GUANABARA_METODOS_DESAFIOS_BLOOM.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos, protocolo e matriz |
+| Revisar desafios para experimentação guiada de métodos | [`Planos/HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md`](Planos/HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md) | handoff original da Entrega B, modelo de dados, contratos, IA, protocolo e matriz |
+| Implementar infraestrutura da página interna do módulo | [`Planos/HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md`](Planos/HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos, protocolo de medição e matriz |
+| Implementar criação de módulos em rascunho | [`Planos/HANDOFF_GUANABARA_RASCUNHO_MODULOS.md`](Planos/HANDOFF_GUANABARA_RASCUNHO_MODULOS.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos e matriz |
 | Implementar ou validar requisito | [`Memoria/MATRIZ_REQUISITOS_TESTES.md`](Memoria/MATRIZ_REQUISITOS_TESTES.md) | requisito, arquitetura e contrato específicos |
 | Alterar arquitetura ou camadas | [`Contexto/Tecnico/ARQUITETURA.md`](Contexto/Tecnico/ARQUITETURA.md) | [`Contexto/Tecnico/MODELO_DE_DADOS.md`](Contexto/Tecnico/MODELO_DE_DADOS.md), [`Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md`](Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md) |
 | Alterar banco, seed ou eventos | [`Contexto/Tecnico/MODELO_DE_DADOS.md`](Contexto/Tecnico/MODELO_DE_DADOS.md) | [`Contexto/Tecnico/DICIONARIO_DE_EVENTOS.md`](Contexto/Tecnico/DICIONARIO_DE_EVENTOS.md), [`Contexto/Tecnico/CENARIO_SINTETICO_E_RESULTADOS_ESPERADOS.md`](Contexto/Tecnico/CENARIO_SINTETICO_E_RESULTADOS_ESPERADOS.md) e decisões |

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Questao = { id: string; enunciado: string; opcoes: string[] };
 export function Quiz({ avaliacaoId, questoes }: { avaliacaoId: string; questoes: Questao[] }) {
+  const roteador = useRouter();
   const [respostas, definirRespostas] = useState<Record<string, string>>({});
   const [resultado, definirResultado] = useState<string | null>(null);
   const [enviando, definirEnviando] = useState(false);
@@ -13,7 +15,8 @@ export function Quiz({ avaliacaoId, questoes }: { avaliacaoId: string; questoes:
     try {
       const resposta = await fetch("/api/tentativas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ avaliacaoId, respostas }) });
       const dados = await resposta.json();
-      definirResultado(resposta.ok ? `Resultado: ${Math.round(dados.notaNormalizada)}% (${dados.respostasCorretas}/${dados.totalQuestoes} respostas corretas).` : dados.erro ?? "Não foi possível enviar.");
+      definirResultado(resposta.ok ? `Tentativa ${dados.numeroTentativa}: ${Math.round(dados.notaNormalizada)}% (${dados.respostasCorretas}/${dados.totalQuestoes} respostas corretas).` : dados.erro ?? "Não foi possível enviar.");
+      if (resposta.ok) roteador.refresh();
     } finally {
       definirEnviando(false);
     }

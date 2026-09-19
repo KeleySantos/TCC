@@ -2,6 +2,8 @@
 
 > Documento de planejamento para execução assistida por IA. Este arquivo não contém implementação do projeto.
 
+> **Atualização de escopo — 2026-09-12:** a execução vigente é regida pelo `../Planos/PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md`, aprovado para a Entrega A. Em qualquer conflito com este planejamento histórico, prevalecem D-014 a D-017 em `../Memoria/DECISOES_DO_PROJETO.md` e os requisitos da Entrega A: uma única conta pessoal, propriedade direta dos dados, sem papéis/turmas/curadoria/administração e Gemini apenas como interpretação opcional de métricas locais determinísticas.
+
 ## 1. Controle do documento
 
 | Campo | Valor |

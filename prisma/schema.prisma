@@ -17,10 +17,20 @@ enum FormatoConteudo {
   VIDEO
   PDF
   TEXTO
+  IMAGEM
+  DOCUMENTO
+  PLANILHA
+  AUDIO
   MAPA_MENTAL
   PODCAST
   QUIZ
   EXERCICIO_PRATICO
+}
+
+enum OrigemMaterial {
+  TEXTO
+  LINK
+  ARQUIVO
 }
 
 enum SituacaoAprovacao {
@@ -43,6 +53,15 @@ enum NivelEvidencia {
   FORTE
 }
 
+enum NivelBloom {
+  LEMBRAR
+  COMPREENDER
+  APLICAR
+  ANALISAR
+  AVALIAR
+  CRIAR
+}
+
 enum SituacaoRecomendacao {
   PENDENTE
   VISUALIZADA
@@ -52,16 +71,65 @@ enum SituacaoRecomendacao {
 }
 
 model Usuario {
-  id               String            @id @default(cuid())
+  id               String                 @id @default(cuid())
   nome             String
-  nomeUsuario      String            @unique
+  nomeUsuario      String                 @unique
+  email            String?                @unique
   senhaHash        String
-  papel            PapelUsuario
-  criadoEm         DateTime          @default(now())
-  atualizadoEm     DateTime          @updatedAt
+  // Campo técnico legado. Não representa papel no produto e não deve ser usado em rotas, serviços ou interface.
+  papel            PapelUsuario           @default(ALUNO)
+  criadoEm         DateTime               @default(now())
+  atualizadoEm     DateTime               @updatedAt
+  modulos          ModuloAprendizagem[]
+  sessoesEstudo    SessaoEstudo[]         @relation("SessoesDoUsuario")
+  tentativas       TentativaAvaliacao[]   @relation("TentativasDoUsuario")
+  recomendacoes    Recomendacao[]         @relation("RecomendacoesDoUsuario")
+  desafios         DesafioExperimentacao[]
   perfilAluno      PerfilAluno?
   perfilProfessor  PerfilProfessor?
-  eventosAuditoria EventoAuditoria[] @relation("AtorAuditoria")
+  eventosAuditoria EventoAuditoria[]      @relation("AtorAuditoria")
+}
+
+enum MetodoEstudo {
+  FEYNMAN
+  RECUPERACAO_ATIVA
+  REPETICAO_ESPACADA
+  POMODORO
+  INTERCALAMENTO
+  PRATICA_DISTRIBUIDA
+  LEITURA_ATIVA
+  VIDEO_GUIADO
+  RESUMO
+  EXERCICIO
+  REVISAO
+  OUTRO
+}
+
+enum SituacaoDesafioExperimentacao {
+  ATIVO
+  CANCELADO
+}
+
+model ModuloAprendizagem {
+  id             String               @id @default(cuid())
+  usuarioId      String
+  identificador  String
+  titulo         String
+  descricao      String
+  arquivado      Boolean              @default(false)
+  rascunho       Boolean              @default(false)
+  criadoEm       DateTime             @default(now())
+  atualizadoEm   DateTime             @updatedAt
+  usuario        Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  topicos        Topico[]
+  sessoesEstudo  SessaoEstudo[]       @relation("SessoesDoModulo")
+  tentativas     TentativaAvaliacao[] @relation("TentativasDoModulo")
+  recomendacoes  Recomendacao[]       @relation("RecomendacoesDoModulo")
+  desafios       DesafioExperimentacao[]
+
+  @@unique([usuarioId, identificador])
+  @@index([usuarioId, arquivado])
+  @@index([usuarioId, arquivado, rascunho])
 }
 
 model PerfilAluno {
@@ -108,26 +176,36 @@ model Matricula {
 }
 
 model Topico {
-  id            String            @id @default(cuid())
-  identificador String            @unique
-  nome          String
-  descricao     String
-  ativo         Boolean           @default(true)
-  criadoEm      DateTime          @default(now())
-  recursos      RecursoConteudo[]
-  avaliacoes    Avaliacao[]
-  sessoes       SessaoEstudo[]
+  id             String            @id @default(cuid())
+  moduloId       String
+  identificador  String
+  nome           String
+  descricao      String
+  ativo          Boolean           @default(true)
+  rascunho       Boolean           @default(false)
+  criadoEm       DateTime          @default(now())
+  modulo         ModuloAprendizagem @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  recursos       RecursoConteudo[]
+  avaliacoes     Avaliacao[]
+  sessoes        SessaoEstudo[]
+  tentativas     TentativaAvaliacao[]
+  recomendacoes  Recomendacao[]
+
+  @@unique([moduloId, identificador])
+  @@index([moduloId, ativo, rascunho])
 }
 
 model RecursoConteudo {
   id               String              @id @default(cuid())
-  identificador    String              @unique
+  identificador    String
   titulo           String
   descricao        String
   formato          FormatoConteudo
   minutosEstimados Int
   topicoId         String
+  conteudoTexto    String?
   url              String?
+  origem           OrigemMaterial      @default(TEXTO)
   ativo            Boolean             @default(true)
   criadoEm         DateTime            @default(now())
   atualizadoEm     DateTime            @updatedAt
@@ -135,8 +213,25 @@ model RecursoConteudo {
   aprovacoes       AprovacaoRecurso[]
   sessoesEstudo    SessaoEstudo[]
   recomendacoes    Recomendacao[]
+  arquivo          ArquivoMaterial?
 
+  @@unique([topicoId, identificador])
   @@index([topicoId, formato])
+  @@index([topicoId, origem, ativo])
+}
+
+model ArquivoMaterial {
+  id                   String           @id @default(cuid())
+  recursoId            String           @unique
+  nomeOriginal         String
+  tipoMime             String
+  tamanhoBytes         Int
+  chaveArmazenamento   String           @unique
+  extensaoNormalizada  String
+  criadoEm             DateTime         @default(now())
+  recurso              RecursoConteudo  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+
+  @@index([recursoId])
 }
 
 model AprovacaoRecurso {
@@ -156,25 +251,55 @@ model AprovacaoRecurso {
 
 model SessaoEstudo {
   id             String          @id @default(cuid())
-  alunoId        String
+  usuarioId      String
+  moduloId       String
+  // Referência de compatibilidade com o modelo anterior. Novos registros não a preenchem.
+  alunoId        String?
   topicoId       String
   recursoId      String
+  metodo         MetodoEstudo?
+  dificuldadePercebida Int?
+  compreensaoPercebida Int?
+  observacao     String?
+  desafioId      String?
   iniciadaEm     DateTime
   encerradaEm    DateTime?
   duracaoMinutos Int?
   situacao       SituacaoSessao  @default(ATIVA)
   criadaEm       DateTime        @default(now())
-  aluno          PerfilAluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  usuario        Usuario         @relation("SessoesDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  modulo         ModuloAprendizagem @relation("SessoesDoModulo", fields: [moduloId], references: [id], onDelete: Cascade)
+  aluno          PerfilAluno?    @relation(fields: [alunoId], references: [id], onDelete: SetNull)
   topico         Topico          @relation(fields: [topicoId], references: [id], onDelete: Restrict)
   recurso        RecursoConteudo @relation(fields: [recursoId], references: [id], onDelete: Restrict)
+  desafio        DesafioExperimentacao? @relation(fields: [desafioId], references: [id], onDelete: SetNull)
 
+  @@index([usuarioId, moduloId, topicoId, situacao])
   @@index([alunoId, topicoId, situacao])
   @@index([recursoId])
+  @@index([usuarioId, desafioId, situacao])
+}
+
+model DesafioExperimentacao {
+  id          String                         @id @default(cuid())
+  usuarioId   String
+  moduloId    String
+  metodo      MetodoEstudo
+  meta        String
+  situacao    SituacaoDesafioExperimentacao  @default(ATIVO)
+  criadoEm    DateTime                       @default(now())
+  canceladoEm DateTime?
+  usuario     Usuario                        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  modulo      ModuloAprendizagem             @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  sessoes     SessaoEstudo[]
+
+  @@index([usuarioId, moduloId, situacao])
+  @@index([moduloId, metodo, situacao])
 }
 
 model Avaliacao {
   id            String                @id @default(cuid())
-  identificador String                @unique
+  identificador String
   titulo        String
   descricao     String
   topicoId      String
@@ -183,6 +308,9 @@ model Avaliacao {
   topico        Topico                @relation(fields: [topicoId], references: [id], onDelete: Restrict)
   questoes      Questao[]
   tentativas    TentativaAvaliacao[]
+
+  @@unique([topicoId, identificador])
+  @@index([topicoId, ativa])
 }
 
 model Questao {
@@ -193,6 +321,7 @@ model Questao {
   opcaoCorreta String
   posicao      Int
   peso         Int               @default(1)
+  nivelBloom   NivelBloom?
   avaliacao    Avaliacao         @relation(fields: [avaliacaoId], references: [id], onDelete: Cascade)
   respostas    RespostaQuestao[]
 
@@ -201,19 +330,28 @@ model Questao {
 
 model TentativaAvaliacao {
   id                String            @id @default(cuid())
-  alunoId           String
+  usuarioId         String
+  moduloId          String
+  // Referência de compatibilidade com o modelo anterior. Novos registros não a preenchem.
+  alunoId           String?
   avaliacaoId       String
   topicoId          String
+  numeroTentativa   Int               @default(1)
   iniciadaEm        DateTime          @default(now())
   concluidaEm       DateTime?
   respostasCorretas Int               @default(0)
   totalQuestoes     Int               @default(0)
   notaNormalizada   Float?
   criadaEm          DateTime          @default(now())
-  aluno             PerfilAluno       @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  usuario           Usuario           @relation("TentativasDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  modulo            ModuloAprendizagem @relation("TentativasDoModulo", fields: [moduloId], references: [id], onDelete: Cascade)
+  aluno             PerfilAluno?      @relation(fields: [alunoId], references: [id], onDelete: SetNull)
   avaliacao         Avaliacao         @relation(fields: [avaliacaoId], references: [id], onDelete: Restrict)
+  topico            Topico            @relation(fields: [topicoId], references: [id], onDelete: Restrict)
   respostas         RespostaQuestao[]
 
+  @@index([usuarioId, moduloId, topicoId, concluidaEm])
+  @@unique([usuarioId, avaliacaoId, numeroTentativa])
   @@index([alunoId, topicoId, concluidaEm])
 }
 
@@ -232,7 +370,10 @@ model RespostaQuestao {
 
 model Recomendacao {
   id                   String                @id @default(cuid())
-  alunoId              String
+  usuarioId            String
+  moduloId             String
+  // Referência de compatibilidade com o modelo anterior. Novos registros não a preenchem.
+  alunoId              String?
   topicoId             String
   recursoId            String?
   formatoSugerido      FormatoConteudo
@@ -244,9 +385,13 @@ model Recomendacao {
   situacao             SituacaoRecomendacao @default(PENDENTE)
   criadaEm             DateTime             @default(now())
   expiraEm             DateTime?
-  aluno                PerfilAluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  usuario              Usuario                @relation("RecomendacoesDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  modulo               ModuloAprendizagem     @relation("RecomendacoesDoModulo", fields: [moduloId], references: [id], onDelete: Cascade)
+  aluno                PerfilAluno?           @relation(fields: [alunoId], references: [id], onDelete: SetNull)
+  topico               Topico                 @relation(fields: [topicoId], references: [id], onDelete: Restrict)
   recurso              RecursoConteudo?      @relation(fields: [recursoId], references: [id], onDelete: SetNull)
 
+  @@index([usuarioId, moduloId, topicoId, situacao])
   @@index([alunoId, topicoId, situacao])
 }
 

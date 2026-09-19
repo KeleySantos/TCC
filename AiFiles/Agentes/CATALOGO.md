@@ -6,6 +6,7 @@ Este catálogo é a fonte de descoberta dos agentes persistentes disponíveis. O
 
 | Nome | Diretório | Função resumida | Arquivo principal |
 |---|---|---|---|
+| Araki | `Araki` | Projeta e implementa o Front End com direção visual, acessibilidade, responsividade e visualização de dados | [`AGENT.md`](Araki/AGENT.md) |
 | Cebolinha | `Cebolinha` | Produz planejamentos técnicos faseados e determinísticos para execução integral por modelos de menor capacidade | [`AGENT.md`](Cebolinha/AGENT.md) |
 | Guanabara | `Guanabara` | Implementa funcionalidades de ponta a ponta, com frontend funcional e sem refinamento visual avançado | [`AGENT.md`](Guanabara/AGENT.md) |
 

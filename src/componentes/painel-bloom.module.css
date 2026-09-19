@@ -1,0 +1,68 @@
+.painel {
+  min-width: 0;
+  margin-top: 16px;
+  padding: 20px;
+  overflow: hidden;
+  border: 1px solid #dedaef;
+  border-radius: 18px;
+  background: radial-gradient(circle at 100% 0%, rgb(124 91 243 / 12%), transparent 19rem), #fff;
+  box-shadow: 0 10px 30px rgb(39 43 98 / 5%);
+}
+
+.cabecalho, .titulo, .titulo > span, .resumo dt {
+  display: flex;
+  align-items: center;
+}
+
+.cabecalho {
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.titulo { gap: 11px; }
+.titulo > span { width: 42px; height: 42px; flex: 0 0 auto; justify-content: center; border-radius: 13px; color: #6543e5; background: #efebff; }
+.titulo > span svg { width: 21px; height: 21px; }
+.titulo p { margin: 0; color: #6748dd; font-size: 0.59rem; font-weight: 850; letter-spacing: 0.1em; }
+.titulo h3 { margin: 3px 0 0; font-size: 1rem; letter-spacing: -0.025em; }
+.versao { flex: 0 0 auto; padding: 5px 8px; border-radius: 999px; color: #6e7290; background: #f2f2f7; font-size: 0.56rem; font-weight: 720; }
+.introducao { max-width: 850px; margin: 11px 0 0; color: #747d99; font-size: 0.67rem; line-height: 1.5; }
+
+.gradeConteudo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(185px, 0.32fr); gap: 16px; align-items: stretch; margin-top: 14px; }
+.grafico { min-width: 0; padding: 10px 8px 4px 0; border: 1px solid #eceaf4; border-radius: 14px; background: #fcfcfe; }
+.areaGrafico { width: 100%; height: 255px; font-size: 0.65rem; }
+.estadoVazioGrafico { display: grid; min-height: 255px; place-content: center; padding: 20px; text-align: center; }
+.estadoVazioGrafico strong { font-size: 0.78rem; }
+.estadoVazioGrafico p { max-width: 360px; margin: 6px 0 0; color: #7c849e; font-size: 0.65rem; line-height: 1.5; }
+
+.resumo { display: grid; gap: 10px; margin: 0; }
+.resumo div { display: grid; align-content: center; min-height: 116px; padding: 14px; border: 1px solid #e6e2f6; border-radius: 14px; background: #f8f6ff; }
+.resumo dt { gap: 6px; color: #606989; font-size: 0.61rem; font-weight: 720; }
+.resumo dt svg { width: 15px; height: 15px; color: #6543e5; }
+.resumo dd { margin: 5px 0 0; font-size: 1.55rem; font-weight: 850; letter-spacing: -0.04em; }
+.resumo small { margin-top: 4px; color: #848ba4; font-size: 0.56rem; line-height: 1.4; }
+
+.detalhes { margin-top: 13px; padding-top: 12px; border-top: 1px solid #ececf4; }
+.detalhes > summary { color: #6040d6; font-size: 0.67rem; font-weight: 760; cursor: pointer; }
+.tabelaResponsiva { max-width: 100%; overflow-x: auto; }
+.tabelaResponsiva table { width: 100%; margin-top: 11px; border-collapse: collapse; font-size: 0.65rem; text-align: left; }
+.tabelaResponsiva caption { margin-bottom: 7px; color: #747d99; text-align: left; }
+.tabelaResponsiva th, .tabelaResponsiva td { padding: 9px 7px; border-bottom: 1px solid #e9e9f2; white-space: nowrap; }
+.tabelaResponsiva th { color: #596281; }
+
+.painel :is(summary):focus-visible { outline: 3px solid #f0a528; outline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .gradeConteudo { grid-template-columns: 1fr; }
+  .resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .resumo div { min-height: 98px; }
+  .areaGrafico, .estadoVazioGrafico { height: 235px; min-height: 235px; }
+}
+
+@media (max-width: 420px) {
+  .painel { padding: 15px; border-radius: 16px; }
+  .cabecalho { align-items: flex-start; }
+  .versao { display: none; }
+  .resumo { grid-template-columns: 1fr; }
+  .resumo div { min-height: 86px; }
+  .areaGrafico, .estadoVazioGrafico { height: 220px; min-height: 220px; }
+}

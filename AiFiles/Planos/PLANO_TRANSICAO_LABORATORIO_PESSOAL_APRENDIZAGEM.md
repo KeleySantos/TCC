@@ -5,12 +5,12 @@
 | Campo | Valor |
 |---|---|
 | Data | 2026-09-09 |
-| Estado | **RASCUNHO BLOQUEADO PARA APROVAÇÃO DE ESCOPO** |
+| Estado | **ENTREGAS A E B CONCLUÍDAS E VALIDADAS LOCALMENTE; FASES 12 A 14 FORA DO CORTE** |
 | Agente planejador | Cebolinha |
 | Origem | `C:\Users\keley\Downloads\roadmap_tecnico_tcc_laboratorio_aprendizagem.md` |
 | Natureza | Evolução faseada do MVP existente; não é construção a partir de repositório vazio |
 | Escopo temporal | MVP demonstrável, incrementos MVP+ e evoluções posteriores |
-| Autorização atual | Planejamento somente; nenhuma implementação de produto foi autorizada |
+| Autorização atual | Execução autorizada pelo autor com Guanabara; corte da banca: Entregas A e B |
 
 ### 1.1 Fontes consultadas
 
@@ -33,7 +33,9 @@ Evoluir o artefato local existente para um laboratório pessoal no qual uma cont
 4. concluir uma avaliação objetiva;
 5. obter métricas determinísticas contextualizadas por módulo e tópico;
 6. visualizar dashboards por módulo e geral;
-7. receber uma interpretação com linguagem controlada e resposta local de contingência, caso a integração de IA seja aprovada.
+7. receber uma interpretação por Gemini com linguagem controlada e resposta local de contingência.
+8. selecionar um método de estudo controlado e registrar desafios pessoais de experimentação;
+9. acompanhar comparações contextuais desses desafios e o desempenho por nível de Bloom, sempre com amostra e limitação explícitas.
 
 O resultado só é aceito quando o ciclo for reproduzível por seed, protegido no servidor, coberto por testes e demonstrável sem depender de dados reais ou da disponibilidade de serviço externo.
 
@@ -41,14 +43,14 @@ O resultado só é aceito quando o ciclo for reproduzível por seed, protegido n
 
 ### 3.1 Entrega A — MVP demonstrável
 
-- conta sintética autenticada e área pessoal;
+- conta sintética autenticada e área pessoal única, sem papéis;
 - módulos, tópicos e materiais simples de texto ou link;
 - sessões com cronômetro oficial, método, dificuldade percebida, compreensão percebida e observações;
 - avaliações objetivas e taxa de acerto calculada no servidor;
 - métricas determinísticas por módulo, tópico, formato e método;
 - comparação entre percepção e resultado observado;
 - dashboard do módulo e dashboard geral;
-- interpretação por IA apenas como camada opcional, com validação e resposta local de contingência;
+- interpretação por Gemini como camada opcional, validada e com resposta local de contingência;
 - cenário sintético e roteiro de demonstração.
 
 ### 3.2 Entrega B — MVP+
@@ -119,29 +121,29 @@ Salas, membros, convites, agregados de sala, upload multimodal e análise de arq
 
 **Conflito:** o roadmap afirma que todas as pessoas possuem o mesmo tipo de conta; D-004/D-012, o escopo científico e o código preservam aluno, professor e administrador.
 
-**Recomendação:** adotar uma área pessoal universal para toda `Usuario`, mantendo professor e administrador como capacidades adicionais. Módulos, sessões e avaliações passam a pertencer diretamente ao usuário. Perfil de aluno, turma e curadoria permanecem para apoio docente até decisão posterior, evitando apagar jornadas já validadas.
+**Decisão aprovada:** substituir os papéis de aluno, professor e administrador por uma única conta pessoal. Módulos, sessões e avaliações passam a pertencer diretamente a `Usuario`. Perfis, turmas, curadoria, administração e suas rotas deixam o escopo do produto; as estruturas legadas só podem subsistir temporariamente para uma migração segura de dados sintéticos.
 
-**Se rejeitada:** remover papéis exige substituir autorização, rotas, perfis, turmas, curadoria, administração, seed e objetivos científicos; isso caracteriza novo produto e migração destrutiva.
+**Impacto registrado:** requisitos, objetivos científicos, arquitetura, modelo de dados, contratos, matriz e riscos foram atualizados na Fase 0. A migração de banco deve ser aditiva e nunca editar a migração já aplicada.
 
-**Estado:** PENDENTE DE APROVAÇÃO DO AUTOR.
+**Estado:** DECIDIDA PELO AUTOR EM 2026-09-12.
 
 ### QD-02 — Função da Gemini API
 
 **Conflito:** o roadmap inclui Gemini; D-009 e o escopo vigente definem recomendador determinístico e adiam LLM.
 
-**Recomendação:** manter métricas e recomendação oficial em `regras-base-v1`; permitir Gemini apenas para converter um DTO sintético de métricas em `interpretacao`, `perguntaMetacognitiva` e `proximoExperimento`. Validar, filtrar pela política de linguagem e usar resposta local de contingência em qualquer falha.
+**Decisão aprovada:** manter métricas e recomendação oficial em algoritmo local determinístico e versionado. Gemini recebe somente DTO sintético agregado para interpretar padrões observados, gerar feedbacks, conselhos e perguntas de reflexão. A saída é validada e filtrada pela política de linguagem; qualquer falha usa resposta local de contingência.
 
-**Se rejeitada:** a Entrega A termina com interpretação determinística; nenhuma chave, dependência ou chamada externa é adicionada.
+**Limites obrigatórios:** Gemini não calcula métricas, não altera notas, dados ou permissões, não recebe nomes, respostas, observações ou chaves de API, não sustenta afirmações causais e não é requisito de disponibilidade para a demonstração.
 
-**Estado:** PENDENTE DE APROVAÇÃO DO AUTOR E ALINHAMENTO COM O ORIENTADOR.
+**Estado:** DECIDIDA PELO AUTOR EM 2026-09-12.
 
 ### QD-03 — Vínculo explícito entre sessão e avaliação
 
 **Conflito:** o roadmap associa avaliação à sessão; o protocolo atual infere evidência por janela de sete dias e exclui exposição mista.
 
-**Recomendação:** novas tentativas podem registrar `sessaoId` opcional, mas o vínculo só gera evidência quando satisfaz o protocolo. Registros legados continuam com a associação determinística atual. Tornar o vínculo obrigatório ou substituir a janela exige validação metodológica.
+**Decisão aprovada:** adiar a referência explícita `sessaoId`. A associação analítica atual por mesma conta, tópico, sessão válida e janela temporal continua; não há mudança metodológica nem coluna nova nesta entrega.
 
-**Estado:** PENDENTE DE VALIDAÇÃO METODOLÓGICA.
+**Estado:** ADIADA PELO AUTOR EM 2026-09-12.
 
 ### 5.1 Decisões já fixadas
 
@@ -150,8 +152,9 @@ Salas, membros, convites, agregados de sala, upload multimodal e análise de arq
 - domínio próprio permanece em português do Brasil;
 - métricas oficiais são determinísticas, versionadas e testáveis;
 - o MVP pode ser demonstrado sem IA externa;
-- módulos e dados privados exigem propriedade verificada no servidor;
+- módulos e dados privados exigem propriedade direta da conta verificada no servidor;
 - exclusão de conteúdo referenciado será lógica.
+- o corte da banca inclui as Entregas A e B; Entregas C e D não serão implementadas neste ciclo.
 
 ## 6. Requisitos propostos e aceite
 
@@ -187,11 +190,11 @@ Os identificadores são provisórios. Na Fase 0, itens aprovados devem ser promo
 
 | Dimensão | Impacto previsto | Obrigação de controle |
 |---|---|---|
-| Interface | Novas rotas pessoais, formulários, cards e gráficos; possível convivência com áreas docente/administrativa | Preservar navegação por teclado, estados explícitos, alternativa tabular e 360 px |
+| Interface | Novas rotas pessoais, formulários, cards e gráficos; rotas por papel serão retiradas do fluxo | Preservar navegação por teclado, estados explícitos, alternativa tabular e 360 px |
 | Servidor | Novos casos de uso e ampliação das APIs de sessão/tentativa | Validar com Zod, obter ator do cookie e aplicar propriedade em toda operação |
 | Domínio | Novas métricas por módulo, método, percepção e Bloom | Manter funções puras, unidade de análise e versão do algoritmo |
 | Banco | Módulo, relações de propriedade e modelos incrementais | Usar migrações aditivas, índices por proprietário/contexto, seed e verificador |
-| Segurança | A superfície horizontal cresce com CRUD e compartilhamento | Testar proprietário, convidado, terceiro, papel/capacidade e revogação |
+| Segurança | CRUD pessoal amplia a superfície horizontal | Testar proprietário, terceira conta, sessão ausente e não enumeração de recursos |
 | Privacidade | Perfil, observação, prompt de IA e upload aumentam risco de conteúdo real | Aceitar somente dados sintéticos; minimizar DTOs e logs; nunca enviar observação livre à IA |
 | Acessibilidade | Mais formulários e visualizações | Manter foco, rótulos, anúncios, contraste e equivalência não visual |
 | Desempenho | Dashboards agregam mais dimensões e o painel docente atual faz consultas repetidas por aluno | Agregar em lote, evitar N+1, criar índices e medir com o seed antes de otimizar |
@@ -231,7 +234,7 @@ Dados sintéticos                 JSON validado + resposta local
 1. Criar backup recuperável do banco sintético antes de cada migração de desenvolvimento.
 2. Adicionar estruturas novas antes de remover ou tornar colunas obrigatórias.
 3. Popular módulos e ligar tópicos atuais de forma determinística.
-4. Migrar propriedade por meio de `PerfilAluno.usuarioId`, sem inventar proprietário.
+4. Migrar propriedade de dados sintéticos existentes para `Usuario` de modo determinístico, sem inventar proprietário; manter estruturas legadas somente até a migração estar conferida.
 5. Conferir contagens, notas e relações antes de apertar restrições.
 6. Recriar o banco do zero com todas as migrações e seed.
 7. Não editar `prisma/migrations/20260830160000_init/migration.sql`.
@@ -240,12 +243,12 @@ Dados sintéticos                 JSON validado + resposta local
 
 | Incremento | Alteração proposta |
 |---|---|
-| A | `ModuloAprendizagem`; propriedade de tópico/material; método/percepção em sessão; vínculo opcional de tentativa com sessão; texto simples |
+| A | `ModuloAprendizagem`; propriedade direta por `Usuario`; tópicos e materiais aninhados; método/percepção em sessão; texto simples; sem vínculo direto de tentativa com sessão |
 | B | `MetodoEstudo`, `DesafioExperimentacao`, vínculo ao desafio e nível de Bloom |
 | C | `CompartilhamentoModulo`, escopos, `ComentarioCompartilhamento` e auditoria |
 | D | `Sala`, `MembroSala`, vínculos de módulo e metadados de arquivo |
 
-Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor não cria migração com essa decisão pendente.
+Nomes finais e chaves estrangeiras da Entrega A foram aprovados pela D-014. O executor cria somente migrações novas, aditivas e validadas sobre dados sintéticos.
 
 ### 8.3 Compatibilidade e recuperação
 
@@ -267,7 +270,7 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Validação:** `rg -n "AI Files|DECISÃO PENDENTE|QD-0" AiFiles AGENTS.md` e `git diff --check`.
 
-**Saída:** nenhuma QD sem decisão e matriz canônica com cada requisito autorizado.
+**Saída:** CONCLUÍDA em 2026-09-12. D-014, D-015, D-016 e D-017 foram registradas; a matriz canônica contém os requisitos da Entrega A.
 
 ## Fase 1 — Restabelecer baseline e documentação da versão
 
@@ -279,7 +282,7 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 ## Fase 2 — Introduzir módulo e propriedade
 
-**Objetivo:** criar a unidade central sem perda. **Dependências:** F1 e QD-01.
+**Objetivo:** criar a unidade central sem perda. **Dependências:** F1 e D-014.
 
 **Arquivos:** `prisma/schema.prisma`, nova migração, `prisma/seed.ts`, verificador e modelo de dados.
 
@@ -289,17 +292,21 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** todo tópico pertence a um módulo autorizado e o cenário anterior permanece calculável.
 
+**Execução em 2026-09-12:** concluída. A migração `20260912190000_modulo_propriedade_pessoal` foi aplicada também a uma cópia recuperável do banco sintético anterior, sem violações de chave estrangeira, tópicos órfãos ou sessões sem proprietário direto. O reset cria cinco contas pessoais, cada qual com módulo e tópicos próprios; o verificador confirmou 15 tópicos, 15 materiais, 17 sessões válidas, uma inválida e as métricas de referência das contas A e C.
+
 ## Fase 3 — Área pessoal, perfil e navegação
 
-**Objetivo:** oferecer área comum sem enfraquecer permissões. **Dependências:** F2.
+**Objetivo:** oferecer a conta pessoal única sem enfraquecer a propriedade dos dados. **Dependências:** F2.
 
-**Arquivos:** autenticação, autorização, consultas, páginas de entrada/layout; novos `src/app/painel/page.tsx`, `src/app/perfil/page.tsx` e ação de perfil.
+**Arquivos:** autenticação, autorização, consultas, páginas de entrada/layout; novos `src/app/dashboard/page.tsx`, redirecionamento legado em `src/app/painel/page.tsx`, `src/app/perfil/page.tsx` e ação de perfil.
 
-**Passos:** separar laboratório de capacidades adicionais; redirecionar à área pessoal; validar nome, e-mail sintético opcional e troca de senha no servidor; exigir senha atual; preservar foco, atalho e 360 px.
+**Passos:** retirar o roteamento e a autorização por papel do fluxo do produto; redirecionar a conta autenticada à área pessoal; validar nome, e-mail sintético opcional e troca de senha no servidor; exigir senha atual; preservar foco, atalho e 360 px.
 
 **Validações:** credenciais, senha incorreta, acesso anônimo/horizontal, teclado e 360 px.
 
 **Saída:** conta acessa painel pessoal sem obter dados de outra conta.
+
+**Execução em 2026-09-12, com rota atualizada em 2026-09-13:** concluída. `UsuarioAtual` e autorização de API passaram a representar somente a conta autenticada; entrada, início e rotas legadas convergem para `/dashboard`, enquanto `/painel` redireciona por compatibilidade. Foram criados dashboard pessoal, perfil com validação de nome/e-mail sintético e troca de senha mediante senha atual. A validação local confirmou foco do atalho de conteúdo, largura de documento de 345 px em viewport de 360 px, páginas autenticadas e isolamento HTTP entre as contas A e B.
 
 ## Fase 4 — CRUD de módulos, tópicos e materiais
 
@@ -313,6 +320,8 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** uma conta cria “JavaScript”, “Loops” e material; outra não acessa.
 
+**Execução em 2026-09-12:** concluída. Foram criados serviços pessoais para módulo, tópico e material; todas as leituras e escritas filtram a conta autenticada no servidor. A migração `20260912200000_materiais_texto_pessoal` incluiu texto próprio opcional em materiais, sem substituir links HTTP(S) validados. Ações de servidor implementam criação, edição e arquivamento lógico; a página de módulo não consulta Prisma diretamente. O script de serviço comprovou CRUD e isolamento entre as contas A e B, e a página autenticada do módulo foi conferida no servidor local.
+
 ## Fase 5 — Sessões enriquecidas
 
 **Objetivo:** registrar contexto e duração confiável. **Dependências:** F4.
@@ -325,17 +334,21 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** sessões distintas aparecem em histórico com contexto completo.
 
+**Execução em 2026-09-12:** concluída. A migração `20260912210000_sessoes_contextualizadas` acrescentou método, dificuldade percebida, compreensão percebida e observação limitada. O serviço calcula a duração no servidor, exige escalas de 1 a 5 ao encerrar e devolve 404 para sessão que não pertence à conta. O cronômetro coleta o método e a autoavaliação, e `/historico` lista sessões próprias válidas e inválidas com seus contextos.
+
 ## Fase 6 — Avaliações, tentativas e Bloom armazenável
 
-**Objetivo:** ligar medida objetiva ao contexto. **Dependências:** F5 e QD-03.
+**Objetivo:** registrar medida objetiva no contexto de módulo e tópico. **Dependências:** F5.
 
 **Arquivos:** schema/migração, API de tentativas, quiz, protocolo, seed, verificador, contratos e testes.
 
-**Passos:** adicionar `sessaoId` conforme decisão; validar proprietário/tópico/módulo/tempo; derivar número de tentativa no servidor; manter gabarito e nota no servidor; adicionar Bloom opcional; rejeitar avaliações/respostas/vínculos inválidos.
+**Passos:** validar proprietário, tópico, módulo e tempo; derivar número de tentativa no servidor; manter gabarito e nota no servidor; não criar `sessaoId`; rejeitar avaliações e respostas inválidas.
 
 **Validações:** notas 0/intermediária/100, total zero, vínculo incompatível e exposição mista.
 
 **Saída:** sessão produz resultado rastreável sem quebrar evidências existentes.
+
+**Execução em 2026-09-12:** concluída. A migração `20260912220000_tentativas_contextualizadas` adicionou `numeroTentativa` sequencial por conta e avaliação, além de nível de Bloom opcional em cada questão. O serviço de tentativas calcula a nota exclusivamente no servidor, grava respostas e rejeita respostas inválidas ou avaliações de outra conta; não cria vínculo direto com sessão. A verificação automatizada confirmou notas 0%, intermediária e 100%, total zero, sequência e isolamento entre contas.
 
 ## Fase 7 — Motor ampliado de Learning Analytics
 
@@ -349,6 +362,8 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** seed produz métricas esperadas sem IA, Prisma ou React nas funções puras.
 
+**Execução em 2026-09-12:** concluída. O motor puro versionado `metricas-oficiais-v2` calcula acerto, média, evolução, tempo válido, desempenho contextual por formato e método, percepção versus resultado e métricas por tópico. Exposição mista não é atribuída a formato ou método; recorrência só é emitida quando o mesmo contexto aparece em dois ou mais módulos. Testes de domínio cobriram vazio, amostra única, empate, contradição, exposição mista e recorrência; o verificador confirmou os perfis sintéticos A–E.
+
 ## Fase 8 — Dashboard do módulo
 
 **Objetivo:** responder “como estou aprendendo este assunto?”. **Dependências:** F7.
@@ -361,11 +376,13 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** dados alteram cards/gráficos previsivelmente e sem causalidade.
 
+**Execução em 2026-09-12:** concluída. O painel de módulo usa exclusivamente o motor oficial e apresenta taxa de acerto, tempo válido, evolução, última nota, desempenho por formato e método, percepção versus resultado e uma tabela por tópico. Cada gráfico possui texto alternativo e tabela equivalente; ausência, amostra única e exposição mista têm estados explícitos. Sessões e tentativas concluídas acionam atualização do painel sem que identificadores internos sejam expostos na interface.
+
 ## Fase 9 — Dashboard geral e histórico dinâmico
 
 **Objetivo:** agregar preservando origem. **Dependências:** F8.
 
-**Arquivos:** alterar `src/app/painel/page.tsx`; criar ou extrair `src/servidor/paineis.ts` e componentes de frequência/recorrência; alterar navegação e testes de interface.
+**Arquivos:** alterar `src/app/dashboard/page.tsx`; manter `src/app/painel/page.tsx` como redirecionamento; criar ou extrair `src/servidor/paineis.ts` e componentes de frequência/recorrência; alterar navegação e testes de interface.
 
 **Passos:** módulos ativos, frequência, evolução e métodos usados; separar local/recorrente; informar observações e atualização; recalcular com contradições; não persistir rótulo fixo.
 
@@ -373,17 +390,21 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** usuário distingue padrões locais de recorrências.
 
+**Execução em 2026-09-12:** concluída. O painel geral mostra frequência, tempo válido e resultados por módulo sem perder a origem. Recorrências de formato ou método são calculadas somente quando há exposição única em pelo menos dois módulos; com um módulo, a interface mostra explicitamente que não há base para generalização. O histórico passou a ordenar sessões e avaliações da própria conta em uma única linha do tempo contextual.
+
 ## Fase 10 — IA interpretativa opcional
 
-**Objetivo:** reflexão sem terceirizar cálculo. **Dependências:** F9 e QD-02.
+**Objetivo:** interpretação profunda e segura sem terceirizar cálculo. **Dependências:** F9 e D-015.
 
 **Arquivos novos propostos:** `src/servidor/ia/provedor-interpretacoes.ts`, `gemini.ts`, `src/dominio/interpretacoes/esquema.ts`, `resposta-local.ts`, testes e endpoint/ação definidos após ler docs Next.js. Alterar `.env.example`, painel, contratos, riscos e README; nunca versionar `.env` real.
 
-**Passos:** consultar documentação oficial atual da Gemini; registrar SDK/modelo; enviar DTO agregado sem nomes/respostas/observações; solicitar três campos; validar JSON e linguagem; aplicar tempo limite, cota e resposta local; registrar metadados mínimos se persistir; identificar interpretação automática na interface.
+**Passos:** consultar documentação oficial atual da Gemini; registrar SDK/modelo; enviar DTO agregado sem nomes/respostas/observações; solicitar padrões observados, feedbacks, conselhos e perguntas de reflexão; validar JSON, contexto e linguagem; aplicar tempo limite, cota e resposta local; registrar metadados mínimos se persistir; identificar interpretação automática na interface.
 
 **Validações:** sucesso, JSON inválido, timeout, 401/429/500, ausência de chave, texto proibido e painel sem provedor.
 
 **Saída:** remover rede/chave apenas ativa a resposta local.
+
+**Execução em 2026-09-12:** concluída. Após consulta à documentação oficial atual da Gemini, o adaptador usa `generateContent` com saída JSON estruturada, tempo limite de sete segundos e modelo configurável (`gemini-2.5-flash` por padrão). Ele recebe somente um DTO agregado sem nome, resposta, observação livre ou identificador interno. Schema, política de linguagem, cota local e contingência impedem que configuração ausente, cota, timeout, falha HTTP ou resposta inválida interrompam o painel; nesses casos é retornada uma interpretação local baseada nas mesmas métricas oficiais.
 
 ## Fase 11 — Métodos, desafios e analytics de Bloom
 
@@ -395,7 +416,11 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Validações:** três sessões, inválida não conta, cancelamento preserva histórico, Bloom ausente não vira zero.
 
-**Saída:** comparações explicáveis e reproduzíveis.
+**Saída:** CONCLUÍDA E VALIDADA LOCALMENTE em 2026-09-15. O catálogo de seis métodos foi integrado sem remover a leitura dos valores históricos; desafios pessoais podem ser criados, vinculados opcionalmente a sessões compatíveis e cancelados sem apagar o histórico. As comparações usam apenas evidências únicas do mesmo módulo e método, exigem duas evidências por grupo e não expressam causalidade. A análise de Bloom usa exclusivamente respostas classificadas e não converte falta de amostra em zero. Reset, cenário sintético, testes de domínio/serviço/integração, tipos, lint e build de produção passaram.
+
+**Integração visual em 2026-09-15:** concluída pelo Araki. A rota `/desafios` passou a apresentar o catálogo controlado, criação, estados e comparação contextual em uma composição responsiva própria, mantendo ações e DTOs do Guanabara. O painel Bloom foi destacado com gráfico, resumo de amostra e tabela equivalente que conserva níveis insuficientes sem taxa. Teclado, foco, alternativas tabulares, viewport de 320 px, lint, tipos, 35 testes e build foram validados.
+
+**Revisão de produto aprovada em 2026-09-15:** o método passa a ser o núcleo da jornada. Desafio escrito pelo usuário e lista de desafios criados deixam o fluxo ativo; recomendações da IA tornam-se orientações opcionais apresentadas no modal do método. “Testar este método” deve iniciar uma experimentação em um ou mais módulos, com ou sem orientação selecionada, e expor o estado `EXPERIMENTANDO`. A implementação de backend está especificada em `HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md`; o fluxo atual permanece provisoriamente ativo até a migração e a integração posterior do Araki.
 
 ## Fase 12 — Compartilhamento e comentários
 
@@ -443,6 +468,8 @@ Nomes finais e chaves estrangeiras da Entrega A dependem de QD-01. O executor n�
 
 **Saída:** corte reproduzível em máquina limpa e sem requisito sem evidência.
 
+**Execução em 2026-09-12:** concluída para a Entrega A. O banco foi recriado e verificado com cinco migrações; os serviços, métricas, APIs e painéis foram validados. Lint, tipos, 18 testes unitários, integração HTTP e build de produção passaram. Em 360 px, a entrada ficou em 345 px sem rolagem horizontal e o atalho de conteúdo recebeu o primeiro foco por teclado. A documentação, o README, a matriz e o relatório técnico foram atualizados. Em 2026-09-15, o autor ampliou o corte para incluir a Entrega B; a Fase 11 foi implementada e validada com a sexta migração, cenário de desafios e Bloom, 35 testes, integração HTTP e build de produção. Fases 12 a 14 continuam fora do corte.
+
 ## 11. Estratégia de testes
 
 | Camada | Casos | Evidência |
@@ -461,7 +488,7 @@ Nenhum teste depende de chave externa, relógio real não controlado ou ordem n�
 
 | ID | Risco/gatilho | Prevenção | Contingência/parada |
 |---|---|---|---|
-| RP-01 | Remover papéis quebra objetivos/jornadas | Resolver QD-01 | Parar F0 |
+| RP-01 | Migração de papéis legados deixa rota, dado ou permissão incoerente | Migração aditiva, remoção do fluxo por papel e testes de propriedade | Parar a fase e corrigir a nova migração/rota |
 | RP-02 | Migração perde registros | Aditiva, backup e contagens | Restaurar banco sintético; corrigir migração nova |
 | RP-03 | IA inventa causalidade/dado | DTO, schema, política e resposta local | Descartar saída |
 | RP-04 | Serviço externo falha na banca | IA opcional | Desabilitar sem afetar dashboard |
@@ -475,7 +502,7 @@ Nenhum teste depende de chave externa, relógio real não controlado ou ordem n�
 ## 13. Instruções ao executor
 
 1. Não implementar antes da saída da Fase 0.
-2. Executar fases em ordem; F10–F14 só quando autorizadas.
+2. Executar fases em ordem; F10 e F11 estão autorizadas; F12–F14 só podem iniciar com nova autorização explícita.
 3. Ler `AGENTS.md`, diretrizes e fontes indicadas pelo índice.
 4. Antes de Next.js, restaurar dependência e ler `node_modules/next/dist/docs/`.
 5. Não alterar lock, instalar SDK de IA ou framework E2E sem decisão registrada.
@@ -498,7 +525,7 @@ Nenhum teste depende de chave externa, relógio real não controlado ou ordem n�
 | Analytics | F7 | testes-ouro A–E | A |
 | Dashboard módulo | F8 | valores, vazio e tabela | A |
 | Dashboard geral | F9 | local versus recorrente | A |
-| IA | F10 | schema, linguagem, tempo limite e resposta local | A opcional |
+| IA | F10 | schema, linguagem, tempo limite e resposta local | A |
 | Métodos/desafios/Bloom | F11 | progresso e amostra | B |
 | Compartilhamento/comentários | F12 | autorização/revogação | C |
 | Salas | F13 | membros/escopos/agregados | D |
@@ -507,10 +534,10 @@ Nenhum teste depende de chave externa, relógio real não controlado ou ordem n�
 
 ## 15. Condição para retirar o bloqueio
 
-O estado passa para **APROVADO PARA EXECUÇÃO** somente quando:
+O estado passou para **APROVADO PARA EXECUÇÃO** em 2026-09-12 porque:
 
-- QD-01, QD-02 e QD-03 tiverem respostas registradas;
-- o corte da banca estiver definido;
-- requisitos, decisões, protocolo e matriz estiverem coerentes;
-- o baseline da Fase 1 tiver sido reproduzido;
-- o usuário escolher explicitamente um agente executor ou autorizar a implementação por meio compatível com o sistema multiagentes.
+- D-014, D-015 e D-016 têm respostas registradas;
+- o corte da banca é a Entrega A;
+- requisitos, decisões, protocolo e matriz foram atualizados na Fase 0;
+- Guanabara foi selecionado explicitamente como agente executor e recebeu autorização de execução;
+- o baseline da Fase 1 foi reproduzido com Node.js 22.23.2 e `better-sqlite3` 12.x; reset, cenário, lint, tipos, testes unitários e build passaram. A integração legada falha apenas na expectativa de papel de professor, que será substituída pela autorização por propriedade da Entrega A.

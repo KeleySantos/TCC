@@ -1,0 +1,202 @@
+.paginaDesafios {
+  min-height: 100vh;
+  color: var(--laboratorio-tinta);
+  background: radial-gradient(circle at 72% 0%, rgb(194 184 255 / 22%), transparent 34rem), #f7f8fd;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.topoConta {
+  display: flex;
+  min-height: 74px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px clamp(20px, 3vw, 46px);
+  border-bottom: 1px solid #e7e8f2;
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: blur(16px);
+}
+
+.contextoAtual, .conta, .mensagemSucesso, .metadadosDesafio, .cabecalhoDesafio > div > p, .botaoCriar, .botaoCancelar, .tituloComoFunciona {
+  display: flex;
+  align-items: center;
+}
+
+.contextoAtual { gap: 9px; color: #69749b; font-size: 0.82rem; font-weight: 700; }
+.contextoAtual svg { width: 19px; height: 19px; color: var(--laboratorio-roxo); }
+.conta { gap: 10px; padding: 5px 7px; border-radius: 12px; }
+.conta:hover { background: #f2f0ff; }
+.avatar { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #8165fc, #5840db); font-weight: 800; }
+.conta span:last-child, .conta small { display: block; }
+.conta strong { font-size: 0.8rem; }
+.conta small { margin-top: 3px; color: #7781a5; font-size: 0.68rem; }
+
+.areaConteudo { width: min(100%, 1540px); margin: 0 auto; padding: 28px clamp(20px, 3vw, 46px) 60px; }
+
+.apresentacao {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.48fr);
+  gap: 34px;
+  align-items: end;
+  overflow: hidden;
+  padding: 30px 34px;
+  border: 1px solid #ddd8fb;
+  border-radius: 24px;
+  background: radial-gradient(circle at 91% -20%, rgb(125 91 251 / 25%), transparent 24rem), linear-gradient(125deg, #fff 0%, #f7f4ff 100%);
+  box-shadow: 0 16px 46px rgb(48 38 111 / 8%);
+}
+
+.apresentacao::after { position: absolute; right: -72px; bottom: -120px; width: 270px; height: 270px; border: 1px solid rgb(106 74 231 / 12%); border-radius: 50%; content: ""; pointer-events: none; }
+.textoApresentacao, .resumoApresentacao { position: relative; z-index: 1; }
+.sobretitulo { margin: 0; color: var(--laboratorio-roxo); font-size: 0.68rem; font-weight: 850; letter-spacing: 0.12em; }
+.textoApresentacao h1 { max-width: 790px; margin: 6px 0 10px; font-size: clamp(2rem, 3.4vw, 3.4rem); line-height: 1.02; letter-spacing: -0.055em; }
+.textoApresentacao > p:last-child { max-width: 750px; margin: 0; color: var(--laboratorio-texto); font-size: 0.94rem; line-height: 1.65; }
+
+.resumoApresentacao { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; border: 1px solid rgb(218 214 242 / 80%); border-radius: 17px; background: rgb(255 255 255 / 75%); backdrop-filter: blur(10px); }
+.resumoApresentacao div { min-width: 0; padding: 16px 12px; text-align: center; }
+.resumoApresentacao div + div { border-left: 1px solid #e6e3f4; }
+.resumoApresentacao dt { color: #737d9d; font-size: 0.62rem; font-weight: 700; line-height: 1.3; }
+.resumoApresentacao dd { margin: 5px 0 0; color: #5235cf; font-size: 1.45rem; font-weight: 850; letter-spacing: -0.04em; }
+
+.mensagemErro, .mensagemSucesso { margin: 18px 0 0; padding: 12px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 720; }
+.mensagemErro { color: #8a1c1c; border: 1px solid #e6abab; background: #fff0f0; }
+.mensagemSucesso { gap: 8px; color: #1d613e; border: 1px solid #a4d7b7; background: #eaf8ef; }
+.mensagemSucesso svg { width: 18px; height: 18px; flex: 0 0 auto; }
+
+.catalogoMetodos { margin-top: 28px; }
+.cabecalhoSecao, .cabecalhoLista, .cabecalhoDesafio { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
+.cabecalhoSecao h2, .cabecalhoLista h2 { margin: 4px 0 0; font-size: 1.28rem; letter-spacing: -0.035em; }
+.cabecalhoSecao > p { max-width: 510px; margin: 0; color: var(--laboratorio-texto); font-size: 0.76rem; line-height: 1.5; text-align: right; }
+.gradeMetodos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.metodo { display: grid; min-width: 0; gap: 12px; padding: 15px; border: 1px solid var(--laboratorio-borda); border-radius: 16px; background: rgb(255 255 255 / 92%); box-shadow: 0 8px 24px rgb(39 43 98 / 4%); }
+.iconeMetodo { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 11px; color: #6544e6; background: #f0edff; }
+.iconeMetodo svg { width: 18px; height: 18px; }
+.metodo h3 { margin: 0; font-size: 0.76rem; line-height: 1.25; }
+.metodo p { margin: 5px 0 0; color: #75809f; font-size: 0.62rem; line-height: 1.45; }
+
+.gradePrincipal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(310px, 360px); gap: 20px; align-items: start; margin-top: 32px; }
+.areaDesafios, .colunaCriacao, .cartaoDesafio { min-width: 0; }
+.cabecalhoLista { align-items: end; margin-bottom: 14px; }
+.cabecalhoLista > span { padding: 6px 9px; border-radius: 999px; color: #6244d7; background: #efecff; font-size: 0.66rem; font-weight: 760; }
+.listaDesafios, .colunaCriacao { display: grid; gap: 14px; }
+.cartaoDesafio, .cartaoCriacao, .avisoResponsavel, .comoFunciona, .estadoVazio { border: 1px solid var(--laboratorio-borda); border-radius: 20px; background: rgb(255 255 255 / 95%); box-shadow: 0 12px 34px rgb(39 43 98 / 6%); }
+.cartaoDesafio { padding: 22px; }
+.cabecalhoDesafio > div { min-width: 0; }
+.metadadosDesafio { flex-wrap: wrap; gap: 7px; color: #656f91; font-size: 0.65rem; font-weight: 720; }
+.estadoAtivo, .estadoCancelado { padding: 4px 7px; border-radius: 999px; font-size: 0.58rem; font-weight: 820; text-transform: uppercase; letter-spacing: 0.07em; }
+.estadoAtivo { color: #18704a; background: #e7f8ef; }
+.estadoCancelado { color: #697087; background: #f0f1f5; }
+.cabecalhoDesafio h3 { max-width: 760px; margin: 9px 0 8px; font-size: 1.05rem; line-height: 1.38; letter-spacing: -0.02em; }
+.cabecalhoDesafio > div > p { flex-wrap: wrap; gap: 8px 15px; margin: 0; color: #7a839f; font-size: 0.65rem; }
+.cabecalhoDesafio a { display: inline-flex; align-items: center; gap: 5px; color: #6040d6; font-weight: 760; }
+.cabecalhoDesafio a svg { width: 13px; height: 13px; }
+
+.botaoCancelar, .botaoCriar { justify-content: center; gap: 7px; border: 0; font-weight: 760; cursor: pointer; }
+.botaoCancelar { min-height: 38px; padding: 8px 11px; border: 1px solid #ddd9ee; border-radius: 10px; color: #6f6689; background: #fff; font-size: 0.7rem; }
+.botaoCancelar:hover { color: #9a3243; border-color: #edc3ca; background: #fff7f8; }
+.botaoCancelar svg, .botaoCriar svg { width: 17px; height: 17px; }
+
+.comparacaoVisual { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.grupoComparacao { min-width: 0; padding: 14px; border: 1px solid #ebe9f5; border-radius: 14px; background: #fbfbfe; }
+.rotuloComparacao { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.rotuloComparacao span, .rotuloComparacao small, .grupoComparacao > small { display: block; }
+.rotuloComparacao span > strong { color: #454f73; font-size: 0.69rem; }
+.rotuloComparacao small, .grupoComparacao > small { margin-top: 4px; color: #858da8; font-size: 0.57rem; line-height: 1.4; }
+.rotuloComparacao > strong { flex: 0 0 auto; color: #5637d5; font-size: 1rem; }
+.grupoComparacao progress { width: 100%; height: 8px; margin-top: 12px; overflow: hidden; border: 0; border-radius: 999px; background: #e9e7f2; }
+.grupoComparacao progress::-webkit-progress-bar { border-radius: 999px; background: #e9e7f2; }
+.grupoComparacao progress::-webkit-progress-value { border-radius: 999px; background: linear-gradient(90deg, #8062f3, #5d3de1); }
+.grupoComparacao progress::-moz-progress-bar { border-radius: 999px; background: linear-gradient(90deg, #8062f3, #5d3de1); }
+.barraIndisponivel { margin-top: 12px; padding: 7px 9px; border: 1px dashed #d7d4e5; border-radius: 9px; color: #7d849d; background: #f6f6fa; font-size: 0.57rem; }
+
+.resultadoComparavel, .resultadoInsuficiente { display: flex; gap: 9px; align-items: flex-start; margin-top: 13px; padding: 10px 12px; border-radius: 12px; }
+.resultadoComparavel { color: #51477e; background: #f2efff; }
+.resultadoInsuficiente { color: #685f49; background: #fff8e8; }
+.resultadoComparavel svg, .resultadoInsuficiente svg { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 1px; }
+.resultadoComparavel p, .resultadoInsuficiente p { margin: 0; font-size: 0.66rem; line-height: 1.5; }
+
+.detalhesTabela { margin-top: 13px; padding-top: 12px; border-top: 1px solid #ececf4; }
+.detalhesTabela > summary { color: #6040d6; font-size: 0.68rem; font-weight: 760; cursor: pointer; }
+.tabelaResponsiva { max-width: 100%; overflow-x: auto; }
+.tabelaResponsiva table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 0.68rem; text-align: left; }
+.tabelaResponsiva caption { margin-bottom: 7px; color: #77809c; text-align: left; }
+.tabelaResponsiva th, .tabelaResponsiva td { padding: 9px 7px; border-bottom: 1px solid #ececf4; }
+.tabelaResponsiva th { color: #566080; }
+.dataCancelamento { margin: 12px 0 0; color: #777f99; font-size: 0.62rem; }
+
+.estadoVazio { display: grid; min-height: 330px; place-content: center; justify-items: center; padding: 34px; text-align: center; }
+.estadoVazio > span { display: grid; width: 52px; height: 52px; place-items: center; border-radius: 16px; color: #6242eb; background: #efebff; }
+.estadoVazio h3 { margin: 15px 0 5px; }
+.estadoVazio p { max-width: 480px; margin: 0; color: var(--laboratorio-texto); font-size: 0.78rem; line-height: 1.55; }
+
+.colunaCriacao { position: sticky; top: 18px; }
+.cartaoCriacao { padding: 22px; }
+.iconeCriacao { display: grid; width: 46px; height: 46px; margin-bottom: 16px; place-items: center; border-radius: 14px; color: #fff; background: linear-gradient(145deg, #7959f2, #5437d4); box-shadow: 0 10px 22px rgb(85 56 213 / 22%); }
+.iconeCriacao svg { width: 23px; height: 23px; }
+.cartaoCriacao h2 { margin: 4px 0 5px; font-size: 1.3rem; letter-spacing: -0.035em; }
+.cartaoCriacao > p:not(.sobretitulo) { margin: 0; color: var(--laboratorio-texto); font-size: 0.72rem; line-height: 1.5; }
+.formularioCadastro { display: grid; gap: 13px; margin-top: 18px; }
+.campoFormulario { display: grid; gap: 6px; }
+.campoFormulario label { color: #30385e; font-size: 0.7rem; font-weight: 760; }
+.campoFormulario :is(select, textarea) { width: 100%; border: 1px solid #cfd3e3; border-radius: 11px; color: var(--laboratorio-tinta); background: #fff; font: inherit; font-size: 0.75rem; }
+.campoFormulario select { min-height: 43px; padding: 9px 11px; }
+.campoFormulario textarea { min-height: 112px; padding: 11px; line-height: 1.5; resize: vertical; }
+.campoFormulario small, .semModulo { color: #7f879f; font-size: 0.59rem; line-height: 1.4; }
+.botaoCriar { min-height: 45px; padding: 11px 14px; border-radius: 11px; color: #fff; background: linear-gradient(115deg, #704cf2, #5034dc); box-shadow: 0 9px 20px rgb(82 52 223 / 20%); font-size: 0.75rem; }
+.botaoCriar:hover:not(:disabled) { background: linear-gradient(115deg, #7b5af4, #5b3ee4); }
+.botaoCriar:disabled, .botaoCancelar:disabled { cursor: wait; opacity: 0.65; }
+.semModulo { margin: -3px 0 0; text-align: center; }
+
+.avisoResponsavel, .comoFunciona { padding: 18px; }
+.avisoResponsavel { display: flex; gap: 11px; align-items: flex-start; border-color: #ded8fb; background: #f6f3ff; }
+.avisoResponsavel > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 10px; color: #5e40dc; background: #eae4ff; }
+.avisoResponsavel svg { width: 18px; height: 18px; }
+.avisoResponsavel h2, .comoFunciona h2 { margin: 0; font-size: 0.8rem; }
+.avisoResponsavel p { margin: 5px 0 0; color: #625d80; font-size: 0.65rem; line-height: 1.5; }
+.tituloComoFunciona { gap: 8px; }
+.tituloComoFunciona svg { width: 17px; height: 17px; color: #6242e4; }
+.comoFunciona ol { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+.comoFunciona li { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 9px; align-items: start; }
+.comoFunciona li > span { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; color: #5d40d6; background: #efecff; font-size: 0.62rem; font-weight: 850; }
+.comoFunciona li p { margin: 2px 0 0; color: #747d99; font-size: 0.64rem; line-height: 1.45; }
+
+.paginaDesafios :is(button, a, summary, select, textarea):focus-visible { outline: 3px solid #f0a528; outline-offset: 3px; }
+.girando { animation: girar 800ms linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+
+@media (max-width: 1320px) { .gradeMetodos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+@media (max-width: 1080px) {
+  .apresentacao, .gradePrincipal { grid-template-columns: 1fr; }
+  .resumoApresentacao { max-width: 560px; }
+  .colunaCriacao { position: static; order: -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cartaoCriacao { grid-row: span 2; }
+}
+
+@media (max-width: 720px) {
+  .topoConta { min-height: 64px; padding: 10px 15px; }
+  .contextoAtual span, .conta span:last-child { display: none; }
+  .areaConteudo { padding: 20px 14px 44px; }
+  .apresentacao { padding: 23px 20px; border-radius: 19px; }
+  .textoApresentacao h1 { font-size: clamp(1.8rem, 10vw, 2.5rem); }
+  .cabecalhoSecao { display: grid; }
+  .cabecalhoSecao > p { max-width: none; text-align: left; }
+  .gradeMetodos, .comparacaoVisual, .colunaCriacao { grid-template-columns: 1fr; }
+  .metodo { grid-template-columns: 35px minmax(0, 1fr); }
+  .cartaoCriacao { grid-row: auto; }
+  .cabecalhoDesafio { display: grid; }
+  .botaoCancelar { width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .areaConteudo { padding-inline: 12px; }
+  .resumoApresentacao { grid-template-columns: 1fr; }
+  .resumoApresentacao div { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; text-align: left; }
+  .resumoApresentacao div + div { border-top: 1px solid #e6e3f4; border-left: 0; }
+  .resumoApresentacao dd { margin: 0; font-size: 1.15rem; }
+  .cartaoDesafio, .cartaoCriacao, .avisoResponsavel, .comoFunciona { padding: 16px 14px; border-radius: 16px; }
+  .cabecalhoLista { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) { .girando { animation: none; } }

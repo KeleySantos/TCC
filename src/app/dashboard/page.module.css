@@ -1,0 +1,344 @@
+.paginaDashboard {
+  min-height: 100vh;
+  color: var(--laboratorio-tinta);
+  background:
+    radial-gradient(circle at 68% 0%, rgb(189 178 255 / 18%), transparent 33rem),
+    #f7f8fd;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.topoConta {
+  display: flex;
+  min-height: 74px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px clamp(20px, 3vw, 46px);
+  border-bottom: 1px solid #e7e8f2;
+  background: rgb(255 255 255 / 80%);
+  backdrop-filter: blur(16px);
+}
+
+.contextoAtual,
+.conta {
+  display: flex;
+  align-items: center;
+}
+
+.contextoAtual {
+  gap: 9px;
+  color: #69749b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.contextoAtual svg {
+  width: 19px;
+  height: 19px;
+  color: var(--laboratorio-roxo);
+}
+
+.conta {
+  gap: 10px;
+  padding: 5px 7px;
+  border-radius: 12px;
+}
+
+.conta:hover {
+  background: #f2f0ff;
+}
+
+.avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(145deg, #8165fc, #5840db);
+  font-weight: 800;
+}
+
+.conta span:last-child,
+.conta small,
+.cartaoResumo p,
+.cartaoResumo small {
+  display: block;
+}
+
+.conta strong {
+  font-size: 0.8rem;
+}
+
+.conta small {
+  margin-top: 3px;
+  color: #7781a5;
+  font-size: 0.68rem;
+}
+
+.areaConteudo {
+  width: min(100%, 1540px);
+  margin: 0 auto;
+  padding: 26px clamp(20px, 3vw, 46px) 58px;
+}
+
+.boasVindas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.boasVindas h1 {
+  margin: 3px 0 5px;
+  font-size: clamp(1.9rem, 3vw, 2.55rem);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+.boasVindas > div > p:last-child {
+  margin: 0;
+  color: var(--laboratorio-texto);
+  font-size: 0.98rem;
+}
+
+.boasVindas blockquote {
+  margin: 1px 0 0;
+  color: #596695;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.boasVindas cite {
+  display: block;
+  margin-top: 4px;
+  color: #8790b4;
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.sobretitulo {
+  margin: 0;
+  color: var(--laboratorio-roxo);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.gradeDashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 22px;
+}
+
+.colunaIndicadores,
+.areaInterpretacao {
+  min-width: 0;
+}
+
+.colunaIndicadores {
+  container-type: inline-size;
+}
+
+.gradeResumo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.cartaoResumo {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 13px;
+  align-items: center;
+  min-width: 0;
+  min-height: 116px;
+  padding: 18px;
+  border: 1px solid var(--laboratorio-borda);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 10px 30px rgb(39 43 98 / 6%);
+}
+
+.iconeResumo {
+  display: grid;
+  place-items: center;
+}
+
+.iconeResumo {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+.iconeResumo svg {
+  width: 24px;
+  height: 24px;
+}
+
+.iconeRoxo { color: #6242eb; background: #efebff; }
+.iconeAzul { color: #2479dc; background: #e9f3ff; }
+.iconeRosa { color: #e62c6d; background: #ffeaf2; }
+.iconeAmarelo { color: #e49a08; background: #fff3d9; }
+
+.cartaoResumo p {
+  margin: 0;
+  color: #4e5b89;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.cartaoResumo strong {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(1.28rem, 2vw, 1.65rem);
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+
+.cartaoResumo .valorMetodo {
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  line-height: 1.15;
+}
+
+.cartaoResumo small {
+  margin-top: 5px;
+  color: #7c86a9;
+  font-size: 0.63rem;
+  line-height: 1.35;
+}
+
+.avisoResponsavel {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0 18px;
+  padding: 11px 14px;
+  border: 1px solid #e0dcfa;
+  border-radius: 13px;
+  color: #565f84;
+  background: #f5f2ff;
+}
+
+.avisoResponsavel svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--laboratorio-roxo);
+}
+
+.avisoResponsavel p {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.areaInterpretacao {
+  display: flex;
+}
+
+.areaInterpretacao :global(.cartao) {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  padding: 25px;
+  overflow: hidden;
+  border-color: var(--laboratorio-borda);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(130 101 255 / 16%), transparent 18rem),
+    rgb(255 255 255 / 96%);
+  box-shadow: 0 12px 36px rgb(39 43 98 / 7%);
+}
+
+.areaInterpretacao :global(.cartao)::after {
+  position: absolute;
+  right: -70px;
+  bottom: -90px;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: rgb(111 76 239 / 7%);
+  content: "";
+  pointer-events: none;
+}
+
+.areaInterpretacao :global(.cartao) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.areaInterpretacao :global(.cartao) > h2 {
+  margin: 5px 0 10px;
+  font-size: 1.3rem;
+  letter-spacing: -0.035em;
+}
+
+.areaInterpretacao :global(.cartao) > :global(.rotulo) {
+  line-height: 1.55;
+}
+
+.areaInterpretacao :global(.cartao) > :global(.botao) {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 13px;
+  background: linear-gradient(115deg, #6d49f3, #4f37df);
+  box-shadow: 0 9px 20px rgb(82 52 223 / 18%);
+}
+
+@media (max-width: 1180px) {
+  .gradeDashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .areaInterpretacao :global(.cartao) {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .topoConta {
+    min-height: 64px;
+    padding: 10px 15px;
+  }
+
+  .contextoAtual span,
+  .conta span:last-child {
+    display: none;
+  }
+
+  .areaConteudo {
+    padding: 22px 14px 42px;
+  }
+
+  .boasVindas blockquote {
+    display: none;
+  }
+
+  .gradeResumo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .gradeResumo {
+    gap: 10px;
+  }
+
+  .cartaoResumo {
+    min-height: 102px;
+    padding: 15px;
+  }
+
+  .areaInterpretacao :global(.cartao) {
+    padding: 19px 15px;
+    border-radius: 16px;
+  }
+}

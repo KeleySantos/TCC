@@ -1,4 +1,6 @@
-# Requisitos e escopo congelado do MVP
+# Requisitos e escopo congelado das Entregas A e B
+
+> Atualizado em 2026-09-15. Esta versão substitui o escopo anterior baseado em aluno, professor e administrador. As seções históricas abaixo permanecem apenas para rastrear o produto de origem; em caso de conflito, prevalecem as Seções 8 a 12 desta atualização.
 
 ## 1. Escopo aprovado para execução técnica
 
@@ -112,3 +114,73 @@ Pré-condição: professor sintético autenticado e turma vinculada.
 ## 7. Critério de congelamento
 
 O escopo pode avançar para a Fase 3 quando autor e orientador confirmarem que os requisitos Must representam a demonstração pretendida. Alterações posteriores devem receber novo identificador em `../../Memoria/DECISOES_DO_PROJETO.md` e atualizar a matriz de testes.
+
+## 8. Escopo aprovado em 2026-09-12
+
+O produto demonstrado na banca é um laboratório pessoal de aprendizagem local, com SQLite e dados exclusivamente sintéticos. Cada pessoa usa uma única conta pessoal; não existem papéis de aluno, professor ou administrador, nem turmas, curadoria ou compartilhamento na Entrega A.
+
+O ciclo obrigatório é:
+
+`entrar → criar módulo → organizar tópico e material → estudar → avaliar → analisar → refletir → reavaliar`
+
+## 9. Jornadas críticas aprovadas
+
+### JLP-001 — Preparar e estudar um assunto
+
+1. A pessoa entra em sua conta pessoal.
+2. Cria um módulo, tópicos e materiais próprios de texto ou link.
+3. Inicia e conclui uma sessão vinculada ao material.
+4. O servidor calcula a duração oficial e persiste método, percepção e observação limitada.
+
+### JLP-002 — Avaliar e consultar o módulo
+
+1. A pessoa conclui uma avaliação objetiva associada ao seu tópico.
+2. O servidor corrige as respostas e grava total, acertos e nota de 0 a 100.
+3. O dashboard do módulo apresenta métricas, amostra, período, estado vazio ou insuficiente e alternativa textual aos gráficos.
+
+### JLP-003 — Refletir sobre o histórico pessoal
+
+1. A pessoa abre o painel geral.
+2. O sistema agrega os módulos sem apagar o contexto de cada um e diferencia um resultado local de uma recorrência.
+3. Gemini, quando configurada, interpreta exclusivamente o resumo sintético agregado; sem chave, rede ou saída válida, a interface mostra a interpretação local de contingência.
+
+## 10. Requisitos funcionais aprovados
+
+| ID | Requisito | Prioridade | Critério de aceite |
+|---|---|---|---|
+| RLP-001 | Área pessoal autenticada | Must | Conta válida abre `/dashboard`; sessão ausente é recusada e dados de outra conta não são retornados. A rota legada `/painel` redireciona para o dashboard. |
+| RLP-002 | CRUD de módulos | Must | Proprietária cria, lista, edita, arquiva e abre módulo; terceira conta recebe 404 ou 403 sem vazamento. |
+| RLP-003 | Tópicos por módulo | Must | Tópico é criado e listado somente no módulo da conta proprietária. |
+| RLP-004 | Materiais simples | Must | Texto ou link possui título, descrição, formato e tópico; URL, tamanho e propriedade são validados no servidor. |
+| RLP-005 | Sessão enriquecida | Must | Sessão registra material, método, início e fim oficiais, escalas de 1 a 5 e observação limitada; duração do cliente não é aceita como oficial. |
+| RLP-006 | Histórico | Must | Histórico cronológico mostra estado e contexto da própria conta, sem expor outra conta. |
+| RLP-007 | Resultado objetivo | Must | Servidor persiste total, acertos e nota de 0 a 100 sem expor gabarito antes do envio. |
+| RLP-008 | Métricas oficiais | Must | Funções puras e versionadas calculam contagem, médias, evolução, tempo, tentativas, método, formato e percepção versus resultado. |
+| RLP-009 | Dashboard do módulo | Must | Cards, gráficos e tabela respondem aos dados e mostram amostra, período, vazio, insuficiência e limitação. |
+| RLP-010 | Dashboard geral | Must | Agrega sem apagar a origem e somente aponta recorrência quando houver evidência em dois ou mais módulos. |
+| RLP-011 | Interpretação por Gemini | Must | Gemini recebe somente DTO sintético agregado e devolve resposta validada com contexto, amostra e limitação; falha, ausência de chave ou rede produz resposta local. |
+
+## 11. Requisitos não funcionais aprovados
+
+| ID | Requisito | Critério de aceite |
+|---|---|---|
+| RLP-NF-001 | Reprodutibilidade | Banco limpo é migrado, populado e conferido por script determinístico. |
+| RLP-NF-002 | Qualidade | `npm run validar` termina com código zero. |
+| RLP-NF-003 | Acessibilidade | Fluxos críticos funcionam por teclado, em 360 px e com alternativa a gráficos. |
+| RLP-NF-004 | Privacidade | Seed, logs e DTOs enviados à Gemini não contêm dados reais, chaves, respostas completas ou observações livres. |
+| RLP-NF-005 | Explicabilidade | Métricas e interpretações apresentam contexto, período, quantidade, nível e limitação; não afirmam causalidade ou classificam estilos fixos. |
+
+Ficam fora do corte da banca: compartilhamento, comentários, salas, uploads, funções por papel, turmas, curadoria e administração.
+
+## 12. Ampliação aprovada — Entrega B
+
+Em 2026-09-15, o autor autorizou a ampliação do corte para a Entrega B. A versão continua local, com uma única conta pessoal e dados exclusivamente sintéticos. O novo ciclo é complementar ao da Entrega A: a pessoa seleciona um método controlado, pode registrar um desafio de experimentação no próprio módulo, vincula sessões ao desafio de forma explícita e consulta comparações apenas descritivas. A análise de Bloom usa exclusivamente questões já classificadas e nunca transforma ausência ou amostra insuficiente em resultado.
+
+| ID | Requisito | Prioridade | Critério de aceite |
+|---|---|---|---|
+| RLB-001 | Catálogo controlado de métodos | Must | A pessoa registra sessões com Feynman, recuperação ativa, repetição espaçada, Pomodoro, intercalamento ou prática distribuída; métodos históricos permanecem legíveis, sem ter seu significado alterado. |
+| RLB-002 | Desafio de experimentação próprio | Must | A proprietária cria e cancela um desafio com módulo, método e meta válida; uma sessão pode vincular explicitamente esse desafio somente se ambos pertencerem à mesma conta, módulo e método. O cancelamento impede novos vínculos e preserva sessões já registradas. |
+| RLB-003 | Comparação contextual do desafio | Must | O sistema compara apenas evidências de exposição única associadas ao desafio contra o mesmo módulo e método fora dele; cada grupo informa quantidade, nível de evidência e limitação. Sem duas evidências em ambos os grupos, nenhuma diferença é calculada ou interpretada como efeito do método. |
+| RLB-004 | Análise por nível de Bloom | Must | O sistema agrega respostas de questões classificadas por nível de Bloom no contexto do módulo; cada nível só expõe taxa de acerto com pelo menos duas respostas classificadas. Ausência de classificação ou amostra não vira nota zero. |
+| RLB-NF-001 | Reprodutibilidade e isolamento da Entrega B | Must | Migração, seed e verificador reproduzem desafios, métodos e Bloom sintéticos; escrita e leitura rejeitam dados de outra conta. |
+| RLB-NF-002 | Linguagem responsável | Must | Comparações e interfaces descrevem registros observados, período, amostra e limitação, sem concluir que desafio ou método causou aprendizagem. |

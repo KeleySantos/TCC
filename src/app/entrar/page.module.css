@@ -1,0 +1,633 @@
+.paginaEntrada {
+  --entrada-tinta: var(--laboratorio-tinta);
+  --entrada-texto: var(--laboratorio-texto);
+  --entrada-roxo: var(--laboratorio-roxo);
+  --entrada-roxo-escuro: var(--laboratorio-roxo-escuro);
+  --entrada-lilas: var(--laboratorio-lilas);
+  --entrada-borda: var(--laboratorio-borda);
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 42px);
+  color: var(--entrada-tinta);
+  background:
+    radial-gradient(circle at 8% 8%, rgb(188 178 255 / 24%), transparent 28rem),
+    radial-gradient(circle at 92% 84%, rgb(204 222 255 / 34%), transparent 30rem),
+    #f8faff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.paginaEntrada::after {
+  position: absolute;
+  right: -8rem;
+  bottom: -12rem;
+  width: 30rem;
+  height: 30rem;
+  border-radius: 50%;
+  background: rgb(102 76 237 / 7%);
+  content: "";
+  filter: blur(2px);
+}
+
+.haloSuperior {
+  position: absolute;
+  top: -13rem;
+  left: 42%;
+  width: 38rem;
+  height: 30rem;
+  border-radius: 50%;
+  background: rgb(116 89 246 / 9%);
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+.experienciaEntrada {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.14fr) minmax(340px, 0.86fr);
+  width: min(1440px, 100%);
+  min-height: calc(100vh - clamp(36px, 6vw, 84px));
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgb(217 220 239 / 78%);
+  border-radius: 30px;
+  background: rgb(255 255 255 / 72%);
+  box-shadow: 0 28px 80px rgb(36 43 91 / 14%);
+  backdrop-filter: blur(20px);
+}
+
+.painelConceito {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(30px, 4.8vw, 70px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 10%, rgb(255 255 255 / 92%), transparent 22rem),
+    linear-gradient(145deg, #f5f3ff 0%, #ececff 48%, #e7edff 100%);
+}
+
+.painelConceito::before,
+.painelConceito::after {
+  position: absolute;
+  border: 1px solid rgb(102 73 234 / 10%);
+  border-radius: 50%;
+  content: "";
+}
+
+.painelConceito::before {
+  top: -15rem;
+  right: -10rem;
+  width: 33rem;
+  height: 33rem;
+}
+
+.painelConceito::after {
+  bottom: -18rem;
+  left: -9rem;
+  width: 34rem;
+  height: 34rem;
+}
+
+.marcaProduto,
+.marcaProduto > span:last-child,
+.marcaProduto small,
+.beneficios strong,
+.beneficios small,
+.cabecalhoPrevia strong,
+.cabecalhoPrevia small {
+  display: block;
+}
+
+.marcaProduto {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.simboloMarca {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  border: 1px solid rgb(99 65 237 / 18%);
+  border-radius: 15px;
+  color: white;
+  background: linear-gradient(145deg, #7c5cff, #5635df);
+  box-shadow: 0 10px 24px rgb(86 53 223 / 28%);
+}
+
+.simboloMarca svg {
+  width: 28px;
+  height: 28px;
+}
+
+.marcaProduto strong {
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  letter-spacing: -0.025em;
+}
+
+.marcaProduto small {
+  margin-top: 3px;
+  color: #67739d;
+  font-size: 0.76rem;
+}
+
+.chamadaPrincipal {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin-top: clamp(42px, 6vh, 78px);
+}
+
+.sobretitulo {
+  margin: 0 0 13px;
+  color: var(--entrada-roxo);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+.chamadaPrincipal h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(2.45rem, 4.4vw, 4.7rem);
+  line-height: 0.98;
+  letter-spacing: -0.064em;
+  text-wrap: balance;
+}
+
+.resumo {
+  max-width: 650px;
+  margin: 22px 0 0;
+  color: var(--entrada-texto);
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.58;
+  text-wrap: pretty;
+}
+
+.beneficios {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: clamp(30px, 4vh, 48px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.beneficios li {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: 17px;
+  background: rgb(255 255 255 / 74%);
+  box-shadow: 0 12px 32px rgb(63 55 139 / 8%);
+}
+
+.iconeBeneficio,
+.iconePrevia {
+  display: grid;
+  place-items: center;
+  color: var(--entrada-roxo);
+  background: var(--entrada-lilas);
+}
+
+.iconeBeneficio {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.iconeBeneficio svg {
+  width: 21px;
+  height: 21px;
+  stroke-width: 2.3;
+}
+
+.beneficios strong {
+  margin-top: 1px;
+  font-size: 0.88rem;
+  line-height: 1.22;
+}
+
+.beneficios small {
+  margin-top: 7px;
+  color: var(--entrada-texto);
+  font-size: 0.72rem;
+  line-height: 1.38;
+}
+
+.previaPainel {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  padding: 18px 20px 10px;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 86%);
+  box-shadow: 0 16px 38px rgb(55 48 124 / 10%);
+}
+
+.cabecalhoPrevia,
+.cabecalhoPrevia > span:first-child {
+  display: flex;
+  align-items: center;
+}
+
+.cabecalhoPrevia {
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cabecalhoPrevia > span:first-child {
+  gap: 11px;
+}
+
+.iconePrevia {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.iconePrevia svg {
+  width: 19px;
+  height: 19px;
+}
+
+.cabecalhoPrevia strong {
+  font-size: 0.8rem;
+}
+
+.cabecalhoPrevia small {
+  margin-top: 3px;
+  color: var(--entrada-texto);
+  font-size: 0.66rem;
+}
+
+.seloPrevia {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: #5235d7;
+  background: #f0edff;
+  font-size: 0.64rem;
+  font-weight: 750;
+}
+
+.etapasPrevia {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-top: 17px;
+  color: #60709f;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.etapasPrevia i {
+  min-width: 14px;
+  height: 1px;
+  flex: 1;
+  background: repeating-linear-gradient(90deg, #c2c7e6 0 4px, transparent 4px 8px);
+}
+
+.graficoPrevia {
+  display: block;
+  width: 100%;
+  height: 92px;
+  margin-top: 3px;
+  overflow: visible;
+}
+
+.painelAcesso {
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  padding: clamp(32px, 5vw, 76px);
+  background: rgb(255 255 255 / 70%);
+}
+
+.fraseApoio {
+  max-width: 320px;
+  margin: 0 0 20px auto;
+  color: #707ca3;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.formularioLogin {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 500px);
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 44px);
+  border: 1px solid var(--entrada-borda);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 62px rgb(49 57 111 / 12%);
+}
+
+.cabecalhoFormulario {
+  padding-bottom: 4px;
+}
+
+.indicadorAcesso {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding-bottom: 9px;
+  border-bottom: 3px solid var(--entrada-roxo);
+  color: var(--entrada-roxo);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.cabecalhoFormulario h2 {
+  margin: 0;
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  letter-spacing: -0.045em;
+}
+
+.cabecalhoFormulario p {
+  margin: 9px 0 0;
+  color: var(--entrada-texto);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.campoLogin {
+  display: grid;
+  gap: 8px;
+}
+
+.campoLogin label {
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+
+.controleCampo {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.controleCampo > svg {
+  position: absolute;
+  left: 15px;
+  z-index: 1;
+  width: 19px;
+  height: 19px;
+  color: #7582ae;
+  pointer-events: none;
+}
+
+.controleCampo input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px 12px 46px;
+  border: 1px solid #cdd3e7;
+  border-radius: 12px;
+  outline: none;
+  color: var(--entrada-tinta);
+  background: #fff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.controleCampo input::placeholder {
+  color: #909abe;
+}
+
+.controleCampo input:hover {
+  border-color: #aeb6d6;
+}
+
+.controleCampo input:focus-visible {
+  border-color: var(--entrada-roxo);
+  outline: 3px solid rgb(96 64 238 / 20%);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--entrada-roxo);
+}
+
+.botaoEntrar {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 3px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(115deg, #6c48f5, #4d35e8);
+  box-shadow: 0 12px 26px rgb(82 52 223 / 24%);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.botaoEntrar svg {
+  width: 19px;
+  height: 19px;
+}
+
+.botaoEntrar:hover {
+  box-shadow: 0 15px 30px rgb(82 52 223 / 32%);
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.botaoEntrar:active {
+  transform: translateY(0);
+}
+
+.botaoEntrar:focus-visible {
+  outline: 3px solid #2e1aa1;
+  outline-offset: 3px;
+}
+
+.avisoDemonstracao {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 1px 0 0;
+  color: #68759e;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.avisoDemonstracao svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #6a52d9;
+}
+
+@media (max-width: 1060px) {
+  .experienciaEntrada {
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 0.82fr);
+  }
+
+  .painelConceito,
+  .painelAcesso {
+    padding: 34px;
+  }
+
+  .beneficios {
+    grid-template-columns: 1fr;
+  }
+
+  .beneficios li {
+    grid-template-columns: 38px 1fr;
+    padding: 13px 14px;
+  }
+
+  .iconeBeneficio {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 820px) {
+  .paginaEntrada {
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  .experienciaEntrada {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    border-radius: 24px;
+  }
+
+  .painelConceito,
+  .painelAcesso {
+    padding: clamp(24px, 7vw, 44px);
+  }
+
+  .chamadaPrincipal {
+    margin-top: 42px;
+  }
+
+  .chamadaPrincipal h1 {
+    max-width: 650px;
+    font-size: clamp(2.5rem, 9vw, 4.3rem);
+  }
+
+  .beneficios {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .painelAcesso {
+    border-top: 1px solid var(--entrada-borda);
+  }
+}
+
+@media (max-width: 620px) {
+  .marcaProduto small {
+    font-size: 0.7rem;
+  }
+
+  .chamadaPrincipal h1 {
+    font-size: clamp(2.25rem, 12vw, 3.2rem);
+  }
+
+  .beneficios {
+    grid-template-columns: 1fr;
+  }
+
+  .previaPainel {
+    padding: 16px 14px 8px;
+  }
+
+  .cabecalhoPrevia {
+    align-items: flex-start;
+  }
+
+  .etapasPrevia {
+    gap: 5px;
+    font-size: 0.56rem;
+  }
+
+  .formularioLogin {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .fraseApoio {
+    margin-right: auto;
+    text-align: center;
+  }
+}
+
+@media (max-width: 390px) {
+  .paginaEntrada {
+    padding: 10px;
+  }
+
+  .experienciaEntrada {
+    border-radius: 20px;
+  }
+
+  .painelConceito,
+  .painelAcesso {
+    padding: 24px 18px;
+  }
+
+  .marcaProduto {
+    gap: 11px;
+  }
+
+  .simboloMarca {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .marcaProduto strong {
+    font-size: 0.94rem;
+  }
+
+  .marcaProduto small {
+    font-size: 0.62rem;
+  }
+
+  .chamadaPrincipal h1 {
+    font-size: 2.15rem;
+  }
+
+  .resumo {
+    font-size: 0.96rem;
+  }
+
+  .seloPrevia {
+    display: none;
+  }
+
+  .formularioLogin {
+    padding: 23px 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controleCampo input,
+  .botaoEntrar {
+    transition: none;
+  }
+}

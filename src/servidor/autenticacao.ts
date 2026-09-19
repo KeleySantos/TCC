@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { PapelUsuario } from "@/gerado/prisma/enums";
 import { prisma } from "@/biblioteca/prisma";
 import type { UsuarioAtual } from "./autorizacao";
 
@@ -13,32 +12,20 @@ export async function obterUsuarioAtual(): Promise<UsuarioAtual | null> {
   const usuarioId = armazenamentoCookies.get(NOME_COOKIE_SESSAO)?.value;
   if (!usuarioId) return null;
 
-  const usuario = await prisma.usuario.findUnique({
+  return prisma.usuario.findUnique({
     where: { id: usuarioId },
-    include: { perfilAluno: true, perfilProfessor: true },
+    select: { id: true, nome: true, nomeUsuario: true, email: true },
   });
-  if (!usuario) return null;
-
-  return {
-    id: usuario.id,
-    nome: usuario.nome,
-    nomeUsuario: usuario.nomeUsuario,
-    papel: usuario.papel,
-    perfilAlunoId: usuario.perfilAluno?.id ?? null,
-    perfilProfessorId: usuario.perfilProfessor?.id ?? null,
-  };
 }
 
-export async function exigirUsuario(papel?: PapelUsuario): Promise<UsuarioAtual> {
+export async function exigirUsuario(): Promise<UsuarioAtual> {
   const usuario = await obterUsuarioAtual();
   if (!usuario) redirect("/entrar");
-  if (papel && usuario.papel !== papel) redirect(obterRotaInicial(usuario.papel));
   return usuario;
 }
 
-export function obterRotaInicial(papel: PapelUsuario) {
-  if (papel === PapelUsuario.ADMINISTRADOR) return "/administrador";
-  return papel === PapelUsuario.PROFESSOR ? "/professor" : "/aluno";
+export function obterRotaInicial() {
+  return "/dashboard";
 }
 
 export async function definirSessaoDemonstracao(usuarioId: string) {

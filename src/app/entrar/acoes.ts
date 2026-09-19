@@ -18,5 +18,5 @@ export async function entrarComCredenciais(formulario: FormData) {
   const usuario = await prisma.usuario.findUnique({ where: { nomeUsuario } });
   if (!usuario || !verificarSenha(credenciais.data.senha, usuario.senhaHash)) redirect("/entrar?erro=credenciais");
   await definirSessaoDemonstracao(usuario.id);
-  redirect(obterRotaInicial(usuario.papel));
+  redirect(obterRotaInicial());
 }

@@ -1,0 +1,367 @@
+.estrutura {
+  --largura-barra-lateral: 252px;
+  min-height: 100vh;
+}
+
+.barraLateral {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 8;
+  display: flex;
+  width: var(--largura-barra-lateral);
+  flex-direction: column;
+  padding: 25px 17px 18px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: #f7f7ff;
+  background:
+    radial-gradient(circle at 90% 84%, rgb(117 89 244 / 26%), transparent 18rem),
+    linear-gradient(160deg, #252261 0%, #191747 58%, #242060 100%);
+  box-shadow: 12px 0 36px rgb(23 21 68 / 10%);
+  transition: width 180ms ease, padding 180ms ease;
+}
+
+.cabecalhoBarra,
+.marcaProduto,
+.rodapeBarra {
+  display: flex;
+  align-items: center;
+}
+
+.cabecalhoBarra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 6px;
+  min-height: 50px;
+}
+
+.marcaProduto {
+  min-width: 0;
+  gap: 11px;
+  padding: 0 8px;
+}
+
+.simboloMarca {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(145deg, #8061ff, #5c3be8);
+  box-shadow: 0 10px 24px rgb(5 4 38 / 24%);
+}
+
+.simboloMarca svg {
+  width: 25px;
+  height: 25px;
+}
+
+.identidadeMarca {
+  min-width: 0;
+}
+
+.identidadeMarca strong,
+.identidadeMarca small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.identidadeMarca strong {
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.identidadeMarca small {
+  max-width: 142px;
+  margin-top: 3px;
+  color: #c6c9e8;
+  font-size: 0.56rem;
+  line-height: 1.35;
+}
+
+.botaoAlternar {
+  display: grid;
+  width: 28px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 9px;
+  color: #fff;
+  background: #443b9f;
+  box-shadow: 0 6px 16px rgb(8 6 48 / 24%);
+  cursor: pointer;
+}
+
+.botaoAlternar:hover {
+  background: #574bc1;
+}
+
+.botaoAlternar svg {
+  width: 17px;
+  height: 17px;
+}
+
+.textoAcessivel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.menuPrincipal {
+  display: grid;
+  gap: 6px;
+  margin-top: 38px;
+}
+
+.menuPrincipal a,
+.formularioSair button {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border: 0;
+  border-radius: 12px;
+  color: #dedff7;
+  background: transparent;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.menuPrincipal a:hover,
+.formularioSair button:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.menuPrincipal a:hover {
+  transform: translateX(2px);
+}
+
+.menuPrincipal a:focus-visible,
+.formularioSair button:focus-visible,
+.botaoAlternar:focus-visible,
+.marcaProduto:focus-visible {
+  outline: 3px solid #b5a8ff;
+  outline-offset: 2px;
+}
+
+.menuPrincipal a svg,
+.formularioSair button svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.menuPrincipal .itemAtivo {
+  color: #fff;
+  background: linear-gradient(100deg, rgb(115 87 243 / 74%), rgb(101 75 225 / 46%));
+  box-shadow: 0 10px 24px rgb(7 5 42 / 18%);
+}
+
+.rotuloItem {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.fraseLateral {
+  margin-top: auto;
+  padding: 22px 13px;
+  color: #cfd1ee;
+}
+
+.fraseLateral svg {
+  width: 23px;
+  height: 23px;
+  color: #9f8cff;
+}
+
+.fraseLateral p {
+  margin: 11px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.rodapeBarra {
+  gap: 9px;
+  min-height: 47px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #211c65;
+  background: #eeeaff;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.nomeConta {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.formularioSair button {
+  min-height: 38px;
+  padding: 8px;
+}
+
+.formularioSair button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.conteudo {
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: var(--largura-barra-lateral);
+  transition: margin-left 180ms ease;
+}
+
+.estruturaRecolhida {
+  --largura-barra-lateral: 82px;
+}
+
+.estruturaRecolhida .barraLateral {
+  padding-inline: 12px;
+}
+
+.estruturaRecolhida .identidadeMarca,
+.estruturaRecolhida .rotuloItem,
+.estruturaRecolhida .fraseLateral,
+.estruturaRecolhida .nomeConta,
+.estruturaRecolhida .avatar {
+  display: none;
+}
+
+.estruturaRecolhida .marcaProduto,
+.estruturaRecolhida .menuPrincipal a,
+.estruturaRecolhida .formularioSair button {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.estruturaRecolhida .cabecalhoBarra {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.estruturaRecolhida .rodapeBarra {
+  justify-content: center;
+}
+
+@media (max-width: 960px) {
+  .estrutura {
+    --largura-barra-lateral: 0px;
+  }
+
+  .barraLateral {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    padding: 15px 17px;
+    overflow: visible;
+  }
+
+  .cabecalhoBarra {
+    grid-template-columns: minmax(0, 1fr) 28px;
+  }
+
+  .menuPrincipal {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+    padding-bottom: 3px;
+    overflow-x: auto;
+  }
+
+  .menuPrincipal a {
+    min-width: max-content;
+  }
+
+  .fraseLateral,
+  .rodapeBarra {
+    display: none;
+  }
+
+  .conteudo {
+    margin-left: 0;
+  }
+
+  .estruturaRecolhida .identidadeMarca {
+    display: block;
+  }
+
+  .estruturaRecolhida .cabecalhoBarra {
+    grid-template-columns: minmax(0, 1fr) 28px;
+    justify-items: stretch;
+  }
+
+  .estruturaRecolhida .marcaProduto {
+    justify-content: flex-start;
+  }
+
+  .estruturaRecolhida .menuPrincipal {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .barraLateral {
+    padding: 12px 14px;
+  }
+
+  .simboloMarca {
+    width: 40px;
+    height: 40px;
+  }
+
+  .identidadeMarca strong {
+    font-size: 0.9rem;
+  }
+
+  .identidadeMarca small {
+    font-size: 0.52rem;
+  }
+
+  .menuPrincipal a {
+    min-height: 42px;
+    padding: 9px 11px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barraLateral,
+  .conteudo,
+  .menuPrincipal a,
+  .formularioSair button {
+    transition: none;
+  }
+}

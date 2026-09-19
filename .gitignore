@@ -10,6 +10,7 @@
 .env.local
 /prisma/*.db
 /prisma/*.db-journal
+/.dados/
 
 # cliente Prisma gerado
 /src/gerado

@@ -1,6 +1,6 @@
-import { FormatoConteudo, NivelEvidencia } from "@/gerado/prisma/enums";
+import { FormatoConteudo, MetodoEstudo, NivelEvidencia } from "@/gerado/prisma/enums";
 
-export const VERSAO_ALGORITMO = "regras-base-v1";
+export const VERSAO_ALGORITMO = "metricas-oficiais-v2";
 export const MINUTOS_MINIMOS_SESSAO_VALIDA = 5;
 export const JANELA_ATRIBUICAO_DIAS = 7;
 
@@ -11,20 +11,30 @@ export type SessaoParaEvidencia = {
   encerradaEm: Date | null;
   duracaoMinutos: number | null;
   situacao: "CONCLUIDA" | "ATIVA" | "ABANDONADA" | "INVALIDADA";
+  metodo?: MetodoEstudo | null;
+  desafioId?: string | null;
+  dificuldadePercebida?: number | null;
+  compreensaoPercebida?: number | null;
 };
 
 export type TentativaParaEvidencia = {
   id: string;
   topicoId: string;
+  numeroTentativa?: number;
   concluidaEm: Date | null;
   notaNormalizada: number | null;
 };
 
 export type EvidenciaAprendizagem = {
   tentativaId: string;
+  numeroTentativa: number | null;
   sessaoId: string;
   topicoId: string;
   formato: FormatoConteudo;
+  metodo: MetodoEstudo | null;
+  desafioId: string | null;
+  dificuldadePercebida: number | null;
+  compreensaoPercebida: number | null;
   nota: number;
   observadaEm: Date;
 };
@@ -78,9 +88,14 @@ export function construirEvidencias(
     const sessao = sessoesElegiveis[0];
     evidencias.push({
       tentativaId: tentativa.id,
+      numeroTentativa: tentativa.numeroTentativa ?? null,
       sessaoId: sessao.id,
       topicoId: tentativa.topicoId,
       formato: sessao.formato,
+      metodo: sessao.metodo ?? null,
+      desafioId: sessao.desafioId ?? null,
+      dificuldadePercebida: sessao.dificuldadePercebida ?? null,
+      compreensaoPercebida: sessao.compreensaoPercebida ?? null,
       nota: tentativa.notaNormalizada,
       observadaEm: tentativa.concluidaEm,
     });

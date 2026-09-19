@@ -2,11 +2,12 @@
 
 | Evento | Emissor | Quando ocorre | Campos mínimos | Finalidade | Retenção no MVP |
 |---|---|---|---|---|---|
-| `sessao_iniciada` | Aluno | Início explícito do estudo | alunoId, tópicoId, recursoId, iniciadaEm | Criar sessão de estudo | Banco sintético local |
-| `sessao_encerrada` | Aluno | Encerramento explícito | sessãoId, encerradaEm, duração, situação | Validar tempo de estudo | Banco sintético local |
-| `tentativa_concluida` | Aluno | Envio do quiz | alunoId, avaliaçãoId, tópicoId, nota, acertos, total | Medir desempenho | Banco sintético local |
+| `sessao_iniciada` | Conta pessoal | Início explícito do estudo | usuarioId, tópicoId, recursoId, iniciadaEm | Criar sessão de estudo | Banco sintético local |
+| `sessao_encerrada` | Conta pessoal | Encerramento explícito | sessaoId, encerradaEm, duração, situação | Validar tempo de estudo | Banco sintético local |
+| `tentativa_concluida` | Conta pessoal | Envio do quiz | usuarioId, avaliacaoId, topicoId, numeroTentativa, nota, acertos, total | Medir desempenho | Banco sintético local |
 | `resposta_registrada` | Servidor | Correção do quiz | tentativaId, questãoId, resposta, correta, pontos | Rastrear cálculo | Banco sintético local |
-| `curadoria_atualizada` | Professor | Aprovação/rejeição de recurso | professorId, recursoId, situação | Curadoria e auditoria | Banco sintético local |
+| `desafio_criado` | Conta pessoal | Criação explícita de desafio | usuarioId, moduloId, método, meta, criadoEm | Contextualizar sessões futuras | Banco sintético local |
+| `desafio_cancelado` | Conta pessoal | Cancelamento explícito | desafioId, usuarioId, canceladoEm | Bloquear novos vínculos sem apagar histórico | Banco sintético local |
 
 Eventos futuros, ainda não implementados:
 

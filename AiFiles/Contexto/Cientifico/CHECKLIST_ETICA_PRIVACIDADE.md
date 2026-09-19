@@ -7,8 +7,9 @@
 - [x] Não há coleta de participantes reais.
 - [x] Não há dados pessoais reais no seed ou no repositório.
 - [x] As contas demonstrativas usam dados fictícios.
-- [x] O acesso da aplicação é separado por papel de aluno e professor.
+- [x] O acesso da aplicação será isolado por propriedade direta da conta pessoal; estruturas legadas por papel não integram a Entrega A.
 - [x] A plataforma evita conclusão causal e classificação fixa.
+- [x] Gemini, quando configurada, recebe somente DTO sintético agregado; não recebe dados identificáveis, respostas completas ou observações livres.
 
 ## Antes de qualquer coleta real
 
