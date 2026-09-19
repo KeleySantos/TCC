@@ -1,4 +1,4 @@
-# Laboratório Pessoal de Aprendizagem
+# Learning Lab
 
 Aplicação local para demonstração acadêmica de Learning Analytics. Cada conta pessoal organiza módulos, tópicos e materiais, registra sessões de estudo, conclui avaliações e consulta indicadores explicáveis.
 
