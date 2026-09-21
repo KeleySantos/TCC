@@ -1,254 +1,104 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
-import { FormatoConteudo, MetodoEstudo, NivelBloom, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
+import { EscopoComentarioSala, FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
 import { criarHashSenha } from "../src/servidor/senhas";
 
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! }) });
 const referencia = new Date("2026-09-01T12:00:00.000Z");
-const diasAntes = (dias: number) => new Date(referencia.getTime() - dias * 24 * 60 * 60 * 1000);
+const diasAntes = (dias: number) => new Date(referencia.getTime() - dias * 86_400_000);
 
-type ContaComConteudo = {
+type Conta = {
   usuario: { id: string };
   modulo: { id: string };
-  loops: { id: string };
-  recursos: { pdf: { id: string }; video: { id: string }; pratica: { id: string } };
-  avaliacao: { id: string };
+  recursos: Record<"pdf" | "video" | "pratica", { id: string; formato: FormatoConteudo }>;
 };
 
-async function criarRespostasSinteticas(tentativaId: string, avaliacaoId: string, nota: number) {
-  const questoes = await prisma.questao.findMany({ where: { avaliacaoId }, orderBy: { posicao: "asc" } });
-  const quantidadeCorretas = Math.round((nota / 100) * questoes.length);
-  await prisma.respostaQuestao.createMany({
-    data: questoes.map((questao, indice) => {
-      const opcoes = JSON.parse(questao.opcoesJson) as string[];
-      const correta = indice < quantidadeCorretas;
-      return {
-        tentativaId,
-        questaoId: questao.id,
-        correta,
-        pontos: correta ? questao.peso : 0,
-        resposta: correta ? questao.opcaoCorreta : opcoes.find((opcao) => opcao !== questao.opcaoCorreta) ?? "Resposta sintética incorreta",
-      };
-    }),
-  });
-}
-
-async function criarSessaoETentativa(
-  conta: ContaComConteudo,
-  recursoId: string,
-  dias: number,
-  minutos: number,
-  nota: number,
-  opcoes: { metodo?: MetodoEstudo; desafioId?: string | null } = {},
-) {
-  const iniciadaEm = diasAntes(dias);
-  const encerradaEm = new Date(iniciadaEm.getTime() + minutos * 60 * 1000);
-  const metodo = opcoes.metodo ?? (recursoId === conta.recursos.pdf.id ? MetodoEstudo.LEITURA_ATIVA : recursoId === conta.recursos.video.id ? MetodoEstudo.VIDEO_GUIADO : MetodoEstudo.EXERCICIO);
-  const quantidadeTentativasAnteriores = await prisma.tentativaAvaliacao.count({
-    where: { usuarioId: conta.usuario.id, avaliacaoId: conta.avaliacao.id },
-  });
-  await prisma.sessaoEstudo.create({
-    data: {
-      usuarioId: conta.usuario.id,
-      moduloId: conta.modulo.id,
-      topicoId: conta.loops.id,
-      recursoId,
-      metodo,
-      desafioId: opcoes.desafioId ?? null,
-      dificuldadePercebida: nota < 60 ? 4 : nota < 75 ? 3 : 2,
-      compreensaoPercebida: Math.min(5, Math.max(1, Math.round(nota / 20))),
-      observacao: "Registro sintético de sessão para validação do laboratório.",
-      iniciadaEm,
-      encerradaEm,
-      duracaoMinutos: minutos,
-      situacao: SituacaoSessao.CONCLUIDA,
-    },
-  });
-  const tentativa = await prisma.tentativaAvaliacao.create({
-    data: {
-      usuarioId: conta.usuario.id,
-      moduloId: conta.modulo.id,
-      topicoId: conta.loops.id,
-      avaliacaoId: conta.avaliacao.id,
-      iniciadaEm: encerradaEm,
-      concluidaEm: new Date(encerradaEm.getTime() + 10 * 60 * 1000),
-      respostasCorretas: Math.round(nota / 20),
-      totalQuestoes: 5,
-      notaNormalizada: nota,
-      numeroTentativa: quantidadeTentativasAnteriores + 1,
-    },
-  });
-  await criarRespostasSinteticas(tentativa.id, conta.avaliacao.id, nota);
-}
-
-async function criarContaComModulo(nome: string, nomeUsuario: string, perfil: string): Promise<ContaComConteudo> {
-  const usuario = await prisma.usuario.create({
-    data: {
-      nome,
-      nomeUsuario,
-      email: `${nomeUsuario}@exemplo.test`,
-      senhaHash: criarHashSenha("Laboratorio@2026"),
-      // Compatibilidade física com a migração inicial; não é um papel do produto.
-      papel: PapelUsuario.ALUNO,
-    },
-  });
-  const modulo = await prisma.moduloAprendizagem.create({
-    data: {
-      usuarioId: usuario.id,
-      identificador: "javascript",
-      titulo: "JavaScript",
-      descricao: `Módulo pessoal sintético do perfil ${perfil}.`,
-    },
-  });
-  const loops = await prisma.topico.create({
-    data: {
-      moduloId: modulo.id,
-      identificador: "loops",
-      nome: "Loops",
-      descricao: "Repetições controladas com for e while.",
-    },
-  });
-  await prisma.topico.createMany({
-    data: [
-      { moduloId: modulo.id, identificador: "condicionais", nome: "Condicionais", descricao: "Decisões com if, else e comparações." },
-      { moduloId: modulo.id, identificador: "funcoes", nome: "Funções", descricao: "Parâmetros, retorno e organização de código." },
-    ],
-  });
+async function criarConta(nome: string, nomeUsuario: string, perfil: string): Promise<Conta> {
+  const usuario = await prisma.usuario.create({ data: { nome, nomeUsuario, email: `${nomeUsuario}@exemplo.test`, senhaHash: criarHashSenha("Laboratorio@2026"), papel: PapelUsuario.ALUNO } });
+  const modulo = await prisma.moduloAprendizagem.create({ data: { usuarioId: usuario.id, identificador: "javascript", titulo: "JavaScript", descricao: `Módulo pessoal sintético do perfil ${perfil}.` } });
   const [pdf, video, pratica] = await Promise.all([
-    prisma.recursoConteudo.create({ data: { topicoId: loops.id, identificador: "guia-visual", titulo: "Loops: guia visual", descricao: "Leitura estruturada com exemplos.", formato: FormatoConteudo.PDF, minutosEstimados: 18, conteudoTexto: "Um loop repete instruções. Use for quando a quantidade de repetições é conhecida e while enquanto houver uma condição verdadeira." } }),
-    prisma.recursoConteudo.create({ data: { topicoId: loops.id, identificador: "passo-a-passo", titulo: "Loops passo a passo", descricao: "Vídeo demonstrativo sobre for e while.", formato: FormatoConteudo.VIDEO, minutosEstimados: 12, conteudoTexto: "Roteiro sintético: inicialize o contador, defina a condição e atualize o contador em cada repetição." } }),
-    prisma.recursoConteudo.create({ data: { topicoId: loops.id, identificador: "laboratorio", titulo: "Laboratório de loops", descricao: "Exercícios práticos progressivos.", formato: FormatoConteudo.EXERCICIO_PRATICO, minutosEstimados: 22, conteudoTexto: "Prática: escreva um for que imprima os números de 1 a 5 e explique quando a condição de parada acontece." } }),
+    prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador: "guia-visual", titulo: "JavaScript: guia visual", descricao: "Leitura estruturada com exemplos.", formato: FormatoConteudo.PDF, minutosEstimados: 18, conteudoTexto: "Material sintético sobre estruturas fundamentais de JavaScript." } }),
+    prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador: "passo-a-passo", titulo: "JavaScript passo a passo", descricao: "Vídeo demonstrativo do módulo.", formato: FormatoConteudo.VIDEO, minutosEstimados: 12, conteudoTexto: "Roteiro sintético para acompanhar exemplos de JavaScript." } }),
+    prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador: "laboratorio", titulo: "Laboratório de JavaScript", descricao: "Exercícios práticos progressivos.", formato: FormatoConteudo.EXERCICIO_PRATICO, minutosEstimados: 22, conteudoTexto: "Prática sintética com pequenos problemas de programação." } }),
   ]);
-  const avaliacao = await prisma.avaliacao.create({
-    data: {
-      topicoId: loops.id,
-      identificador: "quiz-basico",
-      titulo: "Verificação de aprendizagem: Loops",
-      descricao: "Questões objetivas sobre repetição.",
-      questoes: {
-        create: [
-          { enunciado: "Qual estrutura repete enquanto uma condição for verdadeira?", opcoesJson: JSON.stringify(["if", "while", "return", "switch"]), opcaoCorreta: "while", posicao: 1, nivelBloom: NivelBloom.LEMBRAR },
-          { enunciado: "Qual estrutura serve para quantidade conhecida de repetições?", opcoesJson: JSON.stringify(["for", "else", "break", "function"]), opcaoCorreta: "for", posicao: 2, nivelBloom: NivelBloom.COMPREENDER },
-          { enunciado: "O que break faz em um loop?", opcoesJson: JSON.stringify(["Repete", "Interrompe", "Cria variável", "Compara"]), opcaoCorreta: "Interrompe", posicao: 3, nivelBloom: NivelBloom.COMPREENDER },
-          { enunciado: "Qual operador pode incrementar contador?", opcoesJson: JSON.stringify(["++", "===", "&&", "!"]), opcaoCorreta: "++", posicao: 4, nivelBloom: NivelBloom.APLICAR },
-          { enunciado: "Um loop infinito ocorre quando:", opcoesJson: JSON.stringify(["a condição nunca fica falsa", "há return", "contador aumenta", "há for"]), opcaoCorreta: "a condição nunca fica falsa", posicao: 5, nivelBloom: NivelBloom.ANALISAR },
-        ],
-      },
-    },
-  });
-
-  return { usuario, modulo, loops, recursos: { pdf, video, pratica }, avaliacao };
+  return { usuario, modulo, recursos: { pdf, video, pratica } };
 }
 
-async function criarSegundoModuloDaAna(conta: ContaComConteudo) {
-  const modulo = await prisma.moduloAprendizagem.create({
-    data: { usuarioId: conta.usuario.id, identificador: "logica", titulo: "Lógica", descricao: "Segundo módulo sintético para verificar contexto e recorrência entre assuntos." },
-  });
-  const topico = await prisma.topico.create({
-    data: { moduloId: modulo.id, identificador: "proposicoes", nome: "Proposições", descricao: "Conectivos, valores lógicos e tabelas-verdade." },
-  });
-  const recurso = await prisma.recursoConteudo.create({
-    data: { topicoId: topico.id, identificador: "pratica-proposicoes", titulo: "Prática de proposições", descricao: "Exercícios de lógica proposicional.", formato: FormatoConteudo.EXERCICIO_PRATICO, minutosEstimados: 15, conteudoTexto: "Prática sintética: identifique proposições e avalie conectivos lógicos em exemplos simples." },
-  });
-  const avaliacao = await prisma.avaliacao.create({
-    data: {
-      topicoId: topico.id,
-      identificador: "quiz-proposicoes",
-      titulo: "Verificação de aprendizagem: Proposições",
-      descricao: "Questões objetivas de lógica proposicional.",
-      questoes: { create: [
-        { enunciado: "Qual conectivo representa negação?", opcoesJson: JSON.stringify(["não", "e", "ou", "se"]), opcaoCorreta: "não", posicao: 1, nivelBloom: NivelBloom.LEMBRAR },
-        { enunciado: "Se p é verdadeira e q é falsa, p e q é:", opcoesJson: JSON.stringify(["verdadeira", "falsa", "indefinida", "numérica"]), opcaoCorreta: "falsa", posicao: 2, nivelBloom: NivelBloom.APLICAR },
-      ] },
-    },
-  });
+async function criarSessao(conta: Conta, recurso: { id: string; formato: FormatoConteudo }, dias: number, minutos: number, metodo: MetodoEstudo, compreensao: number, desafioId: string | null = null) {
+  const iniciadaEm = diasAntes(dias);
+  await prisma.sessaoEstudo.create({ data: {
+    usuarioId: conta.usuario.id, moduloId: conta.modulo.id,
+    descricao: "Estudo sintético do conteúdo descrito para validar a jornada por sessões.", modoRegistro: ModoRegistroSessao.MANUAL,
+    dificuldadePercebida: compreensao <= 2 ? 4 : compreensao === 3 ? 3 : 2, compreensaoPercebida: compreensao,
+    observacao: "Registro sintético para validação do laboratório.", desafioId, iniciadaEm,
+    encerradaEm: new Date(iniciadaEm.getTime() + minutos * 60_000), duracaoMinutos: minutos, situacao: SituacaoSessao.CONCLUIDA,
+    metodos: { create: { metodo } }, formatos: { create: { formato: recurso.formato } }, materiais: { create: { recursoId: recurso.id } },
+  } });
+}
+
+async function criarSegundoModulo(conta: Conta) {
+  const modulo = await prisma.moduloAprendizagem.create({ data: { usuarioId: conta.usuario.id, identificador: "logica", titulo: "Lógica", descricao: "Segundo módulo sintético para verificar recorrência entre módulos." } });
+  const recurso = await prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador: "pratica-proposicoes", titulo: "Prática de proposições", descricao: "Exercícios de lógica proposicional.", formato: FormatoConteudo.EXERCICIO_PRATICO, minutosEstimados: 15, conteudoTexto: "Material sintético sobre conectivos e valores lógicos." } });
   const iniciadaEm = diasAntes(16);
-  const encerradaEm = new Date(iniciadaEm.getTime() + 15 * 60 * 1_000);
-  await prisma.sessaoEstudo.create({
-    data: { usuarioId: conta.usuario.id, moduloId: modulo.id, topicoId: topico.id, recursoId: recurso.id, metodo: MetodoEstudo.FEYNMAN, dificuldadePercebida: 3, compreensaoPercebida: 4, observacao: "Registro sintético de um segundo módulo para validar recorrência contextual.", iniciadaEm, encerradaEm, duracaoMinutos: 15, situacao: SituacaoSessao.CONCLUIDA },
-  });
-  const tentativa = await prisma.tentativaAvaliacao.create({
-    data: { usuarioId: conta.usuario.id, moduloId: modulo.id, topicoId: topico.id, avaliacaoId: avaliacao.id, numeroTentativa: 1, iniciadaEm: encerradaEm, concluidaEm: new Date(encerradaEm.getTime() + 10 * 60 * 1_000), respostasCorretas: 2, totalQuestoes: 2, notaNormalizada: 100 },
-  });
-  await criarRespostasSinteticas(tentativa.id, avaliacao.id, 100);
+  await prisma.sessaoEstudo.create({ data: {
+    usuarioId: conta.usuario.id, moduloId: modulo.id,
+    descricao: "Explicação de proposições com as próprias palavras.", modoRegistro: ModoRegistroSessao.MANUAL,
+    dificuldadePercebida: 3, compreensaoPercebida: 4, iniciadaEm, encerradaEm: new Date(iniciadaEm.getTime() + 15 * 60_000),
+    duracaoMinutos: 15, situacao: SituacaoSessao.CONCLUIDA, metodos: { create: { metodo: MetodoEstudo.FEYNMAN } },
+    formatos: { create: { formato: recurso.formato } }, materiais: { create: { recursoId: recurso.id } },
+  } });
+}
+
+async function limpar() {
+  await prisma.eventoAuditoria.deleteMany();
+  await prisma.sala.deleteMany();
+  await prisma.sessaoEstudo.deleteMany(); await prisma.desafioExperimentacao.deleteMany(); await prisma.aprovacaoRecurso.deleteMany();
+  await prisma.recursoConteudo.deleteMany(); await prisma.moduloAprendizagem.deleteMany();
+  await prisma.matricula.deleteMany(); await prisma.turma.deleteMany(); await prisma.perfilAluno.deleteMany();
+  await prisma.perfilProfessor.deleteMany(); await prisma.usuario.deleteMany();
 }
 
 async function principal() {
-  await prisma.eventoAuditoria.deleteMany();
-  await prisma.recomendacao.deleteMany();
-  await prisma.respostaQuestao.deleteMany();
-  await prisma.tentativaAvaliacao.deleteMany();
-  await prisma.questao.deleteMany();
-  await prisma.avaliacao.deleteMany();
-  await prisma.sessaoEstudo.deleteMany();
-  await prisma.aprovacaoRecurso.deleteMany();
-  await prisma.recursoConteudo.deleteMany();
-  await prisma.topico.deleteMany();
-  await prisma.moduloAprendizagem.deleteMany();
-  await prisma.matricula.deleteMany();
-  await prisma.turma.deleteMany();
-  await prisma.perfilAluno.deleteMany();
-  await prisma.perfilProfessor.deleteMany();
-  await prisma.usuario.deleteMany();
-
+  await limpar();
   const [ana, bruno, carla, diego, elisa] = await Promise.all([
-    criarContaComModulo("Ana Souza", "ana.souza", "A"),
-    criarContaComModulo("Bruno Lima", "bruno.lima", "B"),
-    criarContaComModulo("Carla Rocha", "carla.rocha", "C"),
-    criarContaComModulo("Diego Alves", "diego.alves", "D"),
-    criarContaComModulo("Elisa Martins", "elisa.martins", "E"),
+    criarConta("Ana Souza", "ana.souza", "A"), criarConta("Bruno Lima", "bruno.lima", "B"),
+    criarConta("Carla Rocha", "carla.rocha", "C"), criarConta("Diego Alves", "diego.alves", "D"), criarConta("Elisa Martins", "elisa.martins", "E"),
   ]);
-
-  const [desafioFeynmanAna] = await Promise.all([
-    prisma.desafioExperimentacao.create({
-      data: {
-        usuarioId: ana.usuario.id,
-        moduloId: ana.modulo.id,
-        metodo: MetodoEstudo.FEYNMAN,
-        meta: "Explicar estruturas de repetição com minhas próprias palavras antes da avaliação.",
-      },
-    }),
-    prisma.desafioExperimentacao.create({
-      data: {
-        usuarioId: bruno.usuario.id,
-        moduloId: bruno.modulo.id,
-        metodo: MetodoEstudo.POMODORO,
-        meta: "Organizar blocos curtos de estudo para revisar o módulo.",
-        situacao: "CANCELADO",
-        canceladoEm: diasAntes(40),
-      },
-    }),
+  const [desafioAna] = await Promise.all([
+    prisma.desafioExperimentacao.create({ data: { usuarioId: ana.usuario.id, moduloId: ana.modulo.id, metodo: MetodoEstudo.FEYNMAN, meta: "Explicar estruturas de repetição com minhas próprias palavras ao final da sessão." } }),
+    prisma.desafioExperimentacao.create({ data: { usuarioId: bruno.usuario.id, moduloId: bruno.modulo.id, metodo: MetodoEstudo.POMODORO, meta: "Organizar blocos curtos de estudo para revisar o módulo.", situacao: "CANCELADO", canceladoEm: diasAntes(40) } }),
   ]);
-
-  for (const [indice, [conta, recurso, minutos, nota, metodo, desafioId]] of ([
-    [ana, ana.recursos.pdf, 25, 46, MetodoEstudo.FEYNMAN, desafioFeynmanAna.id], [ana, ana.recursos.pratica, 21, 78, MetodoEstudo.FEYNMAN, desafioFeynmanAna.id], [ana, ana.recursos.pratica, 19, 82, MetodoEstudo.FEYNMAN, null], [ana, ana.recursos.pratica, 17, 76, MetodoEstudo.FEYNMAN, null],
-    [bruno, bruno.recursos.video, 16, 70, MetodoEstudo.RECUPERACAO_ATIVA, null], [bruno, bruno.recursos.video, 14, 74, MetodoEstudo.RECUPERACAO_ATIVA, null], [bruno, bruno.recursos.video, 13, 72, MetodoEstudo.REPETICAO_ESPACADA, null], [bruno, bruno.recursos.pdf, 18, 68, MetodoEstudo.REPETICAO_ESPACADA, null],
-    [carla, carla.recursos.pdf, 17, 58, MetodoEstudo.POMODORO, null], [diego, diego.recursos.pratica, 20, 48, MetodoEstudo.INTERCALAMENTO, null], [diego, diego.recursos.video, 13, 51, MetodoEstudo.PRATICA_DISTRIBUIDA, null], [diego, diego.recursos.pratica, 19, 47, MetodoEstudo.INTERCALAMENTO, null],
-    [elisa, elisa.recursos.pdf, 16, 84, MetodoEstudo.POMODORO, null], [elisa, elisa.recursos.video, 12, 86, MetodoEstudo.REPETICAO_ESPACADA, null], [elisa, elisa.recursos.pdf, 18, 83, MetodoEstudo.RECUPERACAO_ATIVA, null], [elisa, elisa.recursos.video, 11, 85, MetodoEstudo.PRATICA_DISTRIBUIDA, null], [elisa, elisa.recursos.pratica, 20, 87, MetodoEstudo.INTERCALAMENTO, null],
-  ] as Array<[ContaComConteudo, { id: string }, number, number, MetodoEstudo, string | null]>).entries()) {
-    await criarSessaoETentativa(conta, recurso.id, 180 - indice * 8, minutos, nota, { metodo, desafioId });
-  }
-
-  await criarSegundoModuloDaAna(ana);
-
-  await prisma.sessaoEstudo.create({
-    data: {
-      usuarioId: carla.usuario.id,
-      moduloId: carla.modulo.id,
-      topicoId: carla.loops.id,
-      recursoId: carla.recursos.video.id,
-      metodo: MetodoEstudo.VIDEO_GUIADO,
-      dificuldadePercebida: 4,
-      compreensaoPercebida: 2,
-      observacao: "Sessão curta sintética, inválida para cálculo de evidências.",
-      iniciadaEm: diasAntes(2),
-      encerradaEm: diasAntes(2),
-      duracaoMinutos: 1,
-      situacao: SituacaoSessao.INVALIDADA,
-    },
-  });
-  console.log("Cenário sintético pessoal criado com sucesso.");
+  const dados: Array<[Conta, { id: string; formato: FormatoConteudo }, number, number, MetodoEstudo, number, string | null]> = [
+    [ana, ana.recursos.pdf, 180, 25, MetodoEstudo.FEYNMAN, 2, desafioAna.id], [ana, ana.recursos.pratica, 172, 21, MetodoEstudo.FEYNMAN, 4, desafioAna.id], [ana, ana.recursos.pratica, 164, 19, MetodoEstudo.FEYNMAN, 4, null], [ana, ana.recursos.pratica, 156, 17, MetodoEstudo.FEYNMAN, 4, null],
+    [bruno, bruno.recursos.video, 148, 16, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [bruno, bruno.recursos.video, 140, 14, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [bruno, bruno.recursos.video, 132, 13, MetodoEstudo.REPETICAO_ESPACADA, 4, null], [bruno, bruno.recursos.pdf, 124, 18, MetodoEstudo.REPETICAO_ESPACADA, 3, null],
+    [carla, carla.recursos.pdf, 116, 17, MetodoEstudo.POMODORO, 2, null],
+    [diego, diego.recursos.pratica, 108, 20, MetodoEstudo.INTERCALAMENTO, 2, null], [diego, diego.recursos.video, 100, 13, MetodoEstudo.PRATICA_DISTRIBUIDA, 3, null], [diego, diego.recursos.pratica, 92, 19, MetodoEstudo.INTERCALAMENTO, 2, null],
+    [elisa, elisa.recursos.pdf, 84, 16, MetodoEstudo.POMODORO, 4, null], [elisa, elisa.recursos.video, 76, 12, MetodoEstudo.REPETICAO_ESPACADA, 4, null], [elisa, elisa.recursos.pdf, 68, 18, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [elisa, elisa.recursos.video, 60, 11, MetodoEstudo.PRATICA_DISTRIBUIDA, 4, null], [elisa, elisa.recursos.pratica, 52, 20, MetodoEstudo.INTERCALAMENTO, 4, null],
+  ];
+  for (const item of dados) await criarSessao(...item);
+  await criarSegundoModulo(ana);
+  const sala = await prisma.sala.create({ data: { proprietarioId: ana.usuario.id, identificador: "sala-sintetica-grupo-programacao", nome: "Grupo de Programação", descricao: "Sala sintética para acompanhar módulos pessoais sem expor materiais ou sessões." } });
+  const [membroAna, membroBruno, membroCarla] = await Promise.all([
+    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: ana.usuario.id, papel: PapelMembroSala.PROPRIETARIO } }),
+    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: bruno.usuario.id } }),
+    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: carla.usuario.id } }),
+  ]);
+  const moduloSala = await prisma.moduloSala.create({ data: { salaId: sala.id, titulo: "JavaScript", descricao: "Módulo-pai sintético para consolidar dashboards autorizados.", posicao: 1 } });
+  await Promise.all([
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroAna.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id, permitirComparacao: true } }),
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroBruno.id, usuarioId: bruno.usuario.id, moduloPessoalId: bruno.modulo.id, permitirComparacao: true, permitirIa: true } }),
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroCarla.id, usuarioId: carla.usuario.id, moduloPessoalId: carla.modulo.id } }),
+    prisma.comentarioSala.create({ data: { salaId: sala.id, autorId: ana.usuario.id, escopo: EscopoComentarioSala.SALA, conteudo: "Comentário sintético: registrem suas sessões normalmente; somente os dashboards autorizados serão consolidados." } }),
+  ]);
+  const inicio = diasAntes(2);
+  await prisma.sessaoEstudo.create({ data: {
+    usuarioId: carla.usuario.id, moduloId: carla.modulo.id,
+    descricao: "Sessão curta sintética invalidada.", modoRegistro: ModoRegistroSessao.MANUAL, dificuldadePercebida: 4, compreensaoPercebida: 2,
+    iniciadaEm: inicio, encerradaEm: new Date(inicio.getTime() + 60_000), duracaoMinutos: 1, situacao: SituacaoSessao.INVALIDADA,
+    metodos: { create: { metodo: MetodoEstudo.POMODORO } }, formatos: { create: { formato: FormatoConteudo.VIDEO } }, materiais: { create: { recursoId: carla.recursos.video.id } },
+  } });
+  console.log("Cenário sintético centrado em sessões e compartilhamento seguro criado com sucesso.");
 }
 
 principal().catch((erro) => { console.error(erro); process.exit(1); }).finally(async () => prisma.$disconnect());

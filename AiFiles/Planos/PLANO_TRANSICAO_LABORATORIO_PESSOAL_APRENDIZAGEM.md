@@ -424,39 +424,45 @@ Nomes finais e chaves estrangeiras da Entrega A foram aprovados pela D-014. O ex
 
 ## Fase 12 — Compartilhamento e comentários
 
-**Objetivo:** Entrega C antes de salas. **Dependências:** F9 e escopos aprovados.
+**Objetivo atualizado:** fundação de compartilhamento seguro das salas, sem conceder acesso ao conteúdo dos módulos pessoais. **Dependências:** F9 e escopos aprovados.
 
-**Arquivos:** alterar schema e criar migração; criar `src/servidor/compartilhamentos.ts`, páginas/ações sob `src/app/compartilhamentos/`, testes de autorização; alterar contratos, modelo de dados e auditoria.
+**Arquivos:** schema e migração; `src/servidor/salas.ts`; fundação funcional sob `src/app/salas/`; testes de autorização; contratos, modelo de dados e auditoria. A especificação executável está em `FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md`.
 
-**Passos:** escopos enumerados; convite apenas entre contas sintéticas; validar proprietário/convidado/estado/expiração; revogar imediatamente; auditar ações sem conteúdo excessivo.
+**Passos atualizados:** convite por código/link com aprovação; vínculo entre módulo-pai e instância pessoal; consentimentos separados para comparação e IA; revogação imediata; comentários do proprietário para sala, módulo ou membro; auditoria sem conteúdo excessivo.
 
 **Validações:** proprietário/convidado/terceiro, escopo parcial, revogação e não enumeração de contas.
 
-**Saída:** B vê somente dados autorizados de A e perde acesso após revogação.
+**Saída:** o proprietário recebe somente o dashboard autorizado da instância do membro; nunca recebe materiais ou sessões. Revogação encerra o acesso individual e preserva o módulo pessoal.
+
+**Execução em 2026-09-20:** concluída conforme `FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md`. A fundação funcional de `/salas` cobre criação, convite, aprovação, módulo-pai, instância, consentimentos, comentários, saída, remoção, arquivamento e exclusão lógica. Os dashboards agregados pertencem à Fase 13.
 
 ## Fase 13 — Salas colaborativas
 
 **Objetivo:** Entrega D após compartilhamento. **Dependências:** F12.
 
-**Arquivos:** alterar schema e criar migração; criar `src/servidor/salas.ts`, páginas/ações sob `src/app/salas/`, consultas de agregação e testes de autorização/privacidade.
+**Arquivos:** schema e migração de evidências históricas; `src/servidor/paineis-salas.ts`; extensão segura de `src/servidor/salas.ts`; dashboards sob `src/app/salas/`; rota de interpretação consentida; testes de autorização e privacidade. A especificação executável está em `FASE_13_DASHBOARDS_SALAS.md`.
 
-**Passos:** modelar sala, membros, administrador, convites e módulos; reutilizar escopos; calcular agregados sem ranking; não revelar indivíduo não autorizado.
+**Passos atualizados:** reutilizar métricas oficiais das sessões; exigir três contribuidores para agregados; expor dashboard individual somente ao proprietário enquanto o vínculo estiver ativo; comparar apenas consentidos e sem ranking; condicionar IA a consentimento separado; preservar somente evidências históricas pseudonimizadas no desligamento.
 
 **Validações:** administrador/membro/terceiro, remoção, revogação e grupo pequeno.
 
 **Saída:** sala não amplia permissões individuais.
 
+**Execução em 2026-09-20:** concluída conforme `FASE_13_DASHBOARDS_SALAS.md`. A página da sala entrega os três níveis de dashboard, comparação optativa e IA consentida. Desvínculo, saída e remoção encerram o acesso individual, preservam o módulo pessoal e mantêm no agregado somente campos analíticos pseudonimizados, sem duplicidade na reativação.
+
 ## Fase 14 — Uploads e análise posterior
 
-**Objetivo:** arquivos controlados sem obrigar IA. **Dependências:** F4 e autorização da Entrega D.
+**Objetivo atualizado:** análise automática e segura de materiais sem tornar o upload dependente da IA. **Dependências:** F4, F7 e F13.
 
-**Arquivos:** alterar schema e criar migração; criar serviço local em `src/servidor/arquivos.ts`, rota/ação definida após leitura das docs Next.js, testes e diretório de armazenamento ignorado pelo Git; alterar `.gitignore`, contratos e README.
+**Arquivos:** schema e migração de `AnaliseMaterial`; extração em `src/servidor/extracao-materiais.ts`; processamento em `src/servidor/analises-materiais.ts`; adaptador em `src/servidor/ia/analise-materiais.ts`; rotas, interface, testes, contratos e README. A especificação executável está em `FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md`.
 
-**Passos:** tipos/tamanho, armazenamento seguro, nome gerado, metadados, exclusão/limpeza; validar no servidor; manter análise automática separada.
+**Passos atualizados:** preservar o upload seguro já entregue; extrair texto localmente de PDF/TXT/DOCX/CSV/XLSX e imagens; analisar automaticamente em etapa separada; persistir conceitos e resultado compacto; comparar conceitos com descrições; substituir e excluir com limpeza compensatória. Áudio e vídeo permanecem fora da análise.
 
 **Validações:** tipo/tamanho, nome malicioso, ausente, acesso horizontal e órfãos.
 
-**Saída:** arquivo é recuperado somente por autorizado e não executa como código.
+**Saída:** arquivo é recuperado somente por autorizado, não executa como código e alimenta um painel de conceitos sem persistir o texto integral.
+
+**Execução em 2026-09-21:** concluída conforme `FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md`. Upload compatível inicia análise separada, falhas não removem o material, conceitos alimentam comparação observacional e substituição/exclusão controlam o ciclo físico do arquivo.
 
 ## Fase 15 — Cenário, robustez, documentação e banca
 

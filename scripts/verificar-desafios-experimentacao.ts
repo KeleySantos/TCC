@@ -18,15 +18,15 @@ async function principal() {
     prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "bruno.lima" } }),
   ]);
   const [recursoAna, recursoBruno] = await Promise.all([
-    prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, topico: { modulo: { usuarioId: ana.id, arquivado: false, rascunho: false } } }, include: { topico: { select: { moduloId: true } } } }),
-    prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, topico: { modulo: { usuarioId: bruno.id, arquivado: false, rascunho: false } } } }),
+    prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, modulo: { usuarioId: ana.id, arquivado: false, rascunho: false } }, select: { id: true, moduloId: true } }),
+    prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, modulo: { usuarioId: bruno.id, arquivado: false, rascunho: false } }, select: { id: true, moduloId: true } }),
   ]);
   let desafioId: string | null = null;
   let sessaoId: string | null = null;
   try {
     let bloqueouMetaInvalida = false;
     try {
-      await criarDesafioPessoal(ana.id, { moduloId: recursoAna.topico.moduloId, metodo: "FEYNMAN", meta: "x" });
+      await criarDesafioPessoal(ana.id, { moduloId: recursoAna.moduloId, metodo: "FEYNMAN", meta: "x" });
     } catch (erro) {
       bloqueouMetaInvalida = erro instanceof ErroDesafio && erro.codigo === "DADOS_INVALIDOS";
     }
@@ -40,7 +40,7 @@ async function principal() {
     }
     afirmar(bloqueouMetodoHistorico, "novos registros não podem usar método histórico fora do catálogo controlado.");
 
-    const desafio = await criarDesafioPessoal(ana.id, { moduloId: recursoAna.topico.moduloId, metodo: "FEYNMAN", meta: "Explicar o conceito com minhas próprias palavras antes de avaliar." });
+    const desafio = await criarDesafioPessoal(ana.id, { moduloId: recursoAna.moduloId, metodo: "FEYNMAN", meta: "Explicar o conceito com minhas próprias palavras ao final da sessão." });
     desafioId = desafio.id;
     afirmar(desafio.situacao === "ATIVO" && desafio.metodo === "FEYNMAN", "desafio próprio deve iniciar ativo com método controlado.");
 

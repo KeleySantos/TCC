@@ -9,7 +9,7 @@ export async function POST(_requisicao: Request, contexto: { params: Promise<{ i
   const { identificador } = await contexto.params;
   try {
     const interpretacao = await gerarInterpretacaoModuloPessoal(acesso.usuario.id, identificador);
-    return NextResponse.json({ interpretacao });
+    return NextResponse.json({ interpretacao }, { headers: { "Cache-Control": "no-store" } });
   } catch (erro) {
     if (erro instanceof ErroInterpretacaoModulo) return NextResponse.json({ erro: "NAO_ENCONTRADO" }, { status: 404 });
     return NextResponse.json({ erro: "FALHA_INTERPRETACAO" }, { status: 500 });

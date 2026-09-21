@@ -1,44 +1,57 @@
 import { prisma } from "@/biblioteca/prisma";
-import { calcularFrequenciaEstudo, calcularMetricasModulo, calcularRecorrenciasEntreModulos, calcularTaxaAcertoGeral, selecionarMetodoComMaiorMediaObservada } from "@/dominio/analises/metricas-modulo";
-import { calcularAnaliseBloom } from "@/dominio/analises/analise-bloom";
 import { calcularComparacaoDesafio } from "@/dominio/analises/comparar-desafio";
+import { calcularMetricasSessoes, type SessaoParaMetricasSessoes } from "@/dominio/analises/metricas-sessoes";
+import type { FormatoConteudo, MetodoEstudo } from "@/gerado/prisma/enums";
 
-function mapearSessao(sessao: Awaited<ReturnType<typeof prisma.sessaoEstudo.findMany>>[number] & { recurso: { formato: import("@/gerado/prisma/enums").FormatoConteudo } }) {
-  return { id: sessao.id, moduloId: sessao.moduloId, topicoId: sessao.topicoId, formato: sessao.recurso.formato, metodo: sessao.metodo, desafioId: sessao.desafioId, dificuldadePercebida: sessao.dificuldadePercebida, compreensaoPercebida: sessao.compreensaoPercebida, encerradaEm: sessao.encerradaEm, duracaoMinutos: sessao.duracaoMinutos, situacao: sessao.situacao };
+type SessaoPersistidaParaMetricas = Omit<SessaoParaMetricasSessoes, "metodos" | "formatos"> & {
+  metodos: Array<{ metodo: MetodoEstudo }>;
+  formatos: Array<{ formato: FormatoConteudo }>;
+};
+
+function mapearSessaoOficial(sessao: SessaoPersistidaParaMetricas): SessaoParaMetricasSessoes {
+  return { ...sessao, metodos: sessao.metodos.map((item) => item.metodo), formatos: sessao.formatos.map((item) => item.formato) };
 }
 
-function mapearTentativa(tentativa: Awaited<ReturnType<typeof prisma.tentativaAvaliacao.findMany>>[number]) {
-  return { id: tentativa.id, moduloId: tentativa.moduloId, topicoId: tentativa.topicoId, concluidaEm: tentativa.concluidaEm, notaNormalizada: tentativa.notaNormalizada, numeroTentativa: tentativa.numeroTentativa, respostasCorretas: tentativa.respostasCorretas, totalQuestoes: tentativa.totalQuestoes };
-}
+const selecaoSessaoOficial = {
+  id: true,
+  moduloId: true,
+  descricao: true,
+  iniciadaEm: true,
+  encerradaEm: true,
+  duracaoMinutos: true,
+  situacao: true,
+  arquivada: true,
+  dificuldadePercebida: true,
+  compreensaoPercebida: true,
+  metodos: { select: { metodo: true } },
+  formatos: { select: { formato: true } },
+} as const;
 
-export async function obterMetricasModuloPessoal(usuarioId: string, identificadorModulo: string) {
-  const modulo = await prisma.moduloAprendizagem.findFirst({ where: { usuarioId, identificador: identificadorModulo, arquivado: false, rascunho: false }, select: { id: true } });
+/** Métricas oficiais da jornada centrada em sessões. Não consulta tópicos nem avaliações. */
+export async function obterMetricasSessoesModuloPessoal(usuarioId: string, identificadorModulo: string) {
+  const modulo = await prisma.moduloAprendizagem.findFirst({
+    where: { usuarioId, identificador: identificadorModulo, arquivado: false, rascunho: false },
+    select: { id: true, identificador: true, titulo: true },
+  });
   if (!modulo) return null;
-  const [sessoes, tentativas] = await Promise.all([
-    prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: modulo.id, topico: { ativo: true, rascunho: false } }, include: { recurso: { select: { formato: true } } } }),
-    prisma.tentativaAvaliacao.findMany({ where: { usuarioId, moduloId: modulo.id, topico: { ativo: true, rascunho: false } } }),
-  ]);
-  return calcularMetricasModulo(modulo.id, sessoes.map(mapearSessao), tentativas.map(mapearTentativa));
+  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: modulo.id }, select: selecaoSessaoOficial });
+  return { modulo, metricas: calcularMetricasSessoes(sessoes.map(mapearSessaoOficial), modulo.id) };
 }
 
-export async function obterMetricasPessoais(usuarioId: string) {
-  const modulos = await prisma.moduloAprendizagem.findMany({ where: { usuarioId, arquivado: false, rascunho: false }, select: { id: true }, orderBy: { titulo: "asc" } });
+/** Consolidação oficial da conta, restrita a módulos ativos e sessões próprias. */
+export async function obterMetricasSessoesPessoais(usuarioId: string) {
+  const modulos = await prisma.moduloAprendizagem.findMany({
+    where: { usuarioId, arquivado: false, rascunho: false },
+    select: { id: true, identificador: true, titulo: true },
+    orderBy: { titulo: "asc" },
+  });
   const idsModulos = modulos.map((modulo) => modulo.id);
-  const [sessoes, tentativas] = await Promise.all([
-    prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: { in: idsModulos }, topico: { ativo: true, rascunho: false } }, include: { recurso: { select: { formato: true } } } }),
-    prisma.tentativaAvaliacao.findMany({ where: { usuarioId, moduloId: { in: idsModulos }, topico: { ativo: true, rascunho: false } } }),
-  ]);
-  const sessoesMapeadas = sessoes.map(mapearSessao);
-  const tentativasMapeadas = tentativas.map(mapearTentativa);
-  const metricasPorModulo = modulos.map((modulo) => ({ modulo, metricas: calcularMetricasModulo(modulo.id, sessoesMapeadas, tentativasMapeadas) }));
-  const metricasDosModulos = metricasPorModulo.map((item) => item.metricas);
-  const recorrencias = calcularRecorrenciasEntreModulos(metricasDosModulos);
+  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: { in: idsModulos } }, select: selecaoSessaoOficial });
+  const mapeadas = sessoes.map(mapearSessaoOficial);
   return {
-    metricasPorModulo,
-    recorrencias,
-    frequencia: calcularFrequenciaEstudo(sessoesMapeadas),
-    taxaAcertoGeral: calcularTaxaAcertoGeral(metricasDosModulos),
-    metodoComMaiorMediaObservada: selecionarMetodoComMaiorMediaObservada(recorrencias),
+    versaoAlgoritmo: "metricas-sessoes-v1",
+    consolidado: calcularMetricasSessoes(mapeadas),
+    metricasPorModulo: modulos.map((modulo) => ({ modulo, metricas: calcularMetricasSessoes(mapeadas, modulo.id) })),
   };
 }
 
@@ -50,24 +63,13 @@ export async function obterComparacoesDesafiosPessoais(usuarioId: string) {
   });
   const idsModulos = [...new Set(desafios.map((desafio) => desafio.moduloId))];
   if (!idsModulos.length) return [];
-  const [sessoes, tentativas] = await Promise.all([
-    prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: { in: idsModulos }, topico: { ativo: true, rascunho: false } }, include: { recurso: { select: { formato: true } } } }),
-    prisma.tentativaAvaliacao.findMany({ where: { usuarioId, moduloId: { in: idsModulos }, topico: { ativo: true, rascunho: false } } }),
-  ]);
-  const sessoesMapeadas = sessoes.map(mapearSessao);
-  const tentativasMapeadas = tentativas.map(mapearTentativa);
-  return desafios.map((desafio) => ({ ...desafio, comparacao: calcularComparacaoDesafio(desafio, sessoesMapeadas, tentativasMapeadas) }));
-}
-
-export async function obterAnaliseBloomModuloPessoal(usuarioId: string, identificadorModulo: string) {
-  const modulo = await prisma.moduloAprendizagem.findFirst({
-    where: { usuarioId, identificador: identificadorModulo, arquivado: false, rascunho: false },
-    select: { id: true },
+  const sessoes = await prisma.sessaoEstudo.findMany({
+    where: { usuarioId, moduloId: { in: idsModulos } },
+    select: {
+      id: true, moduloId: true, desafioId: true, encerradaEm: true, duracaoMinutos: true, situacao: true,
+      dificuldadePercebida: true, compreensaoPercebida: true, metodos: { select: { metodo: true } },
+    },
   });
-  if (!modulo) return null;
-  const respostas = await prisma.respostaQuestao.findMany({
-    where: { tentativa: { usuarioId, moduloId: modulo.id, concluidaEm: { not: null }, topico: { ativo: true, rascunho: false } } },
-    select: { correta: true, questao: { select: { nivelBloom: true } }, tentativa: { select: { concluidaEm: true } } },
-  });
-  return calcularAnaliseBloom(respostas.map((resposta) => ({ nivelBloom: resposta.questao.nivelBloom, correta: resposta.correta, concluidaEm: resposta.tentativa.concluidaEm })));
+  const sessoesMapeadas = sessoes.map((sessao) => ({ ...sessao, metodos: sessao.metodos.map((item) => item.metodo) }));
+  return desafios.map((desafio) => ({ ...desafio, comparacao: calcularComparacaoDesafio(desafio, sessoesMapeadas) }));
 }

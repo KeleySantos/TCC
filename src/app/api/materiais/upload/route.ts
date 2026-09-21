@@ -27,12 +27,12 @@ export async function POST(requisicao: Request) {
   if (!(arquivo instanceof File)) return NextResponse.json({ erro: "ARQUIVO_INVALIDO" }, { status: 400 });
   try {
     const material = await criarMaterialComArquivoPessoal(acesso.usuario.id, {
-      topicoId: formulario.get("topicoId"),
+      moduloId: formulario.get("moduloId"),
       titulo: formulario.get("titulo"),
       descricao: formulario.get("descricao"),
       minutosEstimados: formulario.get("minutosEstimados"),
     }, arquivo);
-    return NextResponse.json({ material: { id: material.id, identificador: material.identificador, formato: material.formato, origem: material.origem } }, { status: 201 });
+    return NextResponse.json({ material: { id: material.id, identificador: material.identificador, formato: material.formato, origem: material.origem }, analisar: material.analise?.situacao === "PENDENTE" }, { status: 201 });
   } catch (erro) {
     return respostaDeErro(erro);
   }

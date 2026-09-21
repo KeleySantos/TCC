@@ -108,6 +108,27 @@ Conta pessoal → ação ou rota de servidor → valida entrada e propriedade
 → cria ou altera somente módulos, tópicos, materiais e registros da própria conta
 ```
 
+### Compartilhamento para salas
+
+```text
+Proprietário cria sala e módulo-pai → código/link cria solicitação pendente
+→ proprietário aprova → membro cria ou vincula módulo pessoal
+→ vínculo expõe somente dashboard autorizado, nunca materiais ou sessões
+→ consentimentos separados habilitam comparação e IA
+→ saída, remoção, exclusão ou desvínculo encerram acesso sem apagar o módulo pessoal
+```
+
+`ModuloSala` é apenas um contexto de agregação. `VinculoModuloSala` não transfere propriedade do `ModuloAprendizagem`; consultas do proprietário selecionam identidade mínima e consentimentos. `paineis-salas.ts` compõe métricas vivas e evidências históricas pseudonimizadas, aplica a amostra mínima antes de devolver números e mantém dashboard individual separado do agregado. A IA recebe somente o DTO métrico autorizado.
+
+```text
+sessões válidas do vínculo ativo ─┐
+                                 ├─ amostra mínima ─ dashboards de módulo e sala
+evidências históricas anônimas ──┘
+
+vínculo ativo ─ consentimento de comparação ─ comparação nominal sem ranking
+              └ consentimento de IA ─ DTO métrico ─ fila de provedores
+```
+
 ## Fronteiras de responsabilidade
 
 | Camada | Responsabilidade | Não deve fazer |
@@ -121,4 +142,4 @@ Conta pessoal → ação ou rota de servidor → valida entrada e propriedade
 
 ## Observabilidade atual e evolução
 
-O evento de auditoria legado registra curadoria e não integra a Entrega A. O próximo incremento inclui logs estruturados de falha de API e do adaptador Gemini, correlação por requisição e política de retenção, sem incluir respostas completas de quiz, cookies, observações livres, chaves ou dados pessoais desnecessários.
+`EventoAuditoria` registra as ações sensíveis das salas sem armazenar códigos de convite, conteúdo de comentários, sessões, materiais ou credenciais. Logs e metadados não devem incluir cookies, chaves ou dados pessoais desnecessários.

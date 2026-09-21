@@ -8,6 +8,8 @@
 # local environment and database
 .env
 .env.local
+*.pem
+*.key
 /prisma/*.db
 /prisma/*.db-journal
 /.dados/

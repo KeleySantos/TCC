@@ -11,7 +11,9 @@ import {
   History,
   LayoutDashboard,
   LogOut,
+  Settings2,
   Sparkles,
+  UsersRound,
   UserRound,
 } from "lucide-react";
 import { sairDaConta } from "@/app/acoes-sessao";
@@ -23,8 +25,10 @@ const EVENTO_PREFERENCIA = "learning-lab:preferencia-barra-lateral";
 const ITENS_NAVEGACAO = [
   { href: "/dashboard", rotulo: "Dashboard", Icone: LayoutDashboard },
   { href: "/modulos", rotulo: "Módulos", Icone: BookOpenText },
+  { href: "/salas", rotulo: "Salas", Icone: UsersRound },
   { href: "/desafios", rotulo: "Desafios", Icone: FlaskConical },
   { href: "/historico", rotulo: "Histórico", Icone: History },
+  { href: "/configuracoes/ia", rotulo: "Configurações IA", Icone: Settings2 },
   { href: "/perfil", rotulo: "Perfil", Icone: UserRound },
 ] as const;
 
@@ -46,7 +50,7 @@ function obterPreferenciaNoServidor() {
 }
 
 function itemEstaAtivo(caminhoAtual: string, href: string) {
-  return href === "/modulos" ? caminhoAtual.startsWith("/modulos") : caminhoAtual === href;
+  return href === "/modulos" || href === "/salas" ? caminhoAtual.startsWith(href) : caminhoAtual === href;
 }
 
 export function EstruturaAutenticada({

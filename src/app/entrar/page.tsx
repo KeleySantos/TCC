@@ -42,7 +42,7 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
           <ul className={estilos.beneficios} aria-label="Recursos do laboratório">
             <li>
               <span className={estilos.iconeBeneficio} aria-hidden="true"><BookOpenText /></span>
-              <span><strong>Organize seus estudos</strong><small>Reúna módulos, tópicos e materiais.</small></span>
+              <span><strong>Organize seus estudos</strong><small>Reúna módulos, materiais e sessões.</small></span>
             </li>
             <li>
               <span className={estilos.iconeBeneficio} aria-hidden="true"><ChartNoAxesCombined /></span>
@@ -63,7 +63,7 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
               <span className={estilos.seloPrevia}>Visão ilustrativa</span>
             </div>
             <div className={estilos.etapasPrevia} aria-hidden="true">
-              <span>Organizar</span><i /><span>Estudar</span><i /><span>Avaliar</span><i /><span>Refletir</span>
+              <span>Organizar</span><i /><span>Estudar</span><i /><span>Observar</span><i /><span>Refletir</span>
             </div>
             <svg className={estilos.graficoPrevia} viewBox="0 0 620 112" role="img" aria-label="Linha ascendente meramente ilustrativa">
               <defs>

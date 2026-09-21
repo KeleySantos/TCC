@@ -37,10 +37,10 @@ export default async function PaginaModulos({
 
         <div className={estilos.areaConteudo}>
           <header className={estilos.apresentacaoPagina}>
-            <div><p className={estilos.sobretitulo}>SEUS ESPAÇOS DE ESTUDO</p><h1>Módulos</h1><p>Organize assuntos, tópicos e materiais sem misturar seus contextos de aprendizagem.</p></div>
+            <div><p className={estilos.sobretitulo}>SEUS ESPAÇOS DE ESTUDO</p><h1>Módulos</h1><p>Organize conteúdos, materiais e sessões sem misturar seus contextos de aprendizagem.</p></div>
             <dl className={estilos.resumoPagina}>
               <div><dt>Módulos ativos</dt><dd>{resumo.modulos.length}</dd></div>
-              <div><dt>Avaliações</dt><dd>{resumo.quantidadeTentativas}</dd></div>
+              <div><dt>Sessões concluídas</dt><dd>{resumo.quantidadeSessoesValidas}</dd></div>
             </dl>
           </header>
 

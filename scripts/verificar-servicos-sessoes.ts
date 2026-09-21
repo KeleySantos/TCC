@@ -16,17 +16,19 @@ async function principal() {
     prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "ana.souza" } }),
     prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "bruno.lima" } }),
   ]);
-  const recursoAna = await prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, topico: { modulo: { usuarioId: ana.id } } } });
+  const recursoAna = await prisma.recursoConteudo.findFirstOrThrow({ where: { ativo: true, modulo: { usuarioId: ana.id } } });
   const inicio = new Date("2026-09-02T12:00:00.000Z");
   const ids: string[] = [];
   try {
-    const sessaoValida = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "LEITURA_ATIVA" }, inicio);
+    const sessaoValida = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "FEYNMAN" }, inicio);
     ids.push(sessaoValida.id);
     const concluida = await concluirSessaoPessoal(ana.id, sessaoValida.id, { dificuldadePercebida: 2, compreensaoPercebida: 4, observacao: "Registro temporário para teste de serviço." }, new Date(inicio.getTime() + 6 * 60_000));
     afirmar(concluida.situacao === "CONCLUIDA" && concluida.duracaoMinutos === 6, "sessão com seis minutos deve ser concluída com duração do servidor.");
-    afirmar(concluida.metodo === "LEITURA_ATIVA" && concluida.dificuldadePercebida === 2 && concluida.compreensaoPercebida === 4, "método e escalas devem ser persistidos.");
+    afirmar(concluida.metodos.some((item) => item.metodo === "FEYNMAN") && concluida.dificuldadePercebida === 2 && concluida.compreensaoPercebida === 4, "método e escalas devem ser persistidos.");
+    const contextoMultiplo = await prisma.sessaoEstudo.findUniqueOrThrow({ where: { id: concluida.id }, include: { metodos: true, formatos: true, materiais: true } });
+    afirmar(contextoMultiplo.metodos.some((item) => item.metodo === "FEYNMAN") && contextoMultiplo.formatos.length === 1 && contextoMultiplo.materiais.some((item) => item.recursoId === recursoAna.id), "o fluxo de compatibilidade deve preencher método, formato e material nas relações novas.");
 
-    const sessaoCurta = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "REVISAO" }, new Date(inicio.getTime() + 10 * 60_000));
+    const sessaoCurta = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "POMODORO" }, new Date(inicio.getTime() + 10 * 60_000));
     ids.push(sessaoCurta.id);
     const invalidada = await concluirSessaoPessoal(ana.id, sessaoCurta.id, { dificuldadePercebida: 3, compreensaoPercebida: 3, observacao: "" }, new Date(inicio.getTime() + 11 * 60_000));
     afirmar(invalidada.situacao === "INVALIDADA" && invalidada.duracaoMinutos === 1, "sessão curta deve ser invalidada pelo relógio do servidor.");
@@ -40,7 +42,7 @@ async function principal() {
     afirmar(bloqueouOutraConta, "outra conta não pode concluir sessão alheia.");
 
     let bloqueouEscalaInvalida = false;
-    const sessaoEscala = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "OUTRO" }, new Date(inicio.getTime() + 20 * 60_000));
+    const sessaoEscala = await iniciarSessaoPessoal(ana.id, { recursoId: recursoAna.id, metodo: "RECUPERACAO_ATIVA" }, new Date(inicio.getTime() + 20 * 60_000));
     ids.push(sessaoEscala.id);
     try {
       await concluirSessaoPessoal(ana.id, sessaoEscala.id, { dificuldadePercebida: 6, compreensaoPercebida: 1, observacao: "Escala inválida." });

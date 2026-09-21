@@ -4,33 +4,31 @@ import {
   Archive,
   ArrowLeft,
   BookOpenText,
-  Clock3,
   Download,
   ExternalLink,
   FileText,
   FolderOpen,
-  Gauge,
   MoreHorizontal,
-  Plus,
-  Target,
+  Pencil,
+  Sparkles,
 } from "lucide-react";
-import { formatarData, formatarFormato, formatarPorcentagem } from "@/biblioteca/formatacao";
+import { formatarFormato } from "@/biblioteca/formatacao";
 import { CronometroEstudo } from "@/componentes/cronometro-estudo";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
-import { GraficoDesempenhoContextual } from "@/componentes/grafico-desempenho-contextual";
-import { GraficoPercepcaoResultado } from "@/componentes/grafico-percepcao-resultado";
 import { InterpretacaoAutomatica } from "@/componentes/interpretacao-automatica";
-import { PainelBloom } from "@/componentes/painel-bloom";
-import { Quiz } from "@/componentes/quiz";
-import { formatarMetodoEstudo } from "@/dominio/sessoes/metodos";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import { listarDesafiosAtivosDoModuloPessoal } from "@/servidor/desafios";
-import { obterAnaliseBloomModuloPessoal, obterMetricasModuloPessoal } from "@/servidor/metricas";
+import { obterMetricasSessoesModuloPessoal } from "@/servidor/metricas";
 import { obterModuloPessoal } from "@/servidor/modulos";
-import { arquivarMaterial, arquivarModulo, arquivarTopico, atualizarMaterial, atualizarModulo, criarRascunhoTopico } from "../acoes";
-import { EditorModulo, EditorTopico } from "./editores";
+import { obterPainelConceitosModulo } from "@/servidor/analises-materiais";
+import { listarSessoesModuloPessoal } from "@/servidor/sessoes";
+import { arquivarMaterial, arquivarModulo, atualizarMaterial, atualizarModulo } from "../acoes";
+import { EditorModulo } from "./editores";
+import { AcoesArquivoMaterial } from "./acoes-arquivo-material";
 import { FormularioMaterial } from "./formulario-material";
-import { GraficoEvolucaoTopicos } from "./grafico-evolucao-topicos";
+import { PainelMetricasSessoes } from "./painel-metricas-sessoes";
+import { PainelSessoes } from "./painel-sessoes";
+import { ProcessadorAnalisesPendentes } from "./processador-analises-pendentes";
 import estilos from "./page.module.css";
 
 function mensagemDeErro(codigo?: string) {
@@ -40,24 +38,10 @@ function mensagemDeErro(codigo?: string) {
   return null;
 }
 
-function formatarDuracao(minutos: number) {
-  if (minutos < 60) return `${minutos} min`;
-  const horas = Math.floor(minutos / 60);
-  const restantes = minutos % 60;
-  return restantes ? `${horas}h ${restantes}min` : `${horas}h`;
-}
-
 function formatarTamanho(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 ** 2) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / 1024 ** 2).toFixed(1).replace(".", ",")} MB`;
-}
-
-function rotuloDificuldade(status: "ALTA" | "INTERMEDIARIA" | "BAIXA" | null) {
-  if (status === "ALTA") return "Alta";
-  if (status === "INTERMEDIARIA") return "Intermediária";
-  if (status === "BAIXA") return "Baixa";
-  return "Sem dados";
 }
 
 export default async function PaginaModulo({
@@ -65,7 +49,7 @@ export default async function PaginaModulo({
   searchParams,
 }: {
   params: Promise<{ identificador: string }>;
-  searchParams: Promise<{ erro?: string; sucesso?: string; topico?: string }>;
+  searchParams: Promise<{ editar?: string; erro?: string; sucesso?: string }>;
 }) {
   const [{ identificador }, usuario, parametros] = await Promise.all([params, exigirUsuario(), searchParams]);
   const modulo = await obterModuloPessoal(usuario.id, identificador);
@@ -100,30 +84,34 @@ export default async function PaginaModulo({
     </EstruturaAutenticada>;
   }
 
-  const [metricas, desafiosAtivos, analiseBloom] = await Promise.all([
-    obterMetricasModuloPessoal(usuario.id, identificador),
+  const [resultadoMetricas, desafiosAtivos, sessoes, painelConceitos] = await Promise.all([
+    obterMetricasSessoesModuloPessoal(usuario.id, identificador),
     listarDesafiosAtivosDoModuloPessoal(usuario.id, modulo.id),
-    obterAnaliseBloomModuloPessoal(usuario.id, identificador),
+    listarSessoesModuloPessoal(usuario.id, modulo.id, { incluirArquivadas: true }),
+    obterPainelConceitosModulo(usuario.id, modulo.id),
   ]);
-  if (!metricas || !analiseBloom) notFound();
-  const topicosConfigurados = modulo.topicos.filter((topico) => !topico.rascunho);
-  const materiais = topicosConfigurados.flatMap((topico) => topico.recursos.map((material) => ({ ...material, topicoNome: topico.nome })));
-  const topicosPorId = new Map(topicosConfigurados.map((topico) => [topico.id, topico.nome]));
-  const dificuldade = metricas.dificuldadeAtualEstimada;
-  const classeDificuldade = dificuldade.status === "ALTA" ? estilos.dificuldadeAlta : dificuldade.status === "INTERMEDIARIA" ? estilos.dificuldadeIntermediaria : dificuldade.status === "BAIXA" ? estilos.dificuldadeBaixa : estilos.dificuldadeAusente;
-  const pontosEvolucao = metricas.evolucaoTaxaMediaTopicos.pontos.flatMap((ponto) => ponto.mediaTaxasAcertoTopicos === null ? [] : [{ id: ponto.periodoInicio.toISOString(), rotulo: formatarData(ponto.periodoInicio), intervalo: `${formatarData(ponto.periodoInicio)} a ${formatarData(ponto.periodoFim)}`, taxa: ponto.mediaTaxasAcertoTopicos * 100, quantidadeTopicos: ponto.quantidadeTopicosComEvidencia, quantidadeTentativas: ponto.quantidadeTentativas }]);
+  if (!resultadoMetricas) notFound();
+  const metricas = resultadoMetricas.metricas;
+  const materiais = modulo.materiais;
+  const pendentes = materiais.filter((material) => material.analise?.situacao === "PENDENTE").map((material) => material.id);
 
   return <EstruturaAutenticada usuarioNome={usuario.nome}>
     <main className={estilos.paginaModulo} id="conteudo-principal" tabIndex={-1}>
+      <ProcessadorAnalisesPendentes ids={pendentes} />
       <header className={estilos.cabecalhoModulo}>
         <div className={estilos.barraSuperiorModulo}>
           <Link className={estilos.voltarModulo} href="/modulos"><ArrowLeft aria-hidden="true" />Todos os módulos</Link>
           <details className={estilos.menuModulo}>
             <summary aria-label="Abrir ações do módulo" title="Ações do módulo"><MoreHorizontal aria-hidden="true" /></summary>
-            <div className={estilos.conteudoMenuModulo}><strong>Ações do módulo</strong><p>O arquivamento preserva conteúdos e registros.</p><form action={arquivarModulo}><input name="id" type="hidden" value={modulo.id} /><input name="identificadorAtual" type="hidden" value={modulo.identificador} /><button type="submit"><Archive aria-hidden="true" />Arquivar módulo</button></form></div>
+            <div className={estilos.conteudoMenuModulo}>
+              <strong>Ações do módulo</strong>
+              <p>Edite a identidade do módulo ou arquive-o preservando conteúdos e registros.</p>
+              <Link className={estilos.acaoEditarModulo} href={`/modulos/${encodeURIComponent(modulo.identificador)}?editar=modulo#editor-modulo-${modulo.id}`}><Pencil aria-hidden="true" />Editar nome e descrição</Link>
+              <form action={arquivarModulo}><input name="id" type="hidden" value={modulo.id} /><input name="identificadorAtual" type="hidden" value={modulo.identificador} /><button type="submit"><Archive aria-hidden="true" />Arquivar módulo</button></form>
+            </div>
           </details>
         </div>
-        <EditorModulo descricao={modulo.descricao} id={modulo.id} identificador={modulo.identificador} titulo={modulo.titulo} />
+        <EditorModulo descricao={modulo.descricao} id={modulo.id} identificador={modulo.identificador} inicialmenteEditando={parametros.editar === "modulo"} key={parametros.editar === "modulo" ? "editor-aberto" : "editor-fechado"} titulo={modulo.titulo} />
       </header>
       {erro && <p className="mensagem-erro" role="alert">{erro}</p>}
       {parametros.sucesso && <p className="mensagem-sucesso" role="status">Alteração salva na sua conta.</p>}
@@ -131,15 +119,23 @@ export default async function PaginaModulo({
       <div className={estilos.gradePaginaModulo}>
         <aside className={estilos.colunaContexto} aria-label="Materiais e análises do módulo">
           <section className={estilos.painelMateriais} aria-labelledby="titulo-biblioteca-materiais">
-            <div className={estilos.cabecalhoPainelLateral}><div className={estilos.iconePainel}><FolderOpen aria-hidden="true" /></div><div><p className={estilos.sobretituloPagina}>BIBLIOTECA</p><h2 id="titulo-biblioteca-materiais">Materiais</h2></div><FormularioMaterial identificadorModulo={modulo.identificador} topicos={topicosConfigurados.map((topico) => ({ id: topico.id, nome: topico.nome }))} /></div>
-            <p className={estilos.resumoPainel}>{materiais.length ? `${materiais.length} material(is) em ${topicosConfigurados.length} tópico(s).` : "Seus arquivos, links e notas aparecerão aqui."}</p>
+            <div className={estilos.cabecalhoPainelLateral}><div className={estilos.iconePainel}><FolderOpen aria-hidden="true" /></div><div><p className={estilos.sobretituloPagina}>BIBLIOTECA</p><h2 id="titulo-biblioteca-materiais">Materiais</h2></div><FormularioMaterial identificadorModulo={modulo.identificador} moduloId={modulo.id} /></div>
+            <p className={estilos.resumoPainel}>{materiais.length ? `${materiais.length} material(is) neste módulo.` : "Seus arquivos, links e notas aparecerão aqui."}</p>
             {materiais.length === 0 ? <div className={estilos.estadoVazioLateral}><FileText aria-hidden="true" /><p>Nenhum material adicionado.</p><small>Use o botão “+” para inserir o primeiro.</small></div> : <div className={estilos.listaMateriais}>
               {materiais.map((material) => <details className={estilos.itemMaterial} key={material.id}>
-                <summary><span className={estilos.iconeMaterial}><FileText aria-hidden="true" /></span><span><strong>{material.titulo}</strong><small>{material.topicoNome} · {formatarFormato(material.formato)}</small></span></summary>
+                <summary><span className={estilos.iconeMaterial}><FileText aria-hidden="true" /></span><span><strong>{material.titulo}</strong><small>{formatarFormato(material.formato)}</small></span></summary>
                 <div className={estilos.detalheMaterial}>
                   <p>{material.descricao}</p><span className={estilos.tempoMaterial}>{material.minutosEstimados} min estimados</span>
                   {material.arquivo && <p className={estilos.metadadosArquivo}>{material.arquivo.nomeOriginal} · {formatarTamanho(material.arquivo.tamanhoBytes)}</p>}
                   {material.origem === "ARQUIVO" && <a className={estilos.abrirMaterial} href={`/api/materiais/${encodeURIComponent(material.id)}/arquivo`}><Download aria-hidden="true" />Baixar arquivo</a>}
+                  {material.origem === "ARQUIVO" && material.arquivo && <>
+                    <div className={estilos.estadoAnaliseMaterial} data-situacao={material.analise?.situacao ?? "NAO_SUPORTADA"}>
+                      <Sparkles aria-hidden="true" />
+                      <span>{material.analise?.situacao === "CONCLUIDA" ? "Análise concluída" : material.analise?.situacao === "PROCESSANDO" ? "Análise em andamento" : material.analise?.situacao === "FALHA" ? "Análise pendente de nova tentativa" : material.analise?.situacao === "PENDENTE" ? "Análise aguardando processamento" : "Formato armazenado sem análise"}</span>
+                    </div>
+                    {material.analise?.resumo && <details className={estilos.resultadoAnaliseMaterial}><summary>Ver análise do conteúdo</summary><p>{material.analise.resumo}</p>{material.analise.conteudoTruncado && <small>A análise usou somente a parte inicial devido ao limite de segurança.</small>}</details>}
+                    <AcoesArquivoMaterial materialId={material.id} podeAnalisar={["pdf", "txt", "docx", "csv", "xlsx", "png", "jpg", "jpeg", "webp", "gif"].includes(material.arquivo.extensaoNormalizada)} situacao={material.analise?.situacao ?? "NAO_SUPORTADA"} />
+                  </>}
                   {material.url && <a className={estilos.abrirMaterial} href={material.url} rel="noreferrer" target="_blank"><ExternalLink aria-hidden="true" />Abrir link</a>}
                   {material.conteudoTexto && <div className={estilos.textoMaterial}>{material.conteudoTexto}</div>}
                   <CronometroEstudo desafios={desafiosAtivos} recursoId={material.id} />
@@ -163,45 +159,50 @@ export default async function PaginaModulo({
         </aside>
 
         <div className={estilos.conteudoModulo}>
-          <section aria-labelledby="titulo-indicadores-modulo">
-            <div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretituloPagina}>VISÃO DO MÓDULO</p><h2 id="titulo-indicadores-modulo">Seu progresso em {modulo.titulo}</h2></div><p>Métricas locais da versão {metricas.versaoAlgoritmo}. Resultados observados não demonstram causa.</p></div>
-            <div className={estilos.gradeIndicadores}>
-              <article className={estilos.indicadorModulo}><span className={estilos.iconeIndicador}><Target aria-hidden="true" /></span><div><p>Taxa de acerto</p><strong>{formatarPorcentagem(metricas.taxaAcerto === null ? null : metricas.taxaAcerto * 100)}</strong><small>{metricas.quantidadeTentativas} avaliação(ões) concluída(s)</small></div></article>
-              <article className={estilos.indicadorModulo}><span className={`${estilos.iconeIndicador} ${estilos.iconeTempo}`}><Clock3 aria-hidden="true" /></span><div><p>Tempo estudado</p><strong>{formatarDuracao(metricas.tempoEstudo.minutosTotais)}</strong><small>{metricas.tempoEstudo.quantidadeSessoesValidas} sessão(ões) com ao menos 5 min</small></div></article>
-              <article className={`${estilos.indicadorModulo} ${classeDificuldade}`}><span className={`${estilos.iconeIndicador} ${estilos.iconeDificuldade}`}><Gauge aria-hidden="true" /></span><div><p>Dificuldade atual estimada</p><strong>{rotuloDificuldade(dificuldade.status)}</strong><small>{dificuldade.taxaReferencia === null ? "Sem avaliações suficientes" : `${formatarPorcentagem(dificuldade.taxaReferencia * 100)} nos ${dificuldade.quantidadePeriodos} período(s) recente(s)${dificuldade.amostraReduzida ? " · amostra reduzida" : ""}`}</small></div></article>
-            </div>
+          <section className={estilos.painelConceitos} aria-labelledby="titulo-conceitos-materiais">
+            <div><p className={estilos.sobretituloPagina}>MATERIAIS × SESSÕES</p><h2 id="titulo-conceitos-materiais">Conceitos observados</h2><p>Comparação textual entre conceitos extraídos dos materiais e descrições de sessões concluídas. Menção não representa domínio ou aprendizagem comprovada.</p></div>
+            {painelConceitos.comparacao.length ? <div className={estilos.gradeConceitos}>{painelConceitos.comparacao.map((item) => <article key={item.conceito}><strong>{item.conceito}</strong><span>{item.quantidadeSessoes ? `${item.quantidadeSessoes} sessão(ões) mencionam este conceito` : "Ainda não mencionado nas descrições"}</span></article>)}</div> : <div className={estilos.vazioConceitos}><Sparkles aria-hidden="true" /><p>Os conceitos aparecerão após a análise automática de um material compatível.</p></div>}
+            {painelConceitos.materiais.some((material) => material.situacao === "CONCLUIDA") && <details className={estilos.orientacoesConceitos}><summary>Ver sugestões baseadas nos materiais</summary>{painelConceitos.materiais.filter((material) => material.situacao === "CONCLUIDA").map((material) => <section key={material.id}><h3>{material.titulo}</h3>{material.pontosRevisao.map((texto) => <p key={texto}>{texto}</p>)}{material.proximasSessoes.map((texto) => <p key={texto}>{texto}</p>)}</section>)}</details>}
           </section>
-
-          <article className={estilos.cartaoGraficoPrincipal}>
-            <div className={estilos.cabecalhoGrafico}><div><p className={estilos.sobretituloPagina}>EVOLUÇÃO DAS AVALIAÇÕES</p><h2>Sua taxa média de acerto ao longo do tempo</h2><p>Média semanal das taxas dos tópicos que tiveram avaliações. Tópicos sem evidência não são tratados como zero.</p></div><span>{metricas.evolucaoTaxaMediaTopicos.quantidadePeriodosComEvidencia} período(s)</span></div>
-            <GraficoEvolucaoTopicos dados={pontosEvolucao} />
-          </article>
-
-          <section className={estilos.secaoTopicos} aria-labelledby="titulo-topicos">
-            <div className={estilos.cabecalhoTopicos}><div><p className={estilos.sobretituloPagina}>ORGANIZAÇÃO</p><h2 id="titulo-topicos">Tópicos</h2><p>Estruture os assuntos e acompanhe as avaliações de cada parte do módulo.</p></div><form action={criarRascunhoTopico}><input name="moduloId" type="hidden" value={modulo.id} /><input name="identificadorModulo" type="hidden" value={modulo.identificador} /><button aria-label="Adicionar tópico" className={estilos.botaoNovoTopico} title="Adicionar tópico" type="submit"><Plus aria-hidden="true" /></button></form></div>
-            {modulo.topicos.length === 0 ? <div className={estilos.estadoVazioTopicos}><BookOpenText aria-hidden="true" /><h3>Comece pelo primeiro tópico</h3><p>Use o botão “+” para criar e nomear uma parte deste módulo.</p></div> : <div className={estilos.listaTopicos}>
-              {modulo.topicos.map((topico) => {
-                const selecionado = parametros.topico === topico.identificador;
-                return <article className={`${estilos.cartaoTopico} ${topico.rascunho ? estilos.cartaoTopicoRascunho : ""}`} id={`topico-${topico.identificador}`} key={topico.id}>
-                  <EditorTopico descricao={topico.descricao} id={topico.id} identificadorModulo={modulo.identificador} inicialmenteEditando={selecionado} nome={topico.nome} rascunho={topico.rascunho} />
-                  <details className={estilos.acoesTopico}><summary><MoreHorizontal aria-hidden="true" /><span className={estilos.textoAcessivel}>Ações do tópico {topico.nome || "sem nome"}</span></summary><form action={arquivarTopico}><input name="id" type="hidden" value={topico.id} /><input name="identificadorModulo" type="hidden" value={modulo.identificador} /><button type="submit"><Archive aria-hidden="true" />{topico.rascunho ? "Descartar rascunho" : "Arquivar tópico"}</button></form></details>
-                  {topico.rascunho && !selecionado && <Link className={estilos.continuarRascunho} href={`/modulos/${encodeURIComponent(modulo.identificador)}?topico=${encodeURIComponent(topico.identificador)}`}>Continuar configuração</Link>}
-                  {!topico.rascunho && topico.avaliacoes.map((avaliacao) => <section className={estilos.avaliacaoTopico} key={avaliacao.id}><Quiz avaliacaoId={avaliacao.id} questoes={avaliacao.questoes.map((questao) => ({ id: questao.id, enunciado: questao.enunciado, opcoes: JSON.parse(questao.opcoesJson) as string[] }))} /></section>)}
-                </article>;
-              })}
-            </div>}
-          </section>
-
-          <section className={estilos.analisesComplementares} aria-labelledby="titulo-analises-complementares">
-            <div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretituloPagina}>CONTEXTO</p><h2 id="titulo-analises-complementares">Análises complementares</h2></div><p>Comparações descritivas com amostra e limitações preservadas.</p></div>
-            <PainelBloom niveis={analiseBloom.niveis} quantidadeNiveisComEvidencia={analiseBloom.quantidadeNiveisComEvidencia} quantidadeRespostasClassificadas={analiseBloom.quantidadeRespostasClassificadas} versaoAlgoritmo={analiseBloom.versaoAlgoritmo} />
-            <div className={estilos.gradeAnalises}>
-              <article className={estilos.cartaoAnalise}><h3>Desempenho por formato</h3><p>Somente exposições únicas e válidas entram nesta comparação.</p><GraficoDesempenhoContextual titulo="Média observada por formato" dados={metricas.desempenhoPorFormato.map((item) => ({ contexto: formatarFormato(item.chave), mediaNotas: item.mediaNotas, quantidadeEvidencias: item.quantidadeEvidencias }))} /></article>
-              <article className={estilos.cartaoAnalise}><h3>Desempenho por método</h3><p>O método foi registrado ao iniciar a sessão de estudo.</p><GraficoDesempenhoContextual titulo="Média observada por método" dados={metricas.desempenhoPorMetodo.map((item) => ({ contexto: formatarMetodoEstudo(item.chave), mediaNotas: item.mediaNotas, quantidadeEvidencias: item.quantidadeEvidencias }))} /></article>
-              <article className={estilos.cartaoAnalise}><h3>Percepção e resultado</h3><p>Uma associação observada não demonstra que a percepção causou a taxa.</p><GraficoPercepcaoResultado dados={metricas.percepcaoVersusResultado.observacoes.map((item) => ({ tentativa: item.numeroTentativa === null ? "Tentativa" : `Tentativa ${item.numeroTentativa}`, nota: item.nota, dificuldadePercebida: item.dificuldadePercebida, compreensaoPercebida: item.compreensaoPercebida }))} /></article>
-            </div>
-            <article className={estilos.resumoTopicos}><h3>Resumo por tópico</h3><p>Cada linha mantém seu contexto; ausência de avaliação não aparece como nota zero.</p><div className={estilos.tabelaResponsiva}><table><caption>Métricas oficiais por tópico deste módulo</caption><thead><tr><th scope="col">Tópico</th><th scope="col">Tentativas</th><th scope="col">Acerto</th><th scope="col">Tempo estudado</th><th scope="col">Amostra contextual</th></tr></thead><tbody>{metricas.metricasPorTopico.map((topico) => <tr key={topico.topicoId ?? "sem-topico"}><td>{topicosPorId.get(topico.topicoId ?? "") ?? "Tópico arquivado"}</td><td>{topico.quantidadeTentativas}</td><td>{formatarPorcentagem(topico.taxaAcerto === null ? null : topico.taxaAcerto * 100)}</td><td>{formatarDuracao(topico.tempoEstudo.minutosTotais)}</td><td>{topico.percepcaoVersusResultado.amostra}</td></tr>)}</tbody></table></div></article>
-          </section>
+          <PainelSessoes
+            agoraIso={new Date().toISOString()}
+            materiais={materiais.map((material) => ({ id: material.id, titulo: material.titulo }))}
+            moduloId={modulo.id}
+            sessoesIniciais={sessoes.map((sessao) => ({
+              id: sessao.id,
+              descricao: sessao.descricao,
+              modoRegistro: sessao.modoRegistro,
+              dificuldadePercebida: sessao.dificuldadePercebida,
+              compreensaoPercebida: sessao.compreensaoPercebida,
+              iniciadaEm: sessao.iniciadaEm.toISOString(),
+              encerradaEm: sessao.encerradaEm?.toISOString() ?? null,
+              duracaoMinutos: sessao.duracaoMinutos,
+              situacao: sessao.situacao,
+              arquivada: sessao.arquivada,
+              metodos: sessao.metodos,
+              formatos: sessao.formatos,
+              materiais: sessao.materiais.map((vinculo) => ({ recurso: { id: vinculo.recurso.id, titulo: vinculo.recurso.titulo } })),
+            }))}
+          />
+          <PainelMetricasSessoes
+            metricas={{
+              ...metricas,
+              frequencia: {
+                ...metricas.frequencia,
+                primeiraSessaoEm: metricas.frequencia.primeiraSessaoEm?.toISOString() ?? null,
+                ultimaSessaoEm: metricas.frequencia.ultimaSessaoEm?.toISOString() ?? null,
+              },
+              evolucaoSemanal: {
+                ...metricas.evolucaoSemanal,
+                pontos: metricas.evolucaoSemanal.pontos.map((ponto) => ({
+                  ...ponto,
+                  periodoInicio: ponto.periodoInicio.toISOString(),
+                  periodoFim: ponto.periodoFim.toISOString(),
+                })),
+              },
+            }}
+            tituloModulo={modulo.titulo}
+          />
         </div>
       </div>
     </main>

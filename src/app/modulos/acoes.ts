@@ -6,15 +6,11 @@ import { exigirUsuario } from "@/servidor/autenticacao";
 import {
   arquivarMaterialPessoal,
   arquivarModuloPessoal,
-  arquivarTopicoPessoal,
   atualizarMaterialPessoal,
   atualizarModuloPessoal,
-  atualizarTopicoPessoal,
   criarMaterialPessoal,
   criarModuloPessoal,
   criarRascunhoModuloPessoal,
-  criarRascunhoTopicoPessoal,
-  criarTopicoPessoal,
   ErroModulo,
 } from "@/servidor/modulos";
 
@@ -85,60 +81,6 @@ export async function arquivarModulo(formulario: FormData) {
   revalidatePath("/modulos");
   revalidatePath("/dashboard");
   redirect("/modulos?sucesso=arquivado");
-}
-
-export async function criarTopico(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoModulo(formulario.get("identificadorModulo"));
-  try {
-    await criarTopicoPessoal(usuario.id, objetoDoFormulario(formulario));
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoDeErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  revalidatePath("/modulos");
-  redirect(`${caminho}?sucesso=topico`);
-}
-
-export async function criarRascunhoTopico(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminhoRetorno = caminhoModulo(formulario.get("identificadorModulo"));
-  const moduloId = formulario.get("moduloId");
-  let topico;
-  try {
-    topico = await criarRascunhoTopicoPessoal(usuario.id, typeof moduloId === "string" ? moduloId : "");
-  } catch (erro) {
-    redirect(`${caminhoRetorno}?erro=${codigoDeErro(erro)}`);
-  }
-  const caminho = `/modulos/${encodeURIComponent(topico.identificadorModulo)}`;
-  revalidatePath(caminho);
-  redirect(`${caminho}?topico=${encodeURIComponent(topico.identificador)}`);
-}
-
-export async function atualizarTopico(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoModulo(formulario.get("identificadorModulo"));
-  const id = formulario.get("id");
-  try {
-    await atualizarTopicoPessoal(usuario.id, typeof id === "string" ? id : "", objetoDoFormulario(formulario));
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoDeErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  redirect(`${caminho}?sucesso=topico`);
-}
-
-export async function arquivarTopico(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoModulo(formulario.get("identificadorModulo"));
-  try {
-    await arquivarTopicoPessoal(usuario.id, objetoDoFormulario(formulario));
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoDeErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  revalidatePath("/modulos");
-  redirect(`${caminho}?sucesso=topico-arquivado`);
 }
 
 export async function criarMaterial(formulario: FormData) {

@@ -413,6 +413,7 @@
 }
 
 .conteudoMenuModulo button,
+.acaoEditarModulo,
 .acoesTopico button {
   display: inline-flex;
   align-items: center;
@@ -427,7 +428,22 @@
   cursor: pointer;
 }
 
+.conteudoMenuModulo form {
+  margin-top: 7px;
+}
+
+.acaoEditarModulo {
+  color: #5540bb;
+  background: #f1efff;
+}
+
+.acaoEditarModulo:hover {
+  color: #432ba9;
+  background: #e9e5ff;
+}
+
 .conteudoMenuModulo button svg,
+.acaoEditarModulo svg,
 .acoesTopico button svg {
   width: 15px;
   height: 15px;
@@ -1559,4 +1575,49 @@
   .botaoAdicionar {
     transition: none;
   }
+}
+.estadoAnaliseMaterial {
+  align-items: center;
+  background: #f4f7fb;
+  border-radius: 10px;
+  color: #516276;
+  display: flex;
+  font-size: .78rem;
+  gap: .45rem;
+  margin-top: .7rem;
+  padding: .55rem .7rem;
+}
+
+.estadoAnaliseMaterial svg { height: 1rem; width: 1rem; }
+.estadoAnaliseMaterial[data-situacao="CONCLUIDA"] { background: #edf8f1; color: #28734a; }
+.estadoAnaliseMaterial[data-situacao="FALHA"] { background: #fff7e8; color: #8a5a13; }
+.resultadoAnaliseMaterial { margin-top: .65rem; }
+.resultadoAnaliseMaterial summary { color: #466bc8; cursor: pointer; font-size: .82rem; font-weight: 700; }
+.resultadoAnaliseMaterial p { font-size: .84rem; line-height: 1.55; margin: .55rem 0; }
+
+.acoesArquivoMaterial { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .7rem; }
+.acoesArquivoMaterial button { align-items: center; background: transparent; border: 1px solid #d9e0ea; border-radius: 8px; color: #536274; cursor: pointer; display: inline-flex; font: inherit; font-size: .75rem; gap: .35rem; padding: .45rem .55rem; }
+.acoesArquivoMaterial button svg { height: .9rem; width: .9rem; }
+.acoesArquivoMaterial button:disabled { cursor: wait; opacity: .6; }
+.acoesArquivoMaterial .botaoExcluirMaterial { color: #a13f3f; }
+.acoesArquivoMaterial small { flex-basis: 100%; }
+
+.painelConceitos { background: #fff; border: 1px solid #e4e9f0; border-radius: 18px; margin-bottom: 1.25rem; padding: 1.25rem; }
+.painelConceitos h2 { margin: .15rem 0 .35rem; }
+.painelConceitos > div > p:last-child { color: #687587; line-height: 1.55; margin: 0; }
+.gradeConceitos { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 1rem; }
+.gradeConceitos article { background: #f7f9fc; border: 1px solid #e7ebf1; border-radius: 12px; display: grid; gap: .3rem; padding: .8rem; }
+.gradeConceitos strong { color: #26384d; }
+.gradeConceitos span { color: #667589; font-size: .78rem; line-height: 1.4; }
+.vazioConceitos { align-items: center; color: #748196; display: flex; gap: .7rem; margin-top: 1rem; }
+.vazioConceitos svg { flex: 0 0 auto; }
+.orientacoesConceitos { border-top: 1px solid #e7ebf1; margin-top: 1rem; padding-top: .8rem; }
+.orientacoesConceitos summary { color: #466bc8; cursor: pointer; font-weight: 700; }
+.orientacoesConceitos section { margin-top: .8rem; }
+.orientacoesConceitos h3 { font-size: .9rem; margin: 0 0 .4rem; }
+.orientacoesConceitos p { color: #667589; font-size: .82rem; margin: .3rem 0; }
+
+@media (max-width: 480px) {
+  .gradeConceitos { grid-template-columns: minmax(0, 1fr); }
+  .acoesArquivoMaterial button { width: 100%; }
 }

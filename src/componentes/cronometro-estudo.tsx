@@ -42,7 +42,7 @@ export function CronometroEstudo({ recursoId, desafios = [] }: { recursoId: stri
       definirDificuldadePercebida("");
       definirCompreensaoPercebida("");
       definirObservacao("");
-      definirMensagem(dados.situacao === "CONCLUIDA" ? `Sessão concluída: ${dados.duracaoMinutos} minuto(s) válido(s).` : "Sessão registrada como inválida por ter menos de 5 minutos.");
+      definirMensagem(dados.sessao?.situacao === "CONCLUIDA" ? `Sessão concluída: ${dados.sessao.duracaoMinutos} minuto(s) válido(s).` : "Sessão registrada como inválida por ter menos de 5 minutos.");
       roteador.refresh();
     } finally {
       definirProcessando(false);

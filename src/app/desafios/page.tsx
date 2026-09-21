@@ -16,7 +16,7 @@ import {
   Timer,
   UserRound,
 } from "lucide-react";
-import { formatarData, formatarPorcentagem } from "@/biblioteca/formatacao";
+import { formatarData } from "@/biblioteca/formatacao";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { formatarMetodoEstudo, METODOS_ESTUDO } from "@/dominio/sessoes/metodos";
 import { exigirUsuario } from "@/servidor/autenticacao";
@@ -47,6 +47,16 @@ function apresentacaoMetodo(metodo: string): { descricao: string; Icone: LucideI
 function textoPeriodo(inicio: Date | null, fim: Date | null) {
   if (!inicio || !fim) return "Período ainda indisponível";
   return `${formatarData(inicio)} a ${formatarData(fim)}`;
+}
+
+function formatarEscala(valor: number | null) {
+  return valor === null ? "—" : `${valor.toFixed(1).replace(".", ",")}/5`;
+}
+
+function formatarDiferenca(valor: number | null) {
+  if (valor === null) return "—";
+  const sinal = valor > 0 ? "+" : "";
+  return `${sinal}${valor.toFixed(1).replace(".", ",")} ponto(s)`;
 }
 
 export default async function PaginaDesafios({ searchParams }: { searchParams: Promise<{ erro?: string; sucesso?: string }> }) {
@@ -157,15 +167,15 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
                           {grupos.map(({ id, titulo, grupo }) => (
                             <div className={estilos.grupoComparacao} key={id}>
                               <div className={estilos.rotuloComparacao}>
-                                <span><strong>{titulo}</strong><small>{grupo.quantidadeEvidencias} evidência(s) · {grupo.nivelEvidencia.toLowerCase()}</small></span>
-                                <strong>{formatarPorcentagem(grupo.mediaNotas)}</strong>
+                                <span><strong>{titulo}</strong><small>{grupo.quantidadeSessoes} sessão(ões) · amostra {grupo.nivelAmostra.toLowerCase()}</small></span>
+                                <strong>{formatarEscala(grupo.mediaCompreensaoPercebida)}</strong>
                               </div>
-                              {grupo.mediaNotas === null ? (
-                                <div className={estilos.barraIndisponivel}><span>São necessárias duas evidências únicas</span></div>
+                              {grupo.mediaCompreensaoPercebida === null ? (
+                                <div className={estilos.barraIndisponivel}><span>São necessárias duas sessões válidas</span></div>
                               ) : (
-                                <progress aria-label={`${titulo}: ${formatarPorcentagem(grupo.mediaNotas)}`} max={100} value={grupo.mediaNotas}>{grupo.mediaNotas}%</progress>
+                                <progress aria-label={`${titulo}: compreensão percebida ${formatarEscala(grupo.mediaCompreensaoPercebida)}`} max={5} value={grupo.mediaCompreensaoPercebida}>{grupo.mediaCompreensaoPercebida} de 5</progress>
                               )}
-                              <small>{textoPeriodo(grupo.periodoInicio, grupo.periodoFim)}</small>
+                              <small>{grupo.minutosTotais} min no total · {textoPeriodo(grupo.periodoInicio, grupo.periodoFim)}</small>
                             </div>
                           ))}
                         </div>
@@ -173,8 +183,8 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
                         <div className={desafio.comparacao.comparavel ? estilos.resultadoComparavel : estilos.resultadoInsuficiente}>
                           <Target aria-hidden="true" />
                           <p>{desafio.comparacao.comparavel
-                            ? <><strong>Diferença observada: {formatarPorcentagem(desafio.comparacao.diferencaMedias)}.</strong> Ela descreve apenas estes registros e não demonstra efeito causal.</>
-                            : <><strong>Comparação ainda indisponível.</strong> São necessárias duas evidências únicas em cada grupo.</>}
+                            ? <><strong>Diferença observada na compreensão percebida: {formatarDiferenca(desafio.comparacao.diferencaCompreensaoPercebida)}.</strong> Ela descreve apenas estes registros e não demonstra efeito causal.</>
+                            : <><strong>Comparação ainda indisponível.</strong> São necessárias duas sessões válidas em cada grupo.</>}
                           </p>
                         </div>
 
@@ -183,10 +193,11 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
                           <div className={estilos.tabelaResponsiva}>
                             <table>
                               <caption>Comparação observacional do desafio e do mesmo contexto fora dele</caption>
-                              <thead><tr><th scope="col">Grupo</th><th scope="col">Evidências</th><th scope="col">Média observada</th><th scope="col">Período</th></tr></thead>
+                              <thead><tr><th scope="col">Grupo</th><th scope="col">Sessões</th><th scope="col">Tempo</th><th scope="col">Duração média</th><th scope="col">Dificuldade</th><th scope="col">Compreensão</th><th scope="col">Período</th></tr></thead>
                               <tbody>
-                                <tr><td>Desafio</td><td>{desafio.comparacao.desafio.quantidadeEvidencias} · {desafio.comparacao.desafio.nivelEvidencia.toLowerCase()}</td><td>{formatarPorcentagem(desafio.comparacao.desafio.mediaNotas)}</td><td>{textoPeriodo(desafio.comparacao.desafio.periodoInicio, desafio.comparacao.desafio.periodoFim)}</td></tr>
-                                <tr><td>Mesmo módulo e método, fora do desafio</td><td>{desafio.comparacao.contextoExterno.quantidadeEvidencias} · {desafio.comparacao.contextoExterno.nivelEvidencia.toLowerCase()}</td><td>{formatarPorcentagem(desafio.comparacao.contextoExterno.mediaNotas)}</td><td>{textoPeriodo(desafio.comparacao.contextoExterno.periodoInicio, desafio.comparacao.contextoExterno.periodoFim)}</td></tr>
+                                {[{ titulo: "Desafio", grupo: desafio.comparacao.desafio }, { titulo: "Mesmo módulo e método, fora do desafio", grupo: desafio.comparacao.contextoExterno }].map(({ titulo, grupo }) => (
+                                  <tr key={titulo}><td>{titulo}</td><td>{grupo.quantidadeSessoes} · {grupo.nivelAmostra.toLowerCase()}</td><td>{grupo.minutosTotais} min</td><td>{grupo.mediaDuracaoMinutos === null ? "—" : `${grupo.mediaDuracaoMinutos.toFixed(1).replace(".", ",")} min`}</td><td>{formatarEscala(grupo.mediaDificuldadePercebida)}</td><td>{formatarEscala(grupo.mediaCompreensaoPercebida)}</td><td>{textoPeriodo(grupo.periodoInicio, grupo.periodoFim)}</td></tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>
@@ -204,7 +215,7 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
                 <div className={estilos.iconeCriacao}><FlaskConical aria-hidden="true" /></div>
                 <p className={estilos.sobretitulo}>NOVO EXPERIMENTO</p>
                 <h2 id="titulo-novo-desafio">Criar desafio</h2>
-                <p>A meta é pessoal e descritiva; ela não altera métricas nem avaliações.</p>
+                <p>A meta é pessoal e descritiva; ela não altera sessões nem métricas.</p>
                 <form action={criarDesafio} className={estilos.formularioCadastro}>
                   <div className={estilos.campoFormulario}>
                     <label htmlFor="moduloId">Módulo</label>
@@ -221,7 +232,7 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
                   </div>
                   <div className={estilos.campoFormulario}>
                     <label htmlFor="meta">Meta do desafio</label>
-                    <textarea aria-describedby="ajuda-meta" id="meta" maxLength={280} minLength={3} name="meta" placeholder="Ex.: Explicar o conteúdo com minhas próprias palavras antes de avaliar." required rows={4} />
+                    <textarea aria-describedby="ajuda-meta" id="meta" maxLength={280} minLength={3} name="meta" placeholder="Ex.: Explicar o conteúdo com minhas próprias palavras ao final da sessão." required rows={4} />
                     <small id="ajuda-meta">De 3 a 280 caracteres. Não inclua dados pessoais.</small>
                   </div>
                   <BotaoCriarDesafio desabilitado={modulosConfigurados.length === 0} />
@@ -231,7 +242,7 @@ export default async function PaginaDesafios({ searchParams }: { searchParams: P
 
               <section className={estilos.avisoResponsavel} aria-labelledby="titulo-leitura-responsavel">
                 <span><ShieldCheck aria-hidden="true" /></span>
-                <div><h2 id="titulo-leitura-responsavel">Leitura responsável</h2><p>Comparar registros não prova que um método causou o resultado. Só há diferença quando os dois grupos possuem ao menos duas evidências únicas.</p></div>
+                <div><h2 id="titulo-leitura-responsavel">Leitura responsável</h2><p>Comparar sessões não prova que um método causou o resultado. Só há diferença quando os dois grupos possuem ao menos duas sessões válidas.</p></div>
               </section>
 
               <section className={estilos.comoFunciona} aria-labelledby="titulo-como-funciona">

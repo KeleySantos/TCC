@@ -1,38 +1,33 @@
 # Learning Lab
 
-Aplicação local para demonstração acadêmica de Learning Analytics. Cada conta pessoal organiza módulos, tópicos e materiais, registra sessões de estudo, conclui avaliações e consulta indicadores explicáveis.
+Aplicação local para demonstração acadêmica de um laboratório pessoal de aprendizagem. Cada conta organiza módulos e materiais, registra sessões, observa métricas descritivas e pode receber interpretações com IA.
 
-> O banco contém apenas dados sintéticos. Indicadores e interpretações descrevem registros observados; não comprovam causalidade, não definem estilos de aprendizagem e não constituem diagnóstico.
+> O cenário contém somente dados sintéticos. Indicadores e interpretações descrevem registros observados; não atribuem nota, não comprovam aprendizagem ou causalidade e não definem estilos fixos.
 
-## Recursos das Entregas A e B
+## Recursos atuais
 
-- Conta pessoal autenticada, sem papéis de produto.
-- CRUD de módulos, tópicos e materiais textuais ou com link HTTP(S).
-- Sessões com método, duração calculada no servidor e autoavaliação de dificuldade e compreensão.
-- Quiz corrigido no servidor, com tentativas sequenciais, acertos e nota de 0 a 100.
-- Catálogo controlado de métodos, desafios pessoais canceláveis e vínculo explícito entre desafio e sessão.
-- Comparação observacional de desafio no mesmo módulo e método, com amostra e limitação explícitas.
-- Análise de taxa por nível de Bloom a partir de respostas classificadas, acompanhada de gráfico e tabela.
-- Métricas locais e versionadas por módulo/tópico: acerto, tempo, evolução, método, formato e percepção versus resultado.
-- Painéis com gráficos e tabelas equivalentes, incluindo limites de amostra e exposição mista.
-- Interpretação opcional por Gemini de um resumo agregado; sem chave ou em falha externa, resposta local de contingência.
+- módulos pessoais com materiais de texto, link ou arquivo;
+- sessões manuais, planejadas ou por cronômetro, com vários métodos e formatos;
+- métricas versionadas de tempo, frequência, percepções, métodos e formatos;
+- desafios pessoais com comparação observacional;
+- fila opcional de IA Groq → Gemini → Qwen, com credenciais próprias cifradas e contingência local;
+- salas que agregam dashboards pessoais autorizados sem compartilhar materiais ou sessões;
+- análise automática de PDF, TXT, DOCX, CSV, XLSX e imagens;
+- conceitos persistidos e comparados às descrições das sessões, sem inferir domínio;
+- substituição e exclusão permanente de arquivos com limpeza física controlada.
 
-## Pré-requisitos
+Áudio e vídeo podem ser armazenados e baixados, mas ainda não são transcritos ou analisados.
 
-- Node.js portátil `22.23.2` usado neste ambiente (Node 24 recompila o driver SQLite nativo de modo incompatível).
-- npm compatível com esse Node.
+## Pré-requisitos e execução
 
-## Instalação e execução
-
-No PowerShell, dentro do projeto:
+- Node.js 22.23.2;
+- npm compatível com essa versão.
 
 ```powershell
 Copy-Item .env.example .env
-$pastaNodePortatil = Join-Path $env:TEMP 'codex-node-v22.23.2\node-v22.23.2-win-x64'
-$env:PATH = "$pastaNodePortatil;$env:PATH"
-& (Join-Path $pastaNodePortatil 'npm.cmd') ci
-& (Join-Path $pastaNodePortatil 'npm.cmd') run banco:reiniciar
-& (Join-Path $pastaNodePortatil 'npm.cmd') run desenvolver
+npm ci
+npm run banco:reiniciar
+npm run desenvolver
 ```
 
 Abra [http://localhost:3000/entrar](http://localhost:3000/entrar).
@@ -43,50 +38,41 @@ Abra [http://localhost:3000/entrar](http://localhost:3000/entrar).
 |---|---|---|
 | Ana, Bruno, Carla, Diego ou Elisa | `ana.souza`, `bruno.lima`, `carla.rocha`, `diego.alves`, `elisa.martins` | `Laboratorio@2026` |
 
-As contas funcionam somente no banco local sintético e não devem ser reutilizadas fora da demonstração.
+## IA e privacidade
 
-## Interpretação por Gemini
+As chaves são configuradas em `/configuracoes/ia`, cifradas no servidor e nunca devolvidas à interface. `.env`, banco, arquivos locais e segredos ficam fora do Git.
 
-Por padrão, `GEMINI_API_KEY` fica vazia e o botão de interpretação devolve uma resposta local baseada nas mesmas métricas. Para habilitar Gemini, configure em `.env` — nunca versionar a chave:
+Após um upload compatível, o arquivo é salvo antes da análise. O texto é extraído localmente, limitado a 60.000 caracteres e descartado após o processamento. Somente o resultado compacto — resumo, conceitos e sugestões — permanece no banco. Sem chave ou diante de indisponibilidade externa, a contingência local mantém o dashboard funcional.
 
-```dotenv
-GEMINI_API_KEY="sua-chave"
-GEMINI_MODEL="gemini-2.5-flash"
-```
+O processamento externo é limitado a dez materiais por conta a cada hora. Conteúdo maior é truncado com indicação na interface. Áudio, vídeo e formatos legados não analisáveis permanecem disponíveis sem entrar nessa fila.
 
-O provedor recebe somente um DTO agregado, sem nome, identificador interno, respostas do quiz ou observações livres. Há tempo limite de sete segundos e máximo de cinco solicitações por conta a cada hora; qualquer indisponibilidade retorna a contingência local.
+## Armazenamento de arquivos
 
-## Comandos
+- binários ficam em `.dados/arquivos-materiais`, fora de `public/` e do Git;
+- upload valida nome, extensão, MIME, assinatura e tamanho;
+- download exige autenticação e propriedade;
+- substituição invalida a análise anterior e remove o binário substituído;
+- exclusão permanente remove vínculos opcionais com sessões, metadados, análise e arquivo físico;
+- arquivamento é reversível e preserva o binário.
+
+## Comandos principais
 
 | Comando | Finalidade |
 |---|---|
 | `npm run desenvolver` | Inicia o servidor local. |
 | `npm run compilar` | Gera a compilação de produção. |
-| `npm run verificar-estilo` / `npm run verificar-tipos` | Executa lint e tipos. |
-| `npm run testar` | Executa testes unitários, inclusive analytics e IA. |
-| `npm run testar:servicos` | Confere CRUD e isolamento dos módulos. |
-| `npm run testar:sessoes` | Confere duração, contexto e histórico de sessão. |
-| `npm run testar:avaliacoes` | Confere notas, sequência e isolamento de avaliações. |
-| `npm run testar:metricas` | Confere os perfis sintéticos A–E. |
-| `npm run testar:desafios` | Confere validação, propriedade, vínculo de sessão e cancelamento de desafios. |
-| `npm run testar:integracao` | Confere APIs com o servidor local em execução. |
+| `npm run testar` | Executa testes unitários. |
+| `npm run testar:analises-materiais` | Valida análise, conceitos, autorização, substituição e exclusão. |
+| `npm run testar:arquivos` | Valida categorias, assinaturas, limites e limpeza dos arquivos. |
+| `npm run testar:integracao` | Valida as APIs com o servidor local ativo. |
 | `npm run banco:reiniciar` | Recria o banco sintético aplicando todas as migrações. |
-| `npm run banco:verificar-cenario` | Confere as contagens e expectativas do cenário. |
-| `npm run validar` | Executa lint, tipos, testes unitários e build. |
-
-## Limitações
-
-- Não há dados reais, usuários de produção ou avaliação com participantes.
-- Sessões inválidas permanecem no histórico, mas não entram nas métricas oficiais.
-- Exposição a mais de um material antes de uma tentativa não é atribuída a um único formato ou método.
-- Recorrência exige dados de dois ou mais módulos e nunca vira um rótulo permanente.
-- Gemini interpreta os indicadores; não calcula métricas, não corrige respostas, não altera banco e não decide permissões.
+| `npm run validar` | Executa scanner de segredos, lint, tipos, testes e build. |
 
 ## Estrutura
 
-- `src/dominio/`: regras puras de analytics, recomendações e interpretação.
-- `src/servidor/`: autenticação, serviços, métricas e adaptadores externos.
-- `src/app/`: páginas, ações e APIs do Next.js.
-- `prisma/`: schema, migrações e cenário sintético.
-- `scripts/`: reinicialização e verificações locais.
-- `AiFiles/`: decisões, plano, contexto e rastreabilidade.
+- `src/dominio/`: métricas e regras puras;
+- `src/servidor/`: autorização, extração, serviços e adaptadores externos;
+- `src/app/`: páginas, ações e APIs do Next.js;
+- `prisma/`: schema, migrações e cenário sintético;
+- `scripts/`: verificações locais;
+- `AiFiles/`: planejamento, decisões e rastreabilidade.

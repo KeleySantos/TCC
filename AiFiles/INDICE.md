@@ -49,6 +49,10 @@ AiFiles/
 │   ├── HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md
 │   ├── HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md
 │   ├── HANDOFF_GUANABARA_RASCUNHO_MODULOS.md
+│   ├── ORDEM_IMPLEMENTACAO_MODULOS_SESSOES.md
+│   ├── DECISOES_FUNCIONAIS_MODULOS_SESSOES.md
+│   ├── FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md
+│   ├── FASE_13_DASHBOARDS_SALAS.md
 │   └── PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md
 └── RELATORIOS/
     ├── PESQUISA_ARQUITETURA_CONTEXTO_IA.md
@@ -68,6 +72,10 @@ AiFiles/
 | Revisar desafios para experimentação guiada de métodos | [`Planos/HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md`](Planos/HANDOFF_GUANABARA_EXPERIMENTACAO_GUIADA_METODOS.md) | handoff original da Entrega B, modelo de dados, contratos, IA, protocolo e matriz |
 | Implementar infraestrutura da página interna do módulo | [`Planos/HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md`](Planos/HANDOFF_GUANABARA_PAGINA_INTERNA_MODULO.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos, protocolo de medição e matriz |
 | Implementar criação de módulos em rascunho | [`Planos/HANDOFF_GUANABARA_RASCUNHO_MODULOS.md`](Planos/HANDOFF_GUANABARA_RASCUNHO_MODULOS.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos e matriz |
+| Redefinir módulos em torno de sessões | [`Planos/ORDEM_IMPLEMENTACAO_MODULOS_SESSOES.md`](Planos/ORDEM_IMPLEMENTACAO_MODULOS_SESSOES.md) | [`Planos/DECISOES_FUNCIONAIS_MODULOS_SESSOES.md`](Planos/DECISOES_FUNCIONAIS_MODULOS_SESSOES.md), modelo de dados, contratos, protocolo, decisões e matriz |
+| Implementar compartilhamento seguro para salas | [`Planos/FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md`](Planos/FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos, privacidade, decisões e matriz |
+| Implementar dashboards das salas | [`Planos/FASE_13_DASHBOARDS_SALAS.md`](Planos/FASE_13_DASHBOARDS_SALAS.md) | fundação da Fase 12, métricas de sessões, IA, privacidade e matriz |
+| Implementar análise automática de materiais | [`Planos/FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md`](Planos/FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md) | materiais, extração local, IA, sessões, privacidade e matriz |
 | Implementar ou validar requisito | [`Memoria/MATRIZ_REQUISITOS_TESTES.md`](Memoria/MATRIZ_REQUISITOS_TESTES.md) | requisito, arquitetura e contrato específicos |
 | Alterar arquitetura ou camadas | [`Contexto/Tecnico/ARQUITETURA.md`](Contexto/Tecnico/ARQUITETURA.md) | [`Contexto/Tecnico/MODELO_DE_DADOS.md`](Contexto/Tecnico/MODELO_DE_DADOS.md), [`Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md`](Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md) |
 | Alterar banco, seed ou eventos | [`Contexto/Tecnico/MODELO_DE_DADOS.md`](Contexto/Tecnico/MODELO_DE_DADOS.md) | [`Contexto/Tecnico/DICIONARIO_DE_EVENTOS.md`](Contexto/Tecnico/DICIONARIO_DE_EVENTOS.md), [`Contexto/Tecnico/CENARIO_SINTETICO_E_RESULTADOS_ESPERADOS.md`](Contexto/Tecnico/CENARIO_SINTETICO_E_RESULTADOS_ESPERADOS.md) e decisões |

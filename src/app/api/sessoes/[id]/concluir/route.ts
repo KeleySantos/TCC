@@ -1,23 +1,19 @@
 import { NextResponse } from "next/server";
 import { autorizarUsuarioNaApi } from "@/servidor/autorizacao";
 import { obterUsuarioAtual } from "@/servidor/autenticacao";
-import { ErroSessao, concluirSessaoPessoal } from "@/servidor/sessoes";
+import { concluirSessaoPessoal } from "@/servidor/sessoes";
+import { lerJson, respostaErroSessao } from "../../respostas";
 
 export async function POST(requisicao: Request, contexto: { params: Promise<{ id: string }> }) {
   const acesso = autorizarUsuarioNaApi(await obterUsuarioAtual());
   if (!acesso.permitido) return NextResponse.json({ erro: acesso.erro }, { status: acesso.status });
   const { id } = await contexto.params;
-  let corpo: unknown;
+  const leitura = await lerJson(requisicao);
+  if (!leitura.valido) return NextResponse.json({ erro: "Autoavaliação inválida." }, { status: 400 });
   try {
-    corpo = await requisicao.json();
-  } catch {
-    return NextResponse.json({ erro: "Autoavaliação inválida." }, { status: 400 });
-  }
-  try {
-    const sessao = await concluirSessaoPessoal(acesso.usuario.id, id, corpo);
-    return NextResponse.json({ situacao: sessao.situacao, duracaoMinutos: sessao.duracaoMinutos });
+    const sessao = await concluirSessaoPessoal(acesso.usuario.id, id, leitura.corpo);
+    return NextResponse.json({ sessao });
   } catch (erro) {
-    if (erro instanceof ErroSessao && erro.codigo === "NAO_ENCONTRADA") return NextResponse.json({ erro: "Sessão ativa não encontrada." }, { status: 404 });
-    return NextResponse.json({ erro: "Autoavaliação inválida." }, { status: 400 });
+    return respostaErroSessao(erro);
   }
 }

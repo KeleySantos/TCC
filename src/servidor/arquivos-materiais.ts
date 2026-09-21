@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { FormatoConteudo } from "@/gerado/prisma/enums";
 
@@ -143,4 +143,19 @@ export async function lerArquivoMaterial(chaveArmazenamento: string) {
 
 export async function removerArquivoMaterial(chaveArmazenamento: string) {
   await rm(caminhoSeguro(chaveArmazenamento), { force: true });
+}
+
+export async function prepararRemocaoArquivoMaterial(chaveArmazenamento: string) {
+  const origem = caminhoSeguro(chaveArmazenamento);
+  const temporario = `${origem}.remocao-${randomUUID()}`;
+  try {
+    await rename(origem, temporario);
+  } catch (erro) {
+    if (erro && typeof erro === "object" && "code" in erro && erro.code === "ENOENT") return null;
+    throw erro;
+  }
+  return {
+    confirmar: () => rm(temporario, { force: true }),
+    restaurar: () => rename(temporario, origem),
+  };
 }

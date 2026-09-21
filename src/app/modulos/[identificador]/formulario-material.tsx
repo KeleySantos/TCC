@@ -8,7 +8,6 @@ import { criarMaterial } from "../acoes";
 import estilos from "./page.module.css";
 
 type OrigemFormulario = "ARQUIVO" | "LINK" | "TEXTO";
-type TopicoMaterial = { id: string; nome: string };
 
 const FORMATOS_LINK = [
   ["TEXTO", "Página ou artigo"],
@@ -25,14 +24,8 @@ function BotaoAdicionar() {
   return <button className={estilos.botaoPrimario} disabled={pending} type="submit">{pending ? "Adicionando..." : "Adicionar material"}</button>;
 }
 
-function CamposComuns({ topicos }: { topicos: TopicoMaterial[] }) {
+function CamposComuns() {
   return <>
-    <div className={estilos.campo}>
-      <label htmlFor="topico-novo-material">Tópico</label>
-      <select defaultValue={topicos[0]?.id} id="topico-novo-material" name="topicoId" required>
-        {topicos.map((topico) => <option key={topico.id} value={topico.id}>{topico.nome}</option>)}
-      </select>
-    </div>
     <div className={estilos.campo}>
       <label htmlFor="titulo-novo-material">Nome do material</label>
       <input autoFocus id="titulo-novo-material" maxLength={120} minLength={3} name="titulo" placeholder="Ex.: Resumo da aula 3" required type="text" />
@@ -50,18 +43,18 @@ function CamposComuns({ topicos }: { topicos: TopicoMaterial[] }) {
 
 function mensagemUpload(codigo: string | null, status: number) {
   if (status === 413) return "O arquivo excede o limite permitido.";
-  if (codigo === "IDENTIFICADOR_DUPLICADO") return "Já existe um material com esse nome no tópico.";
+  if (codigo === "IDENTIFICADOR_DUPLICADO") return "Já existe um material com esse nome no módulo.";
   if (codigo === "ARQUIVO_INVALIDO") return "O tipo, o conteúdo ou o tamanho do arquivo não é permitido.";
-  if (codigo === "NAO_ENCONTRADO") return "O tópico não está mais disponível.";
+  if (codigo === "NAO_ENCONTRADO") return "O módulo não está mais disponível.";
   return "Não foi possível armazenar o arquivo. Tente novamente.";
 }
 
 export function FormularioMaterial({
   identificadorModulo,
-  topicos,
+  moduloId,
 }: {
   identificadorModulo: string;
-  topicos: TopicoMaterial[];
+  moduloId: string;
 }) {
   const roteador = useRouter();
   const [aberto, definirAberto] = useState(false);
@@ -82,9 +75,13 @@ export function FormularioMaterial({
         definirMensagem({ tipo: "erro", texto: mensagemUpload(codigo, resposta.status) });
         return;
       }
+      const sucesso = corpo && typeof corpo === "object" ? corpo as { material?: { id?: unknown }; analisar?: unknown } : {};
       formulario.reset();
-      definirMensagem({ tipo: "sucesso", texto: "Arquivo adicionado ao módulo." });
+      definirMensagem({ tipo: "sucesso", texto: sucesso.analisar ? "Arquivo adicionado. A análise automática foi iniciada." : "Arquivo adicionado ao módulo; este formato não recebe análise nesta fase." });
       roteador.refresh();
+      if (sucesso.analisar && typeof sucesso.material?.id === "string") {
+        void fetch(`/api/materiais/${encodeURIComponent(sucesso.material.id)}/analise`, { method: "POST" }).finally(() => roteador.refresh());
+      }
     } catch {
       definirMensagem({ tipo: "erro", texto: "A conexão falhou durante o envio do arquivo." });
     } finally {
@@ -98,9 +95,8 @@ export function FormularioMaterial({
       aria-expanded={aberto}
       aria-label={aberto ? "Fechar inclusão de material" : "Adicionar material"}
       className={estilos.botaoAdicionar}
-      disabled={topicos.length === 0}
       onClick={() => { definirAberto((estado) => !estado); definirMensagem(null); }}
-      title={topicos.length ? "Adicionar material" : "Crie um tópico antes de adicionar materiais"}
+      title="Adicionar material"
       type="button"
     >
       {aberto ? <X aria-hidden="true" /> : <Plus aria-hidden="true" />}
@@ -116,7 +112,8 @@ export function FormularioMaterial({
       </div>
 
       {origem === "ARQUIVO" ? <form className={estilos.formularioMaterial} encType="multipart/form-data" onSubmit={enviarArquivo}>
-        <CamposComuns topicos={topicos} />
+        <input name="moduloId" type="hidden" value={moduloId} />
+        <CamposComuns />
         <div className={estilos.campo}>
           <label htmlFor="arquivo-novo-material">Selecionar arquivo</label>
           <input accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.mov" id="arquivo-novo-material" name="arquivo" required type="file" />
@@ -125,7 +122,8 @@ export function FormularioMaterial({
         <button className={estilos.botaoPrimario} disabled={processando} type="submit">{processando ? "Enviando..." : "Enviar arquivo"}</button>
       </form> : <form action={criarMaterial} className={estilos.formularioMaterial}>
         <input name="identificadorModulo" type="hidden" value={identificadorModulo} />
-        <CamposComuns topicos={topicos} />
+        <input name="moduloId" type="hidden" value={moduloId} />
+        <CamposComuns />
         {origem === "LINK" ? <>
           <input name="conteudoTexto" type="hidden" value="" />
           <div className={estilos.campo}>

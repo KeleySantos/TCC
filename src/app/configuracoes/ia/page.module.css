@@ -1,0 +1,36 @@
+.pagina { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 46px 0 70px; color: #202044; }
+.cabecalho { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.cabecalho p { margin: 0 0 8px; color: #6b4de7; font-size: .72rem; font-weight: 850; letter-spacing: .13em; }
+.cabecalho h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); letter-spacing: -.05em; }
+.cabecalho span { display: block; margin-top: 9px; color: #666681; }
+.seloSeguro { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #dcd6ff; border-radius: 999px; color: #5039c2; background: #f7f4ff; font-size: .78rem; font-weight: 800; }
+.seloSeguro svg { width: 18px; }
+.avisoSeguranca { display: flex; gap: 16px; padding: 22px; margin: 24px 0; border: 1px solid #dfe7de; border-radius: 18px; background: #f7fbf6; }
+.avisoSeguranca > svg { width: 28px; height: 28px; flex: 0 0 auto; color: #347744; }
+.avisoSeguranca h2, .contingencia h2 { margin: 0; font-size: 1rem; }
+.avisoSeguranca p, .avisoSeguranca strong, .contingencia p { display: block; margin: 7px 0 0; color: #5e625d; font-size: .82rem; line-height: 1.55; }
+.avisoSeguranca strong { color: #7a4a23; }
+.lista { display: grid; gap: 18px; }
+.provedor { padding: 24px; border: 1px solid #e5e2f2; border-radius: 20px; background: #fff; box-shadow: 0 12px 32px rgb(31 26 80 / 6%); }
+.provedor > header { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; }
+.prioridade { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; color: #fff; background: #6847ef; font-weight: 900; }
+.provedor h2 { margin: 0; font-size: 1.1rem; }
+.provedor header p { margin: 4px 0 0; color: #77738c; font-family: Consolas, monospace; font-size: .74rem; }
+.provedor > p { margin: 18px 0; color: #66627b; font-size: .84rem; }
+.estado { padding: 7px 10px; border-radius: 999px; color: #6f6b7c; background: #f1f0f5; font-size: .7rem; font-weight: 850; }
+.estado.ativo { color: #276b3b; background: #eaf7ed; }
+.detalhes { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; color: #77738c; font-size: .76rem; }
+.detalhes span { display: flex; align-items: center; gap: 6px; }
+.detalhes svg { width: 16px; }
+.formularioChave label { display: block; margin-bottom: 7px; font-size: .78rem; font-weight: 800; }
+.formularioChave > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.formularioChave input { min-width: 0; padding: 12px 13px; border: 1px solid #d9d5e8; border-radius: 11px; font: inherit; }
+.provedor button, .contingencia button { min-height: 42px; padding: 10px 14px; border: 0; border-radius: 11px; color: #fff; background: #6044dc; font-size: .78rem; font-weight: 800; cursor: pointer; }
+.provedor button:disabled, .contingencia button:disabled { opacity: .6; cursor: wait; }
+.acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.acoes button { color: #4b3bac; background: #f0edff; }
+.acoes .remover { color: #a23d3d; background: #fff0f0; }
+.contingencia { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding: 22px; margin-top: 22px; border: 1px dashed #ccc6e6; border-radius: 18px; background: #fbfaff; }
+.contingencia > div { display: flex; align-items: flex-start; gap: 13px; }
+.contingencia svg { width: 23px; color: #6551bd; }
+@media (max-width: 700px) { .pagina { width: min(100% - 28px, 1180px); padding-top: 28px; } .cabecalho { align-items: flex-start; flex-direction: column; } .provedor { padding: 18px; } .provedor > header { grid-template-columns: 40px minmax(0, 1fr); } .estado { grid-column: 1 / -1; width: max-content; } .formularioChave > div { grid-template-columns: 1fr; } .contingencia { align-items: stretch; flex-direction: column; } .contingencia button { width: 100%; } }
