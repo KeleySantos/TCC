@@ -6,6 +6,19 @@ export function normalizarNomeUsuario(nomeUsuario: string) {
   return nomeUsuario.trim().toLowerCase();
 }
 
+export function normalizarIdentificadorConta(valor: string) {
+  return valor
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, ".")
+    .replace(/\.{2,}/g, ".")
+    .replace(/^[._-]+|[._-]+$/g, "")
+    .slice(0, 40)
+    .replace(/[._-]+$/g, "");
+}
+
 export function criarHashSenha(senha: string) {
   const sal = randomBytes(16).toString("hex");
   const derivada = scryptSync(senha, sal, TAMANHO_CHAVE).toString("hex");

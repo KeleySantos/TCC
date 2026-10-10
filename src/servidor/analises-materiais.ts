@@ -1,22 +1,13 @@
 import { createHash } from "node:crypto";
-import { compararConceitosComSessoes } from "@/dominio/analises/analise-material";
+import { compararConceitosComSessoes, lerListaJson } from "@/dominio/analises/analise-material";
 import { prisma } from "@/biblioteca/prisma";
 import { EXTENSOES_ANALISAVEIS, extrairTextoMaterial } from "./extracao-materiais";
 import { analisarTextoMaterial } from "./ia/analise-materiais";
 import { criarChaveArmazenamentoArquivo, gravarArquivoMaterial, lerArquivoMaterial, prepararRemocaoArquivoMaterial, removerArquivoMaterial, validarArquivoMaterial } from "./arquivos-materiais";
 import { ErroModulo } from "./modulos";
+import { criarRascunhoEvidenciaDoMaterial, sincronizarConceitosMaterial } from "./aprendizagem-modulo";
 
 const VERSAO_ANALISE = "analise-material-v1";
-
-function listaJson(valor: string | null | undefined) {
-  if (!valor) return [] as string[];
-  try {
-    const dados = JSON.parse(valor) as unknown;
-    return Array.isArray(dados) ? dados.filter((item): item is string => typeof item === "string") : [];
-  } catch {
-    return [];
-  }
-}
 
 export function extensaoAnalisavel(extensao: string) {
   return EXTENSOES_ANALISAVEIS.has(extensao.toLowerCase());
@@ -29,7 +20,7 @@ export function dadosIniciaisAnalise(extensao: string) {
 export async function processarAnaliseMaterial(usuarioId: string, recursoId: string, opcoes: { credenciais?: [] } = {}) {
   const material = await prisma.recursoConteudo.findFirst({
     where: { id: recursoId, ativo: true, origem: "ARQUIVO", modulo: { usuarioId, arquivado: false, rascunho: false } },
-    select: { id: true, arquivo: true, analise: true },
+    select: { id: true, funcao: true, arquivo: true, analise: true },
   });
   if (!material?.arquivo) throw new ErroModulo("NAO_ENCONTRADO");
   if (!extensaoAnalisavel(material.arquivo.extensaoNormalizada)) {
@@ -48,7 +39,13 @@ export async function processarAnaliseMaterial(usuarioId: string, recursoId: str
     if (!extracao) throw new Error("FORMATO_NAO_SUPORTADO");
     const resultado = await analisarTextoMaterial(usuarioId, extracao.texto, extracao.conteudoTruncado, opcoes);
     const hashConteudo = createHash("sha256").update(bytes).digest("hex");
-    return prisma.analiseMaterial.update({
+    const trechosConceitos = resultado.conceitos.map((conceito) => {
+      const indice = extracao.texto.toLocaleLowerCase("pt-BR").indexOf(conceito.toLocaleLowerCase("pt-BR"));
+      return { conceito, trecho: indice < 0 ? "" : extracao.texto.slice(Math.max(0, indice - 120), indice + conceito.length + 220).trim() };
+    });
+    const afirmacoes = material.funcao === "ANOTACAO" ? extracao.texto.split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter((item) => item.length >= 20).slice(0, 12) : [];
+    const interpretacaoVisual = material.funcao === "EVIDENCIA_VISUAL" ? resultado.pontosRevisao : [];
+    const analise = await prisma.analiseMaterial.update({
       where: { recursoId },
       data: {
         situacao: "CONCLUIDA",
@@ -59,6 +56,9 @@ export async function processarAnaliseMaterial(usuarioId: string, recursoId: str
         metodosSugeridosJson: JSON.stringify(resultado.metodosSugeridos),
         proximasSessoesJson: JSON.stringify(resultado.proximasSessoes),
         perguntasReflexaoJson: JSON.stringify(resultado.perguntasReflexao),
+        trechosConceitosJson: JSON.stringify(trechosConceitos),
+        afirmacoesJson: JSON.stringify(afirmacoes),
+        interpretacaoVisualJson: JSON.stringify(interpretacaoVisual),
         origem: resultado.origem,
         modelo: resultado.modelo,
         caracteresExtraidos: extracao.caracteresExtraidos,
@@ -68,6 +68,9 @@ export async function processarAnaliseMaterial(usuarioId: string, recursoId: str
         analisadaEm: new Date(),
       },
     });
+    await sincronizarConceitosMaterial(usuarioId, recursoId, resultado.conceitos);
+    await criarRascunhoEvidenciaDoMaterial(usuarioId, recursoId, extracao.texto, resultado.conceitos);
+    return analise;
   } catch (erro) {
     const codigo = erro instanceof Error && /^[A-Z0-9_]+$/.test(erro.message) ? erro.message.slice(0, 60) : "FALHA_PROCESSAMENTO";
     await prisma.analiseMaterial.update({ where: { recursoId }, data: { situacao: "FALHA", codigoFalha: codigo } });
@@ -89,11 +92,11 @@ export async function obterPainelConceitosModulo(usuarioId: string, moduloId: st
     titulo: material.titulo,
     situacao: material.analise?.situacao ?? "NAO_SUPORTADA",
     resumo: material.analise?.resumo ?? null,
-    conceitos: listaJson(material.analise?.conceitosJson),
-    pontosRevisao: listaJson(material.analise?.pontosRevisaoJson),
-    metodosSugeridos: listaJson(material.analise?.metodosSugeridosJson),
-    proximasSessoes: listaJson(material.analise?.proximasSessoesJson),
-    perguntasReflexao: listaJson(material.analise?.perguntasReflexaoJson),
+    conceitos: lerListaJson(material.analise?.conceitosJson),
+    pontosRevisao: lerListaJson(material.analise?.pontosRevisaoJson),
+    metodosSugeridos: lerListaJson(material.analise?.metodosSugeridosJson),
+    proximasSessoes: lerListaJson(material.analise?.proximasSessoesJson),
+    perguntasReflexao: lerListaJson(material.analise?.perguntasReflexaoJson),
     origem: material.analise?.origem ?? null,
     conteudoTruncado: material.analise?.conteudoTruncado ?? false,
   }));
@@ -107,16 +110,23 @@ export async function substituirArquivoMaterial(usuarioId: string, recursoId: st
   let validado;
   try { validado = await validarArquivoMaterial(arquivo); } catch { throw new ErroModulo("ARQUIVO_INVALIDO"); }
   const chaveNova = criarChaveArmazenamentoArquivo();
+  const analisar = extensaoAnalisavel(validado.extensaoNormalizada);
   try { await gravarArquivoMaterial(chaveNova, validado.bytes); } catch { throw new ErroModulo("FALHA_ARMAZENAMENTO"); }
   const remocaoAnterior = await prepararRemocaoArquivoMaterial(atual.arquivo.chaveArmazenamento).catch(() => null);
   try {
     await prisma.$transaction([
       prisma.arquivoMaterial.update({ where: { recursoId }, data: { nomeOriginal: validado.nomeOriginal, tipoMime: validado.tipoMime, tamanhoBytes: validado.tamanhoBytes, chaveArmazenamento: chaveNova, extensaoNormalizada: validado.extensaoNormalizada } }),
       prisma.recursoConteudo.update({ where: { id: recursoId }, data: { formato: validado.formato } }),
-      prisma.analiseMaterial.upsert({ where: { recursoId }, create: { recursoId, ...dadosIniciaisAnalise(validado.extensaoNormalizada) }, update: { ...dadosIniciaisAnalise(validado.extensaoNormalizada), resumo: null, conceitosJson: "[]", pontosRevisaoJson: "[]", metodosSugeridosJson: "[]", proximasSessoesJson: "[]", perguntasReflexaoJson: "[]", origem: null, modelo: null, caracteresExtraidos: 0, conteudoTruncado: false, codigoFalha: null, hashConteudo: null, analisadaEm: null } }),
+      prisma.analiseMaterial.upsert({ where: { recursoId }, create: { recursoId, ...dadosIniciaisAnalise(validado.extensaoNormalizada) }, update: { ...dadosIniciaisAnalise(validado.extensaoNormalizada), resumo: null, conceitosJson: "[]", pontosRevisaoJson: "[]", metodosSugeridosJson: "[]", proximasSessoesJson: "[]", perguntasReflexaoJson: "[]", trechosConceitosJson: "[]", afirmacoesJson: "[]", interpretacaoVisualJson: "[]", origem: null, modelo: null, caracteresExtraidos: 0, conteudoTruncado: false, codigoFalha: null, hashConteudo: null, analisadaEm: null } }),
+      prisma.evidenciaAprendizagem.updateMany({
+        where: { recursoId },
+        data: analisar
+          ? { situacaoConfirmacao: "PENDENTE", confirmadaEm: null, resumo: "O arquivo de origem foi substituído; revise a nova extração antes de usá-la nas análises." }
+          : { situacaoConfirmacao: "REJEITADA", confirmadaEm: null, resumo: "O novo formato do arquivo não permite extrair uma evidência para confirmação." },
+      }),
     ]);
     await remocaoAnterior?.confirmar();
-    return { recursoId, analisar: extensaoAnalisavel(validado.extensaoNormalizada) };
+    return { recursoId, analisar };
   } catch {
     await removerArquivoMaterial(chaveNova).catch(() => undefined);
     await remocaoAnterior?.restaurar().catch(() => undefined);

@@ -1,8 +1,20 @@
 # Protocolo de medição e avaliação técnica
 
+## Vigência para o Dashboard pessoal em 2026-09-21
+
+O contrato atual de `/dashboard` evolui o de [`FASE_0_REFORMULACAO_DASHBOARD_PESSOAL.md`](../../Planos/FASE_0_REFORMULACAO_DASHBOARD_PESSOAL.md), conforme D-029, D-030, D-034, D-038 e D-048. O motor `metricas-sessoes-v1` inclui sessões concluídas com fim e duração oficial mínima de cinco minutos, inclusive arquivadas, e exclui sessões planejadas, ativas e invalidadas. Métodos e formatos múltiplos são contextos não exclusivos. Percepções de 1 a 5 são autorrelatos discretos e inteiros; conceitos extraídos de materiais e mencionados em descrições são observações textuais.
+
+Nos gráficos “Métodos × Resultados” e “Formatos × Resultados”, cada contexto reúne a compreensão percebida das sessões e o desempenho das evidências confirmadas posteriormente. A evidência é associada à sessão por vínculo explícito ou por conceito comum dentro do mesmo módulo e em até 30 dias. Ao consolidar módulos, médias são ponderadas pelas respectivas quantidades de compreensões e evidências; nenhuma sessão é relacionada a evidência de outro módulo. Métodos e formatos simultâneos podem compartilhar a mesma sessão e a mesma evidência. Os gráficos exibem ambos em escala percentual para comparação visual, preservando na tabela a escala original de compreensão.
+
+Os cards de método e formato selecionam a maior compreensão percebida média somente entre contextos com ao menos três compreensões. Empates usam maior amostra e depois chave estável. O card de duração calcula a média ponderada das sessões com compreensão de pelo menos 4/5 e desempenho posterior de pelo menos 70%; sem sessão elegível, informa insuficiência. Esses resultados descrevem associações observadas e não demonstram eficácia, superioridade, duração ideal ou causalidade.
+
+Na seção “Consistência dos métodos entre módulos”, um módulo entra no denominador de um método somente quando possui ao menos duas compreensões e duas evidências posteriores confirmadas para esse método. A associação no módulo é classificada como positiva quando a compreensão média é de pelo menos 4/5 e o desempenho posterior médio é de pelo menos 70%. A consistência é a quantidade de módulos positivos dividida pela quantidade de módulos analisáveis. A contagem de evidências soma somente os módulos analisáveis. Menos de dois módulos analisáveis ou menos de quatro evidências recebe o rótulo “Poucos dados”. A ordenação usa proporção, módulos positivos, evidências e chave estável; ela não representa ranking de eficácia.
+
+As seções abaixo que descrevem quizzes, tentativas e avaliações antigas documentam o protocolo histórico anterior à Fase 9. Elas **não autorizam** a reintrodução dessas entidades. As evidências atuais pertencem ao domínio do módulo e seguem a associação posterior descrita acima. Quantidade de sessões não corresponde a confiança estatística, e nenhuma análise pode afirmar eficácia, calibração perfeita ou domínio.
+
 ## 1. Finalidade
 
-Definir como o laboratório pessoal transforma eventos de estudo e avaliação em registros válidos, métricas e evidências. Este protocolo vale para o cenário sintético atual e deve ser revisado pelo orientador antes de qualquer coleta real. As métricas oficiais são calculadas localmente; Gemini apenas interpreta um resumo agregado dessas métricas.
+Esta seção preserva o protocolo anterior baseado em avaliações para rastreabilidade. No produto atual, o Dashboard segue o contrato de sessões indicado na abertura deste documento. Qualquer protocolo futuro com resultados objetivos deve ser revisado antes de implementação e antes de eventual coleta real. Métricas oficiais são locais; a IA opcional apenas interpreta os dados autorizados.
 
 ## 2. Regras de validade da sessão
 
@@ -101,3 +113,21 @@ No MVP, o quiz de Loops é um instrumento demonstrativo. Ele permite validar cá
 ## 8. Critério de aprovação
 
 O protocolo poderá orientar coleta com participantes somente após validação do orientador e, se aplicável, do procedimento ético institucional.
+
+## 9. Protocolo observacional vigente para evidências do módulo
+
+O modelo atual preserva a seção histórica acima para rastreabilidade, mas recebe evidências por provas, exercícios ou avaliações adicionadas ao módulo e confirmadas pela pessoa usuária.
+
+- Extração automática é rascunho e não participa de análise antes da confirmação.
+- No escopo atual do TCC, a interface de confirmação fica indisponível; a extração automática continua ativa, rascunhos permanecem armazenados e evidências já confirmadas continuam válidas para as análises.
+- Resultados por método e formato reúnem, no mesmo contexto, compreensão percebida média das sessões e desempenho médio de evidências posteriores confirmadas; as medidas permanecem separadas e descritivas.
+- A associação automática entre sessão e evidência exige conceito em comum, ordem temporal e janela de até 30 dias. Um vínculo explícito confirmado prevalece sobre a correspondência textual e continua exigindo que a evidência seja posterior à sessão.
+- Uma mesma evidência alcançada por mais de uma sessão é contada apenas uma vez em cada método ou formato.
+- Rankings de conceitos usam a janela recente de 90 dias, exigem ao menos duas observações e exibem no máximo cinco conceitos por lista. Percepções são normalizadas para 0–100 e combinadas, em partes iguais, com o desempenho confirmado disponível; a interface mantém os componentes observados visíveis e não publica o índice composto como medida clínica ou causal.
+- O limiar de 70% é uma referência descritiva da primeira versão, sem equivaler a aprovação, domínio ou diagnóstico.
+- Toda associação permanece observacional; método, formato, duração ou material não são declarados causa do desempenho.
+- No Dashboard do módulo, o destaque de método ou formato exige ao menos duas sessões válidas com compreensão preenchida. A seleção usa maior compreensão média, depois maior quantidade de compreensões, maior quantidade de sessões e chave estável como desempates.
+- A duração associada a melhores resultados é a média das sessões com compreensão percebida de pelo menos 4/5 e desempenho médio de evidências posteriores confirmadas de pelo menos 70%. Sessões sem os dois lados ficam fora, e ausência de candidatas é exibida como dados insuficientes.
+- A evolução semanal de percepção e evidências mantém as escalas separadas: compreensão de 1 a 5 e desempenho confirmado de 0% a 100%. Cada evidência confirmada entra uma vez na semana de sua data, sem preencher ausências com zero.
+- Quando a pessoa filtra o módulo por data, todas as análises são recalculadas somente com sessões iniciadas, evidências ocorridas e eventos datados dentro do intervalo inclusivo em UTC. O filtro não reaproveita resultados calculados fora do período nem converte ausência no recorte em zero.
+- No Dashboard principal, um período explícito substitui a janela recente de 90 dias e também limita a base histórica usada pelos resultados por método, cards e métricas secundárias. Sem filtro, a distinção entre histórico completo e janela recente permanece.

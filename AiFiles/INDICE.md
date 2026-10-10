@@ -53,8 +53,16 @@ AiFiles/
 │   ├── DECISOES_FUNCIONAIS_MODULOS_SESSOES.md
 │   ├── FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md
 │   ├── FASE_13_DASHBOARDS_SALAS.md
+│   ├── FASE_0_REFORMULACAO_DASHBOARD_PESSOAL.md
+│   ├── PLANO_CORRECAO_INSIGHTS_IA.md
+│   ├── DESENHO_REDESIGN_MINIMALISTA_19576.md
+│   ├── PLANO_REDESIGN_MINIMALISTA_19576.md
+│   ├── DESENHO_REORGANIZACAO_MODULO_SUBABAS.md
+│   ├── PLANO_REORGANIZACAO_MODULO_SUBABAS.md
+│   ├── AUTENTICACAO_EMAIL_GOOGLE_DESIGN.md
 │   └── PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md
 └── RELATORIOS/
+    ├── AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md
     ├── PESQUISA_ARQUITETURA_CONTEXTO_IA.md
     └── VALIDACAO_TECNICA_LOCAL.md
 ```
@@ -75,6 +83,11 @@ AiFiles/
 | Redefinir módulos em torno de sessões | [`Planos/ORDEM_IMPLEMENTACAO_MODULOS_SESSOES.md`](Planos/ORDEM_IMPLEMENTACAO_MODULOS_SESSOES.md) | [`Planos/DECISOES_FUNCIONAIS_MODULOS_SESSOES.md`](Planos/DECISOES_FUNCIONAIS_MODULOS_SESSOES.md), modelo de dados, contratos, protocolo, decisões e matriz |
 | Implementar compartilhamento seguro para salas | [`Planos/FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md`](Planos/FASE_12_FUNDACAO_COMPARTILHAMENTO_SALAS.md) | [`Agentes/Guanabara/AGENT.md`](Agentes/Guanabara/AGENT.md), modelo de dados, contratos, privacidade, decisões e matriz |
 | Implementar dashboards das salas | [`Planos/FASE_13_DASHBOARDS_SALAS.md`](Planos/FASE_13_DASHBOARDS_SALAS.md) | fundação da Fase 12, métricas de sessões, IA, privacidade e matriz |
+| Espelhar dashboards atuais nas salas | [`Planos/PLANO_DASHBOARDS_SALA_ESPELHADOS.md`](Planos/PLANO_DASHBOARDS_SALA_ESPELHADOS.md) | [`Planos/DESENHO_DASHBOARDS_SALA_ESPELHADOS.md`](Planos/DESENHO_DASHBOARDS_SALA_ESPELHADOS.md), decisões D-031, D-032 e D-050, privacidade e matriz |
+| Aplicar o redesign minimalista aprovado | [`Planos/DESENHO_REDESIGN_MINIMALISTA_19576.md`](Planos/DESENHO_REDESIGN_MINIMALISTA_19576.md) | protótipos em `Prototipos/RedesignReferencia19576Minimalista/`, agente Araki e componentes reais do Front End |
+| Executar o redesign minimalista aprovado | [`Planos/PLANO_REDESIGN_MINIMALISTA_19576.md`](Planos/PLANO_REDESIGN_MINIMALISTA_19576.md) | desenho do redesign, protótipos minimalistas e suíte vigente de Front End |
+| Reformular o Dashboard pessoal com dados atuais | [`Planos/FASE_0_REFORMULACAO_DASHBOARD_PESSOAL.md`](Planos/FASE_0_REFORMULACAO_DASHBOARD_PESSOAL.md) | métricas de sessões, conceitos de materiais, decisões D-029 a D-034 e matriz |
+| Corrigir e reformular insights de IA | [`Planos/PLANO_CORRECAO_INSIGHTS_IA.md`](Planos/PLANO_CORRECAO_INSIGHTS_IA.md) | arquitetura, contratos, política de linguagem, decisão D-047 e matriz |
 | Implementar análise automática de materiais | [`Planos/FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md`](Planos/FASE_14_ANALISE_AUTOMATICA_MATERIAIS.md) | materiais, extração local, IA, sessões, privacidade e matriz |
 | Implementar ou validar requisito | [`Memoria/MATRIZ_REQUISITOS_TESTES.md`](Memoria/MATRIZ_REQUISITOS_TESTES.md) | requisito, arquitetura e contrato específicos |
 | Alterar arquitetura ou camadas | [`Contexto/Tecnico/ARQUITETURA.md`](Contexto/Tecnico/ARQUITETURA.md) | [`Contexto/Tecnico/MODELO_DE_DADOS.md`](Contexto/Tecnico/MODELO_DE_DADOS.md), [`Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md`](Contexto/Tecnico/CONTRATOS_DAS_OPERACOES.md) |
@@ -83,6 +96,7 @@ AiFiles/
 | Alterar analytics ou recomendações | [`Contexto/Cientifico/PROTOCOLO_DE_MEDICAO.md`](Contexto/Cientifico/PROTOCOLO_DE_MEDICAO.md) | [`Contexto/Cientifico/ESPECIFICACAO_CIENTIFICA.md`](Contexto/Cientifico/ESPECIFICACAO_CIENTIFICA.md), [`Contexto/Cientifico/POLITICA_DE_LINGUAGEM.md`](Contexto/Cientifico/POLITICA_DE_LINGUAGEM.md), [`Contexto/Cientifico/GLOSSARIO.md`](Contexto/Cientifico/GLOSSARIO.md) e testes |
 | Avaliar ética, privacidade ou dados reais | [`Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md`](Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md) | especificação científica, riscos e decisões |
 | Preparar avaliação do TCC | [`Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md`](Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md) | acompanhamento e relatório técnico |
+| Comparar a implementação atual com o TCC | [`RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md`](RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md) | código vigente, protocolo, matriz e cenário sintético |
 | Consultar evidência de validação anterior | [`RELATORIOS/VALIDACAO_TECNICA_LOCAL.md`](RELATORIOS/VALIDACAO_TECNICA_LOCAL.md) | acompanhamento e matriz |
 
 ## Fontes canônicas

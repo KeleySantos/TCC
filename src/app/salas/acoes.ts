@@ -8,7 +8,7 @@ import {
   arquivarSala,
   criarModuloSala,
   criarSala,
-  decidirSolicitacaoSala,
+  entrarSalaComCodigo,
   desvincularInstanciaModuloSala,
   ErroSala,
   excluirSala,
@@ -17,7 +17,6 @@ import {
   removerMembroSala,
   revogarConviteSala,
   sairDaSala,
-  solicitarEntradaSala,
   vincularInstanciaModuloSala,
 } from "@/servidor/salas";
 
@@ -63,15 +62,17 @@ export async function criarNovaSala(formulario: FormData) {
   redirect(`/salas/${sala.identificador}?sucesso=sala`);
 }
 
-export async function pedirEntradaSala(formulario: FormData) {
+export async function entrarEmSala(formulario: FormData) {
   const usuario = await exigirUsuario();
+  let identificadorSala: string;
   try {
-    await solicitarEntradaSala(usuario.id, { codigo: texto(formulario, "codigo") });
+    identificadorSala = await entrarSalaComCodigo(usuario.id, { codigo: texto(formulario, "codigo") });
   } catch (erro) {
     redirect(`/salas?erro=${codigoErro(erro)}`);
   }
   revalidatePath("/salas");
-  redirect("/salas?sucesso=solicitada");
+  revalidatePath(`/salas/${identificadorSala}`);
+  redirect(`/salas/${identificadorSala}?sucesso=entrada`);
 }
 
 export async function gerarNovoConvite(_: EstadoGeracaoConvite, formulario: FormData): Promise<EstadoGeracaoConvite> {
@@ -95,18 +96,6 @@ export async function revogarConvite(formulario: FormData) {
   }
   revalidatePath(caminho);
   redirect(`${caminho}?sucesso=convite-revogado`);
-}
-
-export async function decidirSolicitacao(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoSala(formulario);
-  try {
-    await decidirSolicitacaoSala(usuario.id, { solicitacaoId: texto(formulario, "solicitacaoId"), aprovar: texto(formulario, "decisao") === "aprovar" });
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  redirect(`${caminho}?sucesso=solicitacao`);
 }
 
 export async function criarNovoModuloSala(formulario: FormData) {

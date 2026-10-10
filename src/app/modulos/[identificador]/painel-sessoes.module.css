@@ -1,10 +1,10 @@
 .painel {
   min-width: 0;
   padding: 22px;
-  border: 1px solid #e3e2ef;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 14px 38px rgb(42 34 92 / 7%);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
 }
 
 .cabecalho,
@@ -39,7 +39,7 @@
 .cabecalho p,
 .cabecalhoFormulario span,
 .conteudoAtiva > span {
-  color: #6848dc;
+  color: var(--cor-acao);
   font-size: .64rem;
   font-weight: 820;
   letter-spacing: .1em;
@@ -71,10 +71,10 @@
   justify-content: center;
   gap: 7px;
   padding: 8px 12px;
-  color: #524c70;
-  border: 1px solid #dedcea;
-  border-radius: 10px;
-  background: #fff;
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-controle);
+  background: var(--cor-superficie);
   font: inherit;
   font-size: .7rem;
   font-weight: 760;
@@ -82,8 +82,8 @@
 }
 
 .painel button:hover:not(:disabled) {
-  border-color: #9b8ae8;
-  color: #5a3ed0;
+  border-color: #9ccaff;
+  color: var(--cor-acao);
 }
 
 .painel button:disabled {
@@ -98,14 +98,14 @@
 
 .painel .primario {
   color: #fff;
-  border-color: #6042d7;
-  background: #6042d7;
+  border-color: var(--cor-acao);
+  background: var(--cor-acao);
 }
 
 .painel .primario:hover:not(:disabled) {
   color: #fff;
-  border-color: #4f34c1;
-  background: #4f34c1;
+  border-color: var(--cor-acao-forte);
+  background: var(--cor-acao-forte);
 }
 
 .mensagemErro,
@@ -134,9 +134,9 @@
   gap: 16px;
   margin-top: 18px;
   padding: 18px;
-  border: 1px solid #dcd8ee;
+  border: 1px solid var(--cor-borda);
   border-radius: 16px;
-  background: #faf9ff;
+  background: var(--cor-superficie-suave);
 }
 
 .cabecalhoFormulario {
@@ -210,7 +210,7 @@
   margin: -7px 0 0;
   padding: 9px 11px;
   border-radius: 9px;
-  background: #f0edff;
+  background: var(--cor-acao-suave);
 }
 
 .grupoOpcoes {
@@ -263,9 +263,9 @@
 }
 
 .opcoes input:checked + span {
-  color: #5337c5;
-  border-color: #8f7be1;
-  background: #efecff;
+  color: var(--cor-acao);
+  border-color: #9ccaff;
+  background: var(--cor-acao-suave);
 }
 
 .opcoes input:focus-visible + span {

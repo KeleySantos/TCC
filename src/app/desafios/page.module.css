@@ -35,10 +35,6 @@
 
 .apresentacao {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.48fr);
-  gap: 34px;
-  align-items: end;
   overflow: hidden;
   padding: 30px 34px;
   border: 1px solid #ddd8fb;
@@ -161,7 +157,87 @@
 .comoFunciona li > span { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; color: #5d40d6; background: #efecff; font-size: 0.62rem; font-weight: 850; }
 .comoFunciona li p { margin: 2px 0 0; color: #747d99; font-size: 0.64rem; line-height: 1.45; }
 
-.paginaDesafios :is(button, a, summary, select, textarea):focus-visible { outline: 3px solid #f0a528; outline-offset: 3px; }
+/* Refinamento visual: superfícies calmas, hierarquia curta e o azul como único destaque. */
+.paginaDesafios {
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+}
+
+.topoConta {
+  min-height: 72px;
+  border-color: var(--cor-borda);
+  background: var(--cor-superficie);
+  backdrop-filter: none;
+}
+
+.contextoAtual { color: var(--cor-texto-secundario); }
+.contextoAtual svg { color: var(--cor-acao); }
+.conta:hover { background: var(--cor-acao-suave); }
+.avatar { color: var(--cor-acao); background: var(--cor-acao-suave); }
+.conta small { color: var(--cor-texto-secundario); }
+.areaConteudo { width: min(100%, var(--largura-conteudo)); padding-block: 34px 72px; }
+
+.apresentacao {
+  padding: 30px;
+  border-color: var(--cor-borda);
+  border-radius: var(--raio-grande);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
+}
+
+.apresentacao::after { display: none; }
+.sobretitulo { color: var(--cor-acao); }
+.textoApresentacao h1 { max-width: 700px; font-size: clamp(2rem, 3vw, 3rem); }
+.textoApresentacao > p:last-child { color: var(--cor-texto-secundario); }
+.resumoApresentacao { border-color: var(--cor-borda); background: var(--cor-acao-suave); backdrop-filter: none; }
+.resumoApresentacao div + div { border-color: var(--cor-borda); }
+.resumoApresentacao dt { color: var(--cor-texto-secundario); }
+.resumoApresentacao dd { color: var(--cor-acao); }
+
+.cabecalhoSecao > p, .metodo p { color: var(--cor-texto-secundario); }
+.gradeMetodos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.metodo {
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: start;
+  border-color: var(--cor-borda);
+  border-radius: var(--raio-medio);
+  background: var(--cor-superficie);
+  box-shadow: none;
+}
+.iconeMetodo { color: var(--cor-acao); background: var(--cor-acao-suave); }
+
+.gradePrincipal { grid-template-columns: minmax(0, 1fr) minmax(320px, 360px); gap: 24px; }
+.cabecalhoLista > span { color: var(--cor-acao); background: var(--cor-acao-suave); }
+.cartaoDesafio, .cartaoCriacao, .avisoResponsavel, .comoFunciona, .estadoVazio {
+  border-color: var(--cor-borda);
+  border-radius: var(--raio-grande);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
+}
+.metadadosDesafio, .cabecalhoDesafio > div > p, .dataCancelamento { color: var(--cor-texto-secundario); }
+.cabecalhoDesafio a, .detalhesTabela > summary { color: var(--cor-acao); }
+.botaoCancelar { border-color: var(--cor-borda); color: var(--cor-texto-secundario); background: var(--cor-superficie); }
+.grupoComparacao { border-color: var(--cor-borda); background: var(--cor-fundo); }
+.rotuloComparacao span > strong { color: var(--cor-texto); }
+.rotuloComparacao small, .grupoComparacao > small { color: var(--cor-texto-secundario); }
+.rotuloComparacao > strong { color: var(--cor-acao); }
+.grupoComparacao progress, .grupoComparacao progress::-webkit-progress-bar { background: var(--cor-borda); }
+.grupoComparacao progress::-webkit-progress-value, .grupoComparacao progress::-moz-progress-bar { background: var(--cor-acao); }
+.resultadoComparavel { color: #155e75; background: #ecfeff; }
+.detalhesTabela, .tabelaResponsiva th, .tabelaResponsiva td { border-color: var(--cor-borda); }
+.tabelaResponsiva th, .tabelaResponsiva caption { color: var(--cor-texto-secundario); }
+.estadoVazio > span, .iconeCriacao { color: var(--cor-acao); background: var(--cor-acao-suave); box-shadow: none; }
+.estadoVazio p, .cartaoCriacao > p:not(.sobretitulo) { color: var(--cor-texto-secundario); }
+.campoFormulario label { color: var(--cor-texto); }
+.campoFormulario :is(select, textarea) { border-color: var(--cor-borda); color: var(--cor-texto); background: var(--cor-superficie); }
+.campoFormulario small, .semModulo { color: var(--cor-texto-secundario); }
+.botaoCriar, .botaoCriar:hover:not(:disabled) { background: var(--cor-acao); box-shadow: none; }
+.avisoResponsavel { border-color: #bfdbfe; background: var(--cor-acao-suave); }
+.avisoResponsavel > span, .comoFunciona li > span { color: var(--cor-acao); background: #dbeafe; }
+.avisoResponsavel p, .comoFunciona li p { color: var(--cor-texto-secundario); }
+.tituloComoFunciona svg { color: var(--cor-acao); }
+
+.paginaDesafios :is(button, a, summary, select, textarea):focus-visible { outline: 3px solid var(--cor-acao); outline-offset: 3px; }
 .girando { animation: girar 800ms linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
 

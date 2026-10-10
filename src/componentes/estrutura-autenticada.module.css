@@ -1,5 +1,5 @@
 .estrutura {
-  --largura-barra-lateral: 252px;
+  --largura-barra-lateral: 248px;
   min-height: 100vh;
 }
 
@@ -10,14 +10,12 @@
   display: flex;
   width: var(--largura-barra-lateral);
   flex-direction: column;
-  padding: 25px 17px 18px;
+  padding: 24px 16px 18px;
   overflow-x: hidden;
   overflow-y: auto;
-  color: #f7f7ff;
-  background:
-    radial-gradient(circle at 90% 84%, rgb(117 89 244 / 26%), transparent 18rem),
-    linear-gradient(160deg, #252261 0%, #191747 58%, #242060 100%);
-  box-shadow: 12px 0 36px rgb(23 21 68 / 10%);
+  color: #f8fafc;
+  background: var(--cor-navegacao);
+  box-shadow: 10px 0 30px rgb(15 23 42 / 8%);
   transition: width 180ms ease, padding 180ms ease;
 }
 
@@ -47,11 +45,11 @@
   height: 44px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 22%);
-  border-radius: 13px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
   color: #fff;
-  background: linear-gradient(145deg, #8061ff, #5c3be8);
-  box-shadow: 0 10px 24px rgb(5 4 38 / 24%);
+  background: #2d3135;
+  box-shadow: none;
 }
 
 .simboloMarca svg {
@@ -78,7 +76,7 @@
 .identidadeMarca small {
   max-width: 142px;
   margin-top: 3px;
-  color: #c6c9e8;
+  color: #aeb7c2;
   font-size: 0.56rem;
   line-height: 1.35;
 }
@@ -88,16 +86,16 @@
   width: 28px;
   height: 34px;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 9px;
   color: #fff;
-  background: #443b9f;
-  box-shadow: 0 6px 16px rgb(8 6 48 / 24%);
+  background: #2d3135;
+  box-shadow: none;
   cursor: pointer;
 }
 
 .botaoAlternar:hover {
-  background: #574bc1;
+  background: #383d42;
 }
 
 .botaoAlternar svg {
@@ -119,8 +117,8 @@
 
 .menuPrincipal {
   display: grid;
-  gap: 6px;
-  margin-top: 38px;
+  gap: 8px;
+  margin-top: 36px;
 }
 
 .menuPrincipal a,
@@ -131,8 +129,8 @@
   gap: 12px;
   padding: 11px 13px;
   border: 0;
-  border-radius: 12px;
-  color: #dedff7;
+  border-radius: 13px;
+  color: #bdc5cf;
   background: transparent;
   font-size: 0.86rem;
   font-weight: 650;
@@ -144,7 +142,7 @@
 .menuPrincipal a:hover,
 .formularioSair button:hover {
   color: #fff;
-  background: rgb(255 255 255 / 9%);
+  background: rgb(255 255 255 / 7%);
 }
 
 .menuPrincipal a:hover {
@@ -155,7 +153,7 @@
 .formularioSair button:focus-visible,
 .botaoAlternar:focus-visible,
 .marcaProduto:focus-visible {
-  outline: 3px solid #b5a8ff;
+  outline: 3px solid #8ec5ff;
   outline-offset: 2px;
 }
 
@@ -168,8 +166,8 @@
 
 .menuPrincipal .itemAtivo {
   color: #fff;
-  background: linear-gradient(100deg, rgb(115 87 243 / 74%), rgb(101 75 225 / 46%));
-  box-shadow: 0 10px 24px rgb(7 5 42 / 18%);
+  background: #3b4147;
+  box-shadow: inset 3px 0 0 #fff;
 }
 
 .rotuloItem {
@@ -180,13 +178,13 @@
 .fraseLateral {
   margin-top: auto;
   padding: 22px 13px;
-  color: #cfd1ee;
+  color: #aeb7c2;
 }
 
 .fraseLateral svg {
   width: 23px;
   height: 23px;
-  color: #9f8cff;
+  color: #f8fafc;
 }
 
 .fraseLateral p {
@@ -201,7 +199,7 @@
   gap: 9px;
   min-height: 47px;
   padding-top: 12px;
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 1px solid rgb(255 255 255 / 10%);
 }
 
 .avatar {
@@ -211,8 +209,8 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  color: #211c65;
-  background: #eeeaff;
+  color: #181818;
+  background: #f1f2f3;
   font-size: 0.78rem;
   font-weight: 850;
 }
@@ -241,15 +239,16 @@
   min-width: 0;
   min-height: 100vh;
   margin-left: var(--largura-barra-lateral);
+  background: var(--cor-fundo);
   transition: margin-left 180ms ease;
 }
 
 .estruturaRecolhida {
-  --largura-barra-lateral: 82px;
+  --largura-barra-lateral: 88px;
 }
 
 .estruturaRecolhida .barraLateral {
-  padding-inline: 12px;
+  padding-inline: 15px;
 }
 
 .estruturaRecolhida .identidadeMarca,
@@ -285,7 +284,7 @@
     position: relative;
     inset: auto;
     width: 100%;
-    padding: 15px 17px;
+    padding: 14px 16px;
     overflow: visible;
   }
 
@@ -305,9 +304,14 @@
     min-width: max-content;
   }
 
-  .fraseLateral,
-  .rodapeBarra {
+  .fraseLateral {
     display: none;
+  }
+
+  .rodapeBarra {
+    display: flex;
+    margin-top: 14px;
+    padding-top: 14px;
   }
 
   .conteudo {
@@ -328,6 +332,10 @@
   }
 
   .estruturaRecolhida .menuPrincipal {
+    display: none;
+  }
+
+  .estruturaRecolhida .rodapeBarra {
     display: none;
   }
 }

@@ -28,6 +28,7 @@ describe("métricas oficiais por sessões", () => {
     expect(metricas.tempoEstudo).toEqual({ quantidadeSessoesValidas: 0, minutosTotais: 0, mediaMinutos: null });
     expect(metricas.frequencia).toMatchObject({ diasComEstudo: 0, maiorSequenciaDias: 0, primeiraSessaoEm: null, ultimaSessaoEm: null });
     expect(metricas.percepcoes).toMatchObject({ amostra: 0, mediaDificuldadePercebida: null, nivelAmostra: "AUSENTE" });
+    expect(metricas.regularidade).toEqual({ semanasAtivas: 0, semanasNoPeriodo: 0, proporcaoSemanasAtivas: 0, classificacao: "SEM_DADOS" });
     expect(metricas.evolucaoSemanal.pontos).toEqual([]);
   });
 
@@ -45,13 +46,34 @@ describe("métricas oficiais por sessões", () => {
 
   it("agrega métodos e formatos múltiplos sem tratá-los como categorias exclusivas", () => {
     const metricas = calcularMetricasSessoes([
-      sessao("s1", { metodos: [MetodoEstudo.FEYNMAN, MetodoEstudo.POMODORO], formatos: [FormatoConteudo.TEXTO, FormatoConteudo.PDF] }),
-      sessao("s2", { metodos: [MetodoEstudo.FEYNMAN], formatos: [FormatoConteudo.PDF], duracaoMinutos: 60 }),
+      sessao("s1", { compreensaoPercebida: 5, metodos: [MetodoEstudo.FEYNMAN, MetodoEstudo.POMODORO], formatos: [FormatoConteudo.TEXTO, FormatoConteudo.PDF] }),
+      sessao("s2", { compreensaoPercebida: 3, metodos: [MetodoEstudo.FEYNMAN], formatos: [FormatoConteudo.PDF], duracaoMinutos: 60 }),
     ], "modulo-a");
-    expect(metricas.porMetodo[0]).toMatchObject({ chave: MetodoEstudo.FEYNMAN, quantidadeSessoes: 2, minutosAssociados: 90, percentualSessoes: 1 });
-    expect(metricas.porMetodo.find((item) => item.chave === MetodoEstudo.POMODORO)).toMatchObject({ quantidadeSessoes: 1, minutosAssociados: 30, nivelAmostra: "INSUFICIENTE" });
+    expect(metricas.porMetodo[0]).toMatchObject({
+      chave: MetodoEstudo.FEYNMAN,
+      quantidadeSessoes: 2,
+      quantidadeCompreensoes: 2,
+      mediaCompreensaoPercebida: 4,
+      minutosAssociados: 90,
+      percentualSessoes: 1,
+    });
+    expect(metricas.porMetodo.find((item) => item.chave === MetodoEstudo.POMODORO)).toMatchObject({
+      quantidadeSessoes: 1,
+      quantidadeCompreensoes: 1,
+      mediaCompreensaoPercebida: null,
+      minutosAssociados: 30,
+      nivelAmostra: "INSUFICIENTE",
+    });
     expect(metricas.porFormato.find((item) => item.chave === FormatoConteudo.PDF)?.quantidadeSessoes).toBe(2);
     expect(metricas.criterios.contextosMultiplosNaoExclusivos).toBe(true);
+  });
+
+  it("mantém a sessão no contexto e não publica média com uma única compreensão", () => {
+    const metodo = calcularMetricasSessoes([
+      sessao("s1", { compreensaoPercebida: 5 }),
+      sessao("s2", { compreensaoPercebida: null }),
+    ], "modulo-a").porMetodo[0];
+    expect(metodo).toMatchObject({ quantidadeSessoes: 2, quantidadeCompreensoes: 1, mediaCompreensaoPercebida: null });
   });
 
   it("calcula frequência e evolução semanal UTC com percepções somente após amostra mínima", () => {
@@ -66,6 +88,20 @@ describe("métricas oficiais por sessões", () => {
     expect(metricas.evolucaoSemanal.pontos).toHaveLength(2);
     expect(metricas.evolucaoSemanal.pontos[0]).toMatchObject({ quantidadeSessoes: 3, minutosTotais: 90, diasComEstudo: 3, quantidadePercepcoes: 2, mediaDificuldadePercebida: 3 });
     expect(metricas.evolucaoSemanal.pontos[1]).toMatchObject({ quantidadeSessoes: 1, quantidadePercepcoes: 1, mediaDificuldadePercebida: null });
+    expect(metricas.regularidade).toEqual({ semanasAtivas: 2, semanasNoPeriodo: 2, proporcaoSemanasAtivas: 1, classificacao: "CONSTANTE" });
+  });
+
+  it("classifica regularidade pela proporção de semanas ativas no intervalo", () => {
+    const metricas = calcularMetricasSessoes([
+      sessao("s1", { encerradaEm: new Date("2026-08-03T10:30:00.000Z") }),
+      sessao("s2", { encerradaEm: new Date("2026-08-31T10:30:00.000Z") }),
+    ], "modulo-a");
+    expect(metricas.regularidade).toEqual({ semanasAtivas: 2, semanasNoPeriodo: 5, proporcaoSemanasAtivas: 0.4, classificacao: "ESPORADICA" });
+  });
+
+  it("não classifica uma única semana como ritmo constante", () => {
+    const metricas = calcularMetricasSessoes([sessao("s1")], "modulo-a");
+    expect(metricas.regularidade).toEqual({ semanasAtivas: 1, semanasNoPeriodo: 1, proporcaoSemanasAtivas: 1, classificacao: "INSUFICIENTE" });
   });
 
   it("restringe o cálculo ao módulo solicitado", () => {

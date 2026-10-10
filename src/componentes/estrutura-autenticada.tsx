@@ -42,11 +42,11 @@ function assinarPreferencia(notificar: () => void) {
 }
 
 function obterPreferencia() {
-  return window.localStorage.getItem(CHAVE_PREFERENCIA) === "sim";
+  return window.localStorage.getItem(CHAVE_PREFERENCIA) !== "nao";
 }
 
 function obterPreferenciaNoServidor() {
-  return false;
+  return true;
 }
 
 function itemEstaAtivo(caminhoAtual: string, href: string) {

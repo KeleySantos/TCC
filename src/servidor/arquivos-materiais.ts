@@ -3,7 +3,7 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { FormatoConteudo } from "@/gerado/prisma/enums";
 
-export type CategoriaArquivoMaterial = "IMAGEM" | "DOCUMENTO" | "PLANILHA" | "AUDIO" | "VIDEO";
+export type CategoriaArquivoMaterial = "IMAGEM" | "DOCUMENTO" | "PLANILHA";
 
 export type ArquivoMaterialValidado = {
   bytes: Uint8Array;
@@ -25,11 +25,10 @@ type RegraArquivo = {
 };
 
 const MIB = 1024 * 1024;
-export const LIMITE_MAXIMO_CORPO_UPLOAD = 101 * MIB;
+export const LIMITE_MAXIMO_CORPO_UPLOAD = 26 * MIB;
 const cabecalho = (bytes: Uint8Array, valores: number[], inicio = 0) => valores.every((valor, indice) => bytes[inicio + indice] === valor);
 const textoNoInicio = (bytes: Uint8Array, texto: string, inicio = 0) => cabecalho(bytes, [...Buffer.from(texto, "ascii")], inicio);
 const eZip = (bytes: Uint8Array) => cabecalho(bytes, [0x50, 0x4b, 0x03, 0x04]);
-const eIsoBaseMedia = (bytes: Uint8Array) => bytes.length >= 12 && textoNoInicio(bytes, "ftyp", 4);
 
 function nomesDoDiretorioCentralZip(bytes: Uint8Array) {
   for (let indice = bytes.length - 22; indice >= Math.max(0, bytes.length - 65_557); indice -= 1) {
@@ -83,13 +82,6 @@ const regras: RegraArquivo[] = [
   { categoria: "PLANILHA", extensao: "xls", formato: FormatoConteudo.PLANILHA, limiteBytes: 25 * MIB, mimes: ["application/vnd.ms-excel"], assinaturaValida: (bytes) => cabecalho(bytes, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]) },
   { categoria: "PLANILHA", extensao: "xlsx", formato: FormatoConteudo.PLANILHA, limiteBytes: 25 * MIB, mimes: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"], assinaturaValida: (bytes) => zipContem(bytes, (nomes) => nomes.includes("[Content_Types].xml") && nomes.some((nome) => nome.startsWith("xl/"))) },
   { categoria: "PLANILHA", extensao: "ods", formato: FormatoConteudo.PLANILHA, limiteBytes: 25 * MIB, mimes: ["application/vnd.oasis.opendocument.spreadsheet"], assinaturaValida: (bytes) => odfTemMime(bytes, "application/vnd.oasis.opendocument.spreadsheet") },
-  { categoria: "AUDIO", extensao: "mp3", formato: FormatoConteudo.AUDIO, limiteBytes: 50 * MIB, mimes: ["audio/mpeg"], assinaturaValida: (bytes) => textoNoInicio(bytes, "ID3") || (bytes.length > 1 && bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0) },
-  { categoria: "AUDIO", extensao: "wav", formato: FormatoConteudo.AUDIO, limiteBytes: 50 * MIB, mimes: ["audio/wav", "audio/x-wav"], assinaturaValida: (bytes) => textoNoInicio(bytes, "RIFF") && textoNoInicio(bytes, "WAVE", 8) },
-  { categoria: "AUDIO", extensao: "ogg", formato: FormatoConteudo.AUDIO, limiteBytes: 50 * MIB, mimes: ["audio/ogg"], assinaturaValida: (bytes) => textoNoInicio(bytes, "OggS") },
-  { categoria: "AUDIO", extensao: "m4a", formato: FormatoConteudo.AUDIO, limiteBytes: 50 * MIB, mimes: ["audio/mp4", "audio/x-m4a"], assinaturaValida: (bytes) => eIsoBaseMedia(bytes) && (textoNoInicio(bytes, "M4A ", 8) || textoNoInicio(bytes, "isom", 8)) },
-  { categoria: "VIDEO", extensao: "mp4", formato: FormatoConteudo.VIDEO, limiteBytes: 100 * MIB, mimes: ["video/mp4"], assinaturaValida: eIsoBaseMedia },
-  { categoria: "VIDEO", extensao: "webm", formato: FormatoConteudo.VIDEO, limiteBytes: 100 * MIB, mimes: ["video/webm"], assinaturaValida: (bytes) => cabecalho(bytes, [0x1a, 0x45, 0xdf, 0xa3]) },
-  { categoria: "VIDEO", extensao: "mov", formato: FormatoConteudo.VIDEO, limiteBytes: 100 * MIB, mimes: ["video/quicktime"], assinaturaValida: (bytes) => eIsoBaseMedia(bytes) && textoNoInicio(bytes, "qt  ", 8) },
 ];
 
 export const LIMITES_ARQUIVOS_MATERIAIS = Object.freeze(

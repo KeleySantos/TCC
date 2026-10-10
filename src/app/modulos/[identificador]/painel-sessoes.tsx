@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Archive, CalendarClock, CheckCircle2, Pencil, Play, Plus, RotateCcw, Timer, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { METODOS_ESTUDO } from "@/dominio/sessoes/metodos";
+import { OPCOES_COMPREENSAO_PERCEBIDA } from "@/dominio/sessoes/percepcoes";
 import estilos from "./painel-sessoes.module.css";
 
 type MaterialSessao = { id: string; titulo: string };
@@ -101,7 +102,7 @@ function EscalasPercebidas({ prefixo, sessao, obrigatorias = true, desabilitado 
       <select defaultValue={sessao?.dificuldadePercebida ?? ""} disabled={desabilitado} id={`${prefixo}-dificuldade`} name="dificuldadePercebida" required={obrigatorias}><option value="">Selecione</option>{[1, 2, 3, 4, 5].map((valor) => <option key={valor} value={valor}>{valor} — {valor === 1 ? "muito baixa" : valor === 5 ? "muito alta" : ""}</option>)}</select>
     </label>
     <label htmlFor={`${prefixo}-compreensao`}>Compreensão percebida
-      <select defaultValue={sessao?.compreensaoPercebida ?? ""} disabled={desabilitado} id={`${prefixo}-compreensao`} name="compreensaoPercebida" required={obrigatorias}><option value="">Selecione</option>{[1, 2, 3, 4, 5].map((valor) => <option key={valor} value={valor}>{valor} — {valor === 1 ? "muito baixa" : valor === 5 ? "muito alta" : ""}</option>)}</select>
+      <select defaultValue={sessao?.compreensaoPercebida ?? ""} disabled={desabilitado} id={`${prefixo}-compreensao`} name="compreensaoPercebida" required={obrigatorias}><option value="">Selecione</option>{OPCOES_COMPREENSAO_PERCEBIDA.map((opcao) => <option key={opcao.valor} value={opcao.valor}>{opcao.valor} — {opcao.rotulo}</option>)}</select>
     </label>
   </div>;
 }

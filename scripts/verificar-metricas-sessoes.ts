@@ -1,8 +1,10 @@
 import "dotenv/config";
+import { randomUUID } from "node:crypto";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
 import { arquivarSessaoPessoal, registrarSessaoManualPessoal } from "../src/servidor/sessoes";
 import { obterMetricasSessoesModuloPessoal, obterMetricasSessoesPessoais } from "../src/servidor/metricas";
+import { obterDashboardObservacionalPessoal } from "../src/servidor/dashboard-observacional";
 
 const urlBanco = process.env.DATABASE_URL;
 if (!urlBanco) throw new Error("DATABASE_URL não está definida.");
@@ -31,9 +33,35 @@ async function principal() {
 
   const gerais = await obterMetricasSessoesPessoais(ana.id);
   afirmar(gerais.metricasPorModulo.length === 2 && gerais.consolidado.tempoEstudo.quantidadeSessoesValidas === 5 && gerais.consolidado.tempoEstudo.minutosTotais === 97, "consolidação deve somar somente sessões válidas dos módulos ativos.");
+  const referenciaDashboard = new Date("2026-09-01T12:00:00.000Z");
+  const [dashboardAna, dashboardBruno, dashboardSemConta] = await Promise.all([
+    obterDashboardObservacionalPessoal(ana.id, referenciaDashboard),
+    obterDashboardObservacionalPessoal(bruno.id, referenciaDashboard),
+    obterDashboardObservacionalPessoal("conta-inexistente", referenciaDashboard),
+  ]);
+  afirmar(dashboardAna.baseHistorica.quantidadeSessoes === 5 && dashboardAna.periodoRecente.quantidadeSessoes === 1, "o Dashboard da conta A deve respeitar o histórico e a janela recente.");
+  afirmar(dashboardBruno.baseHistorica.quantidadeSessoes === 4 && dashboardBruno.periodoRecente.quantidadeSessoes === 0, "o Dashboard da conta B não pode receber sessões da conta A.");
+  afirmar(dashboardSemConta.baseHistorica.quantidadeSessoes === 0 && dashboardSemConta.conceitos.length === 0, "uma conta inexistente não pode receber sessões ou conceitos.");
 
   let sessaoId: string | null = null;
+  const recursosTeste: string[] = [];
   try {
+    const moduloBruno = await prisma.moduloAprendizagem.findFirstOrThrow({ where: { usuarioId: bruno.id, identificador: "javascript" }, select: { id: true } });
+    for (const [moduloId, conceito] of [[javascript.modulo.id, "conceito exclusivo ana"], [moduloBruno.id, "conceito exclusivo bruno"]] as const) {
+      const recurso = await prisma.recursoConteudo.create({ data: {
+        moduloId, identificador: `verificacao-dashboard-${randomUUID()}`,
+        titulo: conceito, descricao: "Arquivo sintético temporário para conferir isolamento.", formato: "PDF", minutosEstimados: 5, origem: "ARQUIVO",
+        analise: { create: { situacao: "CONCLUIDA", conceitosJson: JSON.stringify([conceito]) } },
+      } });
+      recursosTeste.push(recurso.id);
+    }
+    const [conceitosAna, conceitosBruno] = await Promise.all([
+      obterDashboardObservacionalPessoal(ana.id, referenciaDashboard),
+      obterDashboardObservacionalPessoal(bruno.id, referenciaDashboard),
+    ]);
+    afirmar(conceitosAna.conceitos.some((item) => item.chave === "conceito exclusivo ana") && !conceitosAna.conceitos.some((item) => item.chave === "conceito exclusivo bruno"), "conceitos da conta B não podem aparecer no Dashboard da conta A.");
+    afirmar(conceitosBruno.conceitos.some((item) => item.chave === "conceito exclusivo bruno") && !conceitosBruno.conceitos.some((item) => item.chave === "conceito exclusivo ana"), "conceitos da conta A não podem aparecer no Dashboard da conta B.");
+
     const sessao = await registrarSessaoManualPessoal(ana.id, {
       moduloId: logicaAntes.modulo.id,
       descricao: "Sessão temporária para validar métricas oficiais.",
@@ -52,10 +80,11 @@ async function principal() {
     afirmar(logicaDepois.metricas.porMetodo.some((item) => item.chave === "POMODORO") && logicaDepois.metricas.porFormato.some((item) => item.chave === "AUDIO"), "contextos múltiplos devem aparecer sem material vinculado.");
   } finally {
     if (sessaoId) await prisma.sessaoEstudo.deleteMany({ where: { id: sessaoId } });
+    if (recursosTeste.length) await prisma.recursoConteudo.deleteMany({ where: { id: { in: recursosTeste } } });
     await prisma.$disconnect();
   }
 
-  console.log("Métricas por sessões verificadas: tempo, frequência, evolução, métodos, formatos, percepções, arquivamento, estados e propriedade.");
+  console.log("Métricas e Dashboard observacional verificados: sessões, conceitos, período, métodos, percepções, arquivamento e propriedade.");
 }
 
 principal().catch((erro: unknown) => { console.error(erro); process.exit(1); });

@@ -6,7 +6,7 @@
 
 - `Sala` pertence ao `Usuario` proprietário e usa exclusão lógica.
 - `MembroSala` representa proprietário ou membro e preserva o motivo de encerramento (`SAIU` ou `REMOVIDO`).
-- `ConviteSala` guarda apenas o hash do código, expiração e revogação; `SolicitacaoEntradaSala` separa convite de aprovação.
+- `ConviteSala` guarda apenas o hash do código, expiração e revogação. `SolicitacaoEntradaSala` permanece como histórico de compatibilidade e é registrada ou encerrada como aprovada no ingresso imediato por código.
 - `ModuloSala` é um contexto-pai de agregação, limitado pela regra de serviço a cinco itens ativos por sala.
 - `VinculoModuloSala` conecta um membro e seu `ModuloAprendizagem` pessoal ao módulo-pai. O módulo pessoal usa `onDelete: Restrict` e não é propriedade da sala.
 - `permitirComparacao` e `permitirIa` são consentimentos independentes, falsos por padrão. `compartilharDashboard` é desligado ao encerrar o vínculo.

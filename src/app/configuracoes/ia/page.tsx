@@ -30,7 +30,7 @@ export default async function PaginaConfiguracoesIa({ searchParams }: { searchPa
   const aviso = mensagem(parametros);
   return <EstruturaAutenticada usuarioNome={usuario.nome}>
     <main className={estilos.pagina} id="conteudo-principal" tabIndex={-1}>
-      <header className={estilos.cabecalho}><div><p>CONFIGURAÇÕES</p><h1>Provedores de IA</h1><span>Fila fixa: Groq → Gemini → Qwen → resposta local.</span></div><div className={estilos.seloSeguro}><ShieldCheck aria-hidden="true" />Cofre local criptografado</div></header>
+      <header className={estilos.cabecalho}><div><p>CONFIGURAÇÕES</p><h1>Provedores de IA</h1><span>Fila atual: {configuracoes.map((item) => item.nome).join(" → ")} → resposta local.</span></div><div className={estilos.seloSeguro}><ShieldCheck aria-hidden="true" />Cofre local criptografado</div></header>
       {aviso && <p className={aviso.tipo === "erro" ? "mensagem-erro" : "mensagem-sucesso"} role={aviso.tipo === "erro" ? "alert" : "status"}>{aviso.texto}</p>}
 
       <section className={estilos.avisoSeguranca} aria-labelledby="titulo-seguranca-chave"><LockKeyhole aria-hidden="true" /><div><h2 id="titulo-seguranca-chave">Suas chaves não são recuperáveis pela interface</h2><p>Depois de salvas, elas ficam cifradas e nunca retornam ao navegador, aos logs ou ao Git. Uma chave só é enviada por HTTPS ao próprio provedor quando você solicita uma análise ou clica em testar.</p><strong>Para garantir custo zero, mantenha o faturamento automático desativado também na conta de cada provedor.</strong></div></section>

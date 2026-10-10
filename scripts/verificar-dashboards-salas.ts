@@ -14,6 +14,7 @@ async function criarContaComSessao(indice: number) {
   const usuario = await prisma.usuario.create({ data: { nome: `Participante ${indice}`, nomeUsuario: `painel-sala-${indice}-${sufixo}`, senhaHash: "sintetica" } });
   usuarios.push(usuario.id);
   const modulo = await prisma.moduloAprendizagem.create({ data: { usuarioId: usuario.id, identificador: `modulo-${indice}-${sufixo}`, titulo: `Módulo pessoal ${indice}`, descricao: "Instância pessoal sintética." } });
+  await prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador: `privado-${indice}-${sufixo}`, titulo: `ARQUIVO_PRIVADO_DASHBOARD_${indice}`, descricao: "Não pode sair no painel administrativo.", formato: FormatoConteudo.TEXTO, minutosEstimados: 10, conteudoTexto: `CONTEUDO_PRIVADO_DASHBOARD_${indice}` } });
   const iniciadaEm = new Date(`2025-0${indice}-10T10:00:00.000Z`);
   await prisma.sessaoEstudo.create({ data: {
     usuarioId: usuario.id, moduloId: modulo.id, descricao: `DESCRICAO_PRIVADA_DASHBOARD_${indice}`, modoRegistro: ModoRegistroSessao.MANUAL,
@@ -43,12 +44,24 @@ try {
   assert.equal(await obterDashboardsSalaDoProprietario(membroDois.usuario.id, sala.identificador), null);
   assert.equal(await obterDashboardsSalaDoProprietario(terceiro.usuario.id, sala.identificador), null);
 
+  const sessaoDois = await prisma.sessaoEstudo.findFirstOrThrow({ where: { usuarioId: membroDois.usuario.id, moduloId: membroDois.modulo.id }, select: { iniciadaEm: true } });
+  await prisma.vinculoModuloSala.update({ where: { id: vinculoDois.id }, data: { dadosDesde: new Date(sessaoDois.iniciadaEm.getTime() + 5 * 60_000) } });
+  painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
+  assert.equal(painel?.modulos[0].individuais.find((item) => item.vinculoId === vinculoDois.id)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0, "sessão iniciada antes de dadosDesde não pode ser compartilhada");
+  await prisma.vinculoModuloSala.update({ where: { id: vinculoDois.id }, data: { dadosDesde: null } });
+
   const vinculoTres = await vincularInstanciaModuloSala(membroTres.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: membroTres.modulo.id, criarInstancia: false });
   painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
   assert(painel?.geral.disponivel);
   assert.equal(painel.geral.metricas?.tempoEstudo.quantidadeSessoesValidas, 3);
   assert.equal(painel.geral.metricas?.tempoEstudo.minutosTotais, 60);
+  assert.equal(painel.geral.dados?.baseHistorica.quantidadeSessoes, 3);
+  assert.equal(painel.geral.dados?.metodoMaiorCompreensao?.chave, MetodoEstudo.FEYNMAN);
+  assert.equal(painel.geral.dados?.formatoMaiorCompreensao?.chave, FormatoConteudo.TEXTO);
+  assert(painel.modulos.every((modulo) => modulo.individuais.every((individual) => individual.aprendizagem)));
   assert(!JSON.stringify(painel).includes("DESCRICAO_PRIVADA_DASHBOARD"));
+  assert(!JSON.stringify(painel).includes("ARQUIVO_PRIVADO_DASHBOARD"));
+  assert(!JSON.stringify(painel).includes("CONTEUDO_PRIVADO_DASHBOARD"));
 
   await alterarConsentimentosVinculo(membroDois.usuario.id, { vinculoId: vinculoDois.id, permitirComparacao: true, permitirIa: true });
   await alterarConsentimentosVinculo(membroTres.usuario.id, { vinculoId: vinculoTres.id, permitirComparacao: true, permitirIa: false });
@@ -66,13 +79,15 @@ try {
   assert(!JSON.stringify(historicas).includes(membroTres.usuario.id));
   assert(!JSON.stringify(historicas).includes("DESCRICAO_PRIVADA_DASHBOARD"));
   painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert(painel?.geral.disponivel);
-  assert.equal(painel.geral.metricas?.tempoEstudo.minutosTotais, 60);
+  assert.equal(painel?.geral.disponivel, false, "o painel geral espelhado usa somente membros ativos autorizados");
+  assert.equal(painel?.geral.dados, null);
+  assert.equal(painel?.modulos[0].agregado.metricas?.tempoEstudo.minutosTotais, 60, "o agregado legado do módulo preserva o histórico anonimizado");
   assert.equal(painel.modulos[0].individuais.length, 2);
 
   await vincularInstanciaModuloSala(membroTres.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: membroTres.modulo.id, criarInstancia: false });
   painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert.equal(painel?.geral.metricas?.tempoEstudo.minutosTotais, 60, "reativação não pode duplicar a sessão histórica");
+  assert.equal(painel?.geral.disponivel, false, "a sessão histórica não pode contar como contribuição ativa após reativação");
+  assert.equal(painel?.modulos[0].agregado.metricas?.tempoEstudo.minutosTotais, 60, "reativação não pode duplicar a sessão histórica");
   assert.equal(painel?.modulos[0].individuais.find((item) => item.nome === membroTres.usuario.nome)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0);
 
   assert(vinculoUm);

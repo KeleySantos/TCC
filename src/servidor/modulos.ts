@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { FormatoConteudo, OrigemMaterial } from "@/gerado/prisma/enums";
+import { FormatoConteudo, FuncaoMaterial, OrigemMaterial } from "@/gerado/prisma/enums";
 import { prisma } from "@/biblioteca/prisma";
 import { criarChaveArmazenamentoArquivo, gravarArquivoMaterial, lerArquivoMaterial, removerArquivoMaterial, validarArquivoMaterial } from "./arquivos-materiais";
 import { EXTENSOES_ANALISAVEIS } from "./extracao-materiais";
@@ -26,6 +26,14 @@ const campoTitulo = z.string().trim().min(3).max(120);
 const campoDescricao = z.string().trim().min(3).max(500);
 const esquemaModulo = z.object({ titulo: campoTitulo, descricao: campoDescricao });
 const esquemaReferencia = z.object({ id: z.string().min(1) });
+const campoDataEvento = z.preprocess(
+  (valor) => valor === "" || valor === undefined ? null : valor,
+  z.coerce.date().nullable(),
+).refine((data) => data === null || data.getTime() <= Date.now(), "A data do evento não pode estar no futuro.");
+const camposFuncaoMaterial = {
+  funcao: z.nativeEnum(FuncaoMaterial).default(FuncaoMaterial.REFERENCIA),
+  dataEvento: campoDataEvento.default(null),
+};
 const esquemaMaterial = z.object({
   moduloId: z.string().min(1),
   titulo: campoTitulo,
@@ -34,6 +42,7 @@ const esquemaMaterial = z.object({
   minutosEstimados: z.coerce.number().int().min(1).max(600),
   conteudoTexto: z.string().trim().max(8_000),
   url: z.string().trim().max(2_048),
+  ...camposFuncaoMaterial,
 }).superRefine((dados, contexto) => {
   if (Number(Boolean(dados.conteudoTexto)) + Number(Boolean(dados.url)) !== 1) contexto.addIssue({ code: "custom", message: "Informe exatamente um texto ou link." });
   if (!dados.url) return;
@@ -49,6 +58,7 @@ const esquemaMaterialArquivo = z.object({
   titulo: campoTitulo,
   descricao: campoDescricao,
   minutosEstimados: z.coerce.number().int().min(1).max(600),
+  ...camposFuncaoMaterial,
 });
 
 function dadosValidos<T>(resultado: z.ZodSafeParseResult<T>) {
@@ -80,6 +90,24 @@ async function exigirMaterial(usuarioId: string, id: string) {
   return material;
 }
 
+async function reconciliarMudancaFuncaoMaterial(material: { id: string; origem: OrigemMaterial; funcao: FuncaoMaterial }, novaFuncao: FuncaoMaterial) {
+  if (material.funcao === novaFuncao) return;
+  if (novaFuncao === FuncaoMaterial.AVALIACAO) {
+    if (material.origem === OrigemMaterial.ARQUIVO) {
+      await prisma.analiseMaterial.updateMany({ where: { recursoId: material.id }, data: { situacao: "PENDENTE", codigoFalha: null } });
+    }
+    return;
+  }
+  await prisma.evidenciaAprendizagem.updateMany({
+    where: { recursoId: material.id },
+    data: {
+      situacaoConfirmacao: "REJEITADA",
+      confirmadaEm: null,
+      resumo: "Esta evidência deixou de participar das análises porque o material não está mais classificado como avaliação.",
+    },
+  });
+}
+
 export async function listarModulosPessoais(usuarioId: string, opcoes: { incluirRascunhos?: boolean } = {}): Promise<ModuloListadoPessoal[]> {
   return prisma.moduloAprendizagem.findMany({
     where: { usuarioId, arquivado: false, ...(opcoes.incluirRascunhos ? {} : { rascunho: false }) },
@@ -104,7 +132,8 @@ export async function obterModuloPessoal(usuarioId: string, identificador: strin
         orderBy: { titulo: "asc" },
         include: {
           arquivo: { select: { nomeOriginal: true, tipoMime: true, tamanhoBytes: true, extensaoNormalizada: true } },
-          analise: { select: { situacao: true, resumo: true, conceitosJson: true, pontosRevisaoJson: true, metodosSugeridosJson: true, proximasSessoesJson: true, perguntasReflexaoJson: true, origem: true, conteudoTruncado: true } },
+          analise: { select: { situacao: true, resumo: true, conceitosJson: true, pontosRevisaoJson: true, metodosSugeridosJson: true, proximasSessoesJson: true, perguntasReflexaoJson: true, trechosConceitosJson: true, afirmacoesJson: true, interpretacaoVisualJson: true, origem: true, conteudoTruncado: true } },
+          evidencia: { include: { questoes: { orderBy: { identificador: "asc" } }, conceitos: { include: { conceito: true } } } },
         },
       },
     },
@@ -154,11 +183,12 @@ export async function criarMaterialPessoal(usuarioId: string, entrada: unknown) 
   const identificador = criarIdentificador(dados.titulo);
   const existente = await prisma.recursoConteudo.findFirst({ where: { moduloId: modulo.id, identificador } });
   if (existente) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-  return prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
+  return prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, dataEventoConfirmada: dados.dataEvento !== null, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
 }
 
 export async function criarMaterialComArquivoPessoal(usuarioId: string, entrada: unknown, arquivo: File) {
   const dados = dadosValidos(esquemaMaterialArquivo.safeParse(entrada));
+  const dataEvento = dados.dataEvento ?? new Date();
   const modulo = await exigirModulo(usuarioId, dados.moduloId);
   if (modulo.arquivado || modulo.rascunho) throw new ErroModulo("NAO_ENCONTRADO");
   const identificador = criarIdentificador(dados.titulo);
@@ -186,6 +216,9 @@ export async function criarMaterialComArquivoPessoal(usuarioId: string, entrada:
         descricao: dados.descricao,
         formato: arquivoValidado.formato,
         minutosEstimados: dados.minutosEstimados,
+        funcao: dados.funcao,
+        dataEvento,
+        dataEventoConfirmada: dados.dataEvento !== null,
         origem: OrigemMaterial.ARQUIVO,
         arquivo: {
           create: {
@@ -217,13 +250,17 @@ export async function atualizarMaterialPessoal(usuarioId: string, id: string, en
     const identificadorArquivo = criarIdentificador(dadosArquivo.titulo);
     const existenteArquivo = await prisma.recursoConteudo.findFirst({ where: { moduloId: atual.moduloId, identificador: identificadorArquivo, id: { not: atual.id } } });
     if (existenteArquivo) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-    return prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador: identificadorArquivo, titulo: dadosArquivo.titulo, descricao: dadosArquivo.descricao, minutosEstimados: dadosArquivo.minutosEstimados } });
+    const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador: identificadorArquivo, titulo: dadosArquivo.titulo, descricao: dadosArquivo.descricao, minutosEstimados: dadosArquivo.minutosEstimados, funcao: dadosArquivo.funcao, dataEvento: dadosArquivo.dataEvento, dataEventoConfirmada: dadosArquivo.dataEvento !== null } });
+    await reconciliarMudancaFuncaoMaterial(atual, dadosArquivo.funcao);
+    return atualizado;
   }
   const dados = dadosValidos(esquemaMaterial.safeParse({ ...objetoEntrada, moduloId: atual.moduloId }));
   const identificador = criarIdentificador(dados.titulo);
   const existente = await prisma.recursoConteudo.findFirst({ where: { moduloId: atual.moduloId, identificador, id: { not: atual.id } } });
   if (existente) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-  return prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
+  const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, dataEventoConfirmada: dados.dataEvento !== null, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
+  await reconciliarMudancaFuncaoMaterial(atual, dados.funcao);
+  return atualizado;
 }
 
 export async function arquivarMaterialPessoal(usuarioId: string, entrada: unknown) {

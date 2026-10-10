@@ -43,12 +43,11 @@ async function principal() {
       { titulo: "Imagem", arquivo: arquivo("imagem.png", "image/png", [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) },
       { titulo: "Documento", arquivo: arquivo("documento.pdf", "application/pdf", "%PDF-1.7\n") },
       { titulo: "Planilha", arquivo: arquivo("dados.csv", "text/csv", "coluna,valor\na,1\n") },
-      { titulo: "Áudio", arquivo: arquivo("audio.mp3", "audio/mpeg", [0x49, 0x44, 0x33, 0x04]) },
-      { titulo: "Vídeo", arquivo: arquivo("video.mp4", "video/mp4", [0, 0, 0, 12, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]) },
+      { titulo: "Texto", arquivo: arquivo("notas.txt", "text/plain", "Anotações sintéticas para estudo.\n") },
     ];
     for (const caso of casos) await criarMaterialComArquivoPessoal(ana.id, { moduloId: modulo.id, titulo: caso.titulo, descricao: `Arquivo sintético válido de ${caso.titulo.toLowerCase()}.`, minutosEstimados: 10 }, caso.arquivo);
     const materiais = await prisma.recursoConteudo.findMany({ where: { moduloId: modulo.id }, include: { arquivo: true }, orderBy: { titulo: "asc" } });
-    afirmar(materiais.length === casos.length && materiais.every((material) => material.origem === OrigemMaterial.ARQUIVO && material.arquivo !== null), "cada categoria deve persistir metadados de arquivo e origem explícita.");
+    afirmar(materiais.length === casos.length && materiais.every((material) => material.origem === OrigemMaterial.ARQUIVO && material.arquivo !== null && material.dataEvento !== null), "cada arquivo deve persistir metadados, origem explícita e data de envio como referência padrão.");
     chavesArmazenadas.push(...materiais.map((material) => material.arquivo!.chaveArmazenamento));
     await atualizarMaterialPessoal(ana.id, materiais[0].id, { titulo: materiais[0].titulo, descricao: materiais[0].descricao, formato: materiais[0].formato, minutosEstimados: 10, conteudoTexto: "Conversão indevida", url: "" })
       .then(() => { throw new Error("arquivo foi convertido sem operação explícita"); })
@@ -58,6 +57,8 @@ async function principal() {
     for (const candidato of [
       arquivo("invasao.png", "image/png", [0x4d, 0x5a, 0x90]),
       arquivo("macro.docm", "application/vnd.ms-word", [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]),
+      arquivo("audio.mp3", "audio/mpeg", [0x49, 0x44, 0x33, 0x04]),
+      arquivo("video.mp4", "video/mp4", [0, 0, 0, 12, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]),
       arquivo("../travessia.pdf", "application/pdf", "%PDF-1.7\n"),
       arquivo("grande.png", "image/png", new Uint8Array(10 * 1024 * 1024 + 1)),
     ]) {
@@ -77,7 +78,7 @@ async function principal() {
       bloqueouOutraConta = erro instanceof ErroModulo && erro.codigo === "NAO_ENCONTRADO";
     }
     afirmar(bloqueouOutraConta, "outra conta não pode enviar arquivo para módulo alheio.");
-    console.log("Arquivos de materiais verificados: categorias, assinatura, MIME, limites lógicos, propriedade e limpeza.");
+    console.log("Arquivos de materiais verificados: tipos permitidos, rejeição de áudio e vídeo, data padrão, assinatura, propriedade e limpeza.");
   } finally {
     await Promise.all(chavesArmazenadas.map((chave) => removerArquivoMaterial(chave)));
     if (moduloId) {

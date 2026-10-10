@@ -52,10 +52,10 @@ async function principal() {
     afirmar(await lerArquivoMaterial(chaveAtual) === null, "exclusão deve remover o arquivo físico.");
     chaveAtual = null;
 
-    const audio = await criarMaterialComArquivoPessoal(ana.id, { moduloId: modulo.id, titulo: "Áudio", descricao: "Material não analisado nesta fase.", minutosEstimados: 10 }, arquivo("audio.mp3", "audio/mpeg", new Uint8Array([0x49, 0x44, 0x33, 0x04])));
-    chaveAtual = (await prisma.arquivoMaterial.findUniqueOrThrow({ where: { recursoId: audio.id } })).chaveArmazenamento;
-    afirmar(audio.analise?.situacao === "NAO_SUPORTADA", "áudio não deve entrar na análise desta fase.");
-    await excluirMaterialPermanentemente(ana.id, audio.id);
+    const documentoLegado = await criarMaterialComArquivoPessoal(ana.id, { moduloId: modulo.id, titulo: "Documento legado", descricao: "Documento aceito sem extração nesta fase.", minutosEstimados: 10 }, arquivo("legado.doc", "application/msword", new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])));
+    chaveAtual = (await prisma.arquivoMaterial.findUniqueOrThrow({ where: { recursoId: documentoLegado.id } })).chaveArmazenamento;
+    afirmar(documentoLegado.analise?.situacao === "NAO_SUPORTADA", "DOC legado deve ser armazenado sem entrar na análise desta fase.");
+    await excluirMaterialPermanentemente(ana.id, documentoLegado.id);
     chaveAtual = null;
 
     const imagemBytes = await sharp(Buffer.from('<svg width="900" height="220"><rect width="100%" height="100%" fill="white"/><text x="35" y="130" font-size="64" fill="black">Algoritmos e estruturas de dados</text></svg>')).png().toBuffer();

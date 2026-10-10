@@ -278,8 +278,8 @@
   flex: 0 0 auto;
   padding: 6px 9px;
   border-radius: 999px;
-  color: #5235d7;
-  background: #f0edff;
+  color: var(--cor-texto);
+  background: var(--cor-acao-suave);
   font-size: 0.64rem;
   font-weight: 750;
 }
@@ -289,7 +289,7 @@
   gap: 9px;
   align-items: center;
   margin-top: 17px;
-  color: #60709f;
+  color: var(--cor-texto-secundario);
   font-size: 0.62rem;
   font-weight: 700;
 }
@@ -339,6 +339,42 @@
   border-radius: 24px;
   background: rgb(255 255 255 / 94%);
   box-shadow: 0 24px 62px rgb(49 57 111 / 12%);
+}
+
+.formularioInterno {
+  display: grid;
+  gap: 20px;
+}
+
+.alternadorAcesso {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #dfe3f1;
+  border-radius: 13px;
+  background: #f4f5fb;
+}
+
+.alternadorAcesso a {
+  padding: 9px 12px;
+  border-radius: 9px;
+  color: var(--cor-texto-secundario);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.alternadorAcesso a[aria-current="page"] {
+  color: var(--cor-texto);
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(61 54 117 / 10%);
+}
+
+.alternadorAcesso a:focus-visible {
+  outline: 3px solid rgb(96 64 238 / 25%);
+  outline-offset: 2px;
 }
 
 .cabecalhoFormulario {
@@ -422,7 +458,7 @@
   box-shadow: 0 0 0 1px var(--entrada-roxo);
 }
 
-.botaoEntrar {
+.formularioLogin :global(.botao-submissao-entrada) {
   display: flex;
   min-height: 52px;
   align-items: center;
@@ -439,24 +475,30 @@
   transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
-.botaoEntrar svg {
+.formularioLogin :global(.botao-submissao-entrada) svg {
   width: 19px;
   height: 19px;
 }
 
-.botaoEntrar:hover {
+.formularioLogin :global(.botao-submissao-entrada):hover:not(:disabled) {
   box-shadow: 0 15px 30px rgb(82 52 223 / 32%);
   filter: brightness(1.04);
   transform: translateY(-1px);
 }
 
-.botaoEntrar:active {
+.formularioLogin :global(.botao-submissao-entrada):active {
   transform: translateY(0);
 }
 
-.botaoEntrar:focus-visible {
+.formularioLogin :global(.botao-submissao-entrada):focus-visible {
   outline: 3px solid #2e1aa1;
   outline-offset: 3px;
+}
+
+.formularioLogin :global(.botao-submissao-entrada):disabled {
+  cursor: wait;
+  filter: saturate(0.65);
+  opacity: 0.72;
 }
 
 .avisoDemonstracao {
@@ -465,7 +507,7 @@
   align-items: flex-start;
   justify-content: center;
   margin: 1px 0 0;
-  color: #68759e;
+  color: var(--cor-texto-secundario);
   font-size: 0.75rem;
   line-height: 1.45;
   text-align: center;
@@ -476,7 +518,7 @@
   height: 16px;
   flex: 0 0 auto;
   margin-top: 1px;
-  color: #6a52d9;
+  color: var(--cor-texto);
 }
 
 @media (max-width: 1060px) {
@@ -627,7 +669,159 @@
 
 @media (prefers-reduced-motion: reduce) {
   .controleCampo input,
-  .botaoEntrar {
+  .formularioLogin :global(.botao-submissao-entrada) {
     transition: none;
   }
+}
+
+/* Direção minimalista aprovada: o formulário é a ação principal e a
+   apresentação permanece como contexto, sem superfícies saturadas. */
+.paginaEntrada {
+  --entrada-tinta: var(--cor-texto);
+  --entrada-texto: var(--cor-texto-secundario);
+  --entrada-roxo: var(--cor-acao);
+  --entrada-roxo-escuro: var(--cor-acao-forte);
+  --entrada-lilas: var(--cor-acao-suave);
+  --entrada-borda: var(--cor-borda);
+  padding: clamp(16px, 3vw, 36px);
+  background: var(--cor-fundo);
+}
+
+.paginaEntrada::after,
+.haloSuperior,
+.painelConceito::before,
+.painelConceito::after {
+  display: none;
+}
+
+.experienciaEntrada {
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .72fr);
+  width: min(1320px, 100%);
+  min-height: calc(100vh - clamp(32px, 6vw, 72px));
+  border-color: var(--cor-borda);
+  border-radius: 24px;
+  background: var(--cor-superficie);
+  box-shadow: 0 22px 70px rgb(15 23 42 / 9%);
+  backdrop-filter: none;
+}
+
+.painelConceito {
+  padding: clamp(30px, 4.5vw, 64px);
+  background: var(--cor-superficie-suave);
+}
+
+.simboloMarca {
+  border-color: var(--cor-borda);
+  border-radius: 12px;
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
+  box-shadow: none;
+}
+
+.marcaProduto small,
+.resumo,
+.beneficios small,
+.cabecalhoPrevia small,
+.avisoDemonstracao {
+  color: var(--cor-texto-secundario);
+}
+
+.chamadaPrincipal {
+  max-width: 680px;
+  margin-top: clamp(48px, 8vh, 92px);
+}
+
+.chamadaPrincipal h1 {
+  max-width: 680px;
+  font-size: clamp(2.7rem, 4.7vw, 4.9rem);
+}
+
+.beneficios {
+  gap: var(--espaco-3);
+}
+
+.beneficios li {
+  padding: 14px;
+  border-color: var(--cor-borda);
+  border-radius: 14px;
+  background: var(--cor-superficie);
+  box-shadow: none;
+}
+
+.previaPainel {
+  border-color: var(--cor-borda);
+  background: var(--cor-superficie);
+  box-shadow: none;
+}
+
+.painelAcesso {
+  padding: clamp(30px, 4vw, 58px);
+  border-left-color: var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.fraseApoio {
+  color: var(--cor-texto-secundario);
+}
+
+.formularioLogin {
+  border-color: var(--cor-borda);
+  border-radius: 18px;
+  box-shadow: var(--sombra-suave);
+}
+
+.alternadorAcesso {
+  background: var(--cor-superficie-suave);
+}
+
+.alternadorAcesso a[aria-current="page"] {
+  color: var(--cor-acao);
+  background: var(--cor-superficie);
+  box-shadow: 0 4px 14px rgb(15 23 42 / 6%);
+}
+
+.controleCampo {
+  border-color: var(--cor-borda);
+  border-radius: var(--raio-controle);
+  background: var(--cor-superficie);
+}
+
+.controleCampo > svg {
+  color: var(--cor-texto-secundario);
+}
+
+.controleCampo input {
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.controleCampo input::placeholder {
+  color: #8a8d91;
+}
+
+.controleCampo input:hover {
+  border-color: #bfc1c4;
+}
+
+.controleCampo input:focus-visible {
+  border-color: var(--cor-acao);
+  box-shadow: 0 0 0 1px var(--cor-acao);
+}
+
+.formularioLogin :global(.botao-submissao-entrada) {
+  border-radius: var(--raio-controle);
+  background: var(--cor-acao);
+  box-shadow: none;
+}
+
+.formularioLogin :global(.botao-submissao-entrada):hover:not(:disabled) {
+  background: var(--cor-acao-forte);
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+
+@media (max-width: 820px) {
+  .experienciaEntrada { grid-template-columns: 1fr; }
+  .painelAcesso { border-top: 1px solid var(--cor-borda); border-left: 0; }
 }

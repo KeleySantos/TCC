@@ -93,30 +93,30 @@ enum EscopoComentarioSala {
 }
 
 model Usuario {
-  id               String                  @id @default(cuid())
-  nome             String
-  nomeUsuario      String                  @unique
-  email            String?                 @unique
-  senhaHash        String
+  id                       String                   @id @default(cuid())
+  nome                     String
+  nomeUsuario              String                   @unique
+  email                    String?                  @unique
+  senhaHash                String
   // Campo técnico legado. Não representa papel no produto e não deve ser usado em rotas, serviços ou interface.
-  papel            PapelUsuario            @default(ALUNO)
-  criadoEm         DateTime                @default(now())
-  atualizadoEm     DateTime                @updatedAt
-  modulos          ModuloAprendizagem[]
-  sessoesEstudo    SessaoEstudo[]          @relation("SessoesDoUsuario")
-  desafios         DesafioExperimentacao[]
-  perfilAluno      PerfilAluno?
-  perfilProfessor  PerfilProfessor?
-  eventosAuditoria EventoAuditoria[]       @relation("AtorAuditoria")
-  configuracoesIa  ConfiguracaoIa[]
-  salasProprias    Sala[]                   @relation("ProprietarioSala")
-  membrosSalas     MembroSala[]
-  convitesSalas    ConviteSala[]            @relation("CriadorConviteSala")
-  solicitacoesSala SolicitacaoEntradaSala[] @relation("SolicitanteSala")
-  decisoesSala     SolicitacaoEntradaSala[] @relation("DecisorSolicitacaoSala")
-  vinculosSala     VinculoModuloSala[]
-  comentariosSala  ComentarioSala[]         @relation("AutorComentarioSala")
-  comentariosRecebidosSala ComentarioSala[] @relation("DestinatarioComentarioSala")
+  papel                    PapelUsuario             @default(ALUNO)
+  criadoEm                 DateTime                 @default(now())
+  atualizadoEm             DateTime                 @updatedAt
+  modulos                  ModuloAprendizagem[]
+  sessoesEstudo            SessaoEstudo[]           @relation("SessoesDoUsuario")
+  desafios                 DesafioExperimentacao[]
+  perfilAluno              PerfilAluno?
+  perfilProfessor          PerfilProfessor?
+  eventosAuditoria         EventoAuditoria[]        @relation("AtorAuditoria")
+  configuracoesIa          ConfiguracaoIa[]
+  salasProprias            Sala[]                   @relation("ProprietarioSala")
+  membrosSalas             MembroSala[]
+  convitesSalas            ConviteSala[]            @relation("CriadorConviteSala")
+  solicitacoesSala         SolicitacaoEntradaSala[] @relation("SolicitanteSala")
+  decisoesSala             SolicitacaoEntradaSala[] @relation("DecisorSolicitacaoSala")
+  vinculosSala             VinculoModuloSala[]
+  comentariosSala          ComentarioSala[]         @relation("AutorComentarioSala")
+  comentariosRecebidosSala ComentarioSala[]         @relation("DestinatarioComentarioSala")
 }
 
 enum MetodoEstudo {
@@ -161,20 +161,61 @@ enum SituacaoAnaliseMaterial {
   NAO_SUPORTADA
 }
 
+enum FuncaoMaterial {
+  REFERENCIA
+  AVALIACAO
+  ANOTACAO
+  EVIDENCIA_VISUAL
+}
+
+enum SituacaoConfirmacao {
+  PENDENTE
+  CONFIRMADA
+  REJEITADA
+}
+
+enum TipoEvidenciaAprendizagem {
+  PROVA
+  EXERCICIO
+  AVALIACAO
+  OUTRA
+}
+
+enum TipoQuestaoEvidencia {
+  MULTIPLA_ESCOLHA
+  VERDADEIRO_FALSO
+  DISCURSIVA
+  PRATICA
+  APLICACAO
+  OUTRA
+}
+
+enum ResultadoQuestaoEvidencia {
+  ACERTO
+  PARCIAL
+  ERRO
+  NAO_INFORMADO
+}
+
+enum OrigemVinculoEvidenciaSessao {
+  MANUAL
+  INFERIDO
+}
+
 model ConfiguracaoIa {
-  id                   String                @id @default(cuid())
+  id                   String               @id @default(cuid())
   usuarioId            String
-  provedor              ProvedorIa
-  chaveCifrada          String
-  vetorInicializacao    String
-  etiquetaAutenticacao  String
-  ativa                 Boolean               @default(true)
-  estadoUltimoTeste     EstadoConfiguracaoIa @default(NAO_TESTADA)
-  ultimoTesteEm         DateTime?
-  bloqueadaAte          DateTime?
-  criadoEm              DateTime              @default(now())
-  atualizadoEm          DateTime              @updatedAt
-  usuario               Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  provedor             ProvedorIa
+  chaveCifrada         String
+  vetorInicializacao   String
+  etiquetaAutenticacao String
+  ativa                Boolean              @default(true)
+  estadoUltimoTeste    EstadoConfiguracaoIa @default(NAO_TESTADA)
+  ultimoTesteEm        DateTime?
+  bloqueadaAte         DateTime?
+  criadoEm             DateTime             @default(now())
+  atualizadoEm         DateTime             @updatedAt
+  usuario              Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, provedor])
   @@index([usuarioId, ativa])
@@ -196,6 +237,8 @@ model ModuloAprendizagem {
   sessoesEstudo SessaoEstudo[]          @relation("SessoesDoModulo")
   desafios      DesafioExperimentacao[]
   vinculosSala  VinculoModuloSala[]
+  conceitos     ConceitoAprendizagem[]
+  evidencias    EvidenciaAprendizagem[]
 
   @@unique([usuarioId, identificador])
   @@index([usuarioId, arquivado])
@@ -203,15 +246,15 @@ model ModuloAprendizagem {
 }
 
 model Sala {
-  id             String        @id @default(cuid())
+  id             String                   @id @default(cuid())
   proprietarioId String
-  identificador  String        @unique
+  identificador  String                   @unique
   nome           String
   descricao      String
-  situacao       SituacaoSala  @default(ATIVA)
-  criadaEm       DateTime      @default(now())
-  atualizadaEm   DateTime      @updatedAt
-  proprietario   Usuario       @relation("ProprietarioSala", fields: [proprietarioId], references: [id], onDelete: Restrict)
+  situacao       SituacaoSala             @default(ATIVA)
+  criadaEm       DateTime                 @default(now())
+  atualizadaEm   DateTime                 @updatedAt
+  proprietario   Usuario                  @relation("ProprietarioSala", fields: [proprietarioId], references: [id], onDelete: Restrict)
   membros        MembroSala[]
   convites       ConviteSala[]
   solicitacoes   SolicitacaoEntradaSala[]
@@ -222,16 +265,16 @@ model Sala {
 }
 
 model MembroSala {
-  id          String               @id @default(cuid())
-  salaId      String
-  usuarioId   String
-  papel       PapelMembroSala      @default(MEMBRO)
-  situacao    SituacaoMembroSala   @default(ATIVO)
-  entrouEm    DateTime             @default(now())
-  encerrouEm  DateTime?
-  sala        Sala                 @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  usuario     Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  vinculos    VinculoModuloSala[]
+  id         String              @id @default(cuid())
+  salaId     String
+  usuarioId  String
+  papel      PapelMembroSala     @default(MEMBRO)
+  situacao   SituacaoMembroSala  @default(ATIVO)
+  entrouEm   DateTime            @default(now())
+  encerrouEm DateTime?
+  sala       Sala                @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  usuario    Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  vinculos   VinculoModuloSala[]
 
   @@unique([salaId, usuarioId])
   @@index([usuarioId, situacao])
@@ -239,50 +282,50 @@ model MembroSala {
 }
 
 model ConviteSala {
-  id           String    @id @default(cuid())
+  id           String                   @id @default(cuid())
   salaId       String
   criadoPorId  String
-  codigoHash   String    @unique
+  codigoHash   String                   @unique
   expiraEm     DateTime
   revogadoEm   DateTime?
-  criadoEm     DateTime  @default(now())
-  sala         Sala      @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  criadoPor    Usuario   @relation("CriadorConviteSala", fields: [criadoPorId], references: [id], onDelete: Restrict)
+  criadoEm     DateTime                 @default(now())
+  sala         Sala                     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  criadoPor    Usuario                  @relation("CriadorConviteSala", fields: [criadoPorId], references: [id], onDelete: Restrict)
   solicitacoes SolicitacaoEntradaSala[]
 
   @@index([salaId, revogadoEm, expiraEm])
 }
 
 model SolicitacaoEntradaSala {
-  id            String                    @id @default(cuid())
+  id            String                  @id @default(cuid())
   salaId        String
   conviteId     String
   solicitanteId String
-  situacao      SituacaoSolicitacaoSala   @default(PENDENTE)
-  solicitadaEm  DateTime                  @default(now())
+  situacao      SituacaoSolicitacaoSala @default(PENDENTE)
+  solicitadaEm  DateTime                @default(now())
   decididaEm    DateTime?
   decididaPorId String?
-  sala          Sala                      @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  convite       ConviteSala               @relation(fields: [conviteId], references: [id], onDelete: Restrict)
-  solicitante   Usuario                   @relation("SolicitanteSala", fields: [solicitanteId], references: [id], onDelete: Restrict)
-  decididaPor   Usuario?                  @relation("DecisorSolicitacaoSala", fields: [decididaPorId], references: [id], onDelete: SetNull)
+  sala          Sala                    @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  convite       ConviteSala             @relation(fields: [conviteId], references: [id], onDelete: Restrict)
+  solicitante   Usuario                 @relation("SolicitanteSala", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  decididaPor   Usuario?                @relation("DecisorSolicitacaoSala", fields: [decididaPorId], references: [id], onDelete: SetNull)
 
   @@index([salaId, situacao, solicitadaEm])
   @@index([solicitanteId, situacao])
 }
 
 model ModuloSala {
-  id          String               @id @default(cuid())
-  salaId      String
-  titulo      String
-  descricao   String
-  posicao     Int
-  situacao    SituacaoModuloSala   @default(ATIVO)
-  criadoEm    DateTime             @default(now())
-  atualizadoEm DateTime            @updatedAt
-  sala        Sala                 @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  vinculos    VinculoModuloSala[]
-  comentarios ComentarioSala[]
+  id                   String                         @id @default(cuid())
+  salaId               String
+  titulo               String
+  descricao            String
+  posicao              Int
+  situacao             SituacaoModuloSala             @default(ATIVO)
+  criadoEm             DateTime                       @default(now())
+  atualizadoEm         DateTime                       @updatedAt
+  sala                 Sala                           @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  vinculos             VinculoModuloSala[]
+  comentarios          ComentarioSala[]
   evidenciasHistoricas EvidenciaHistoricaModuloSala[]
 
   @@unique([salaId, posicao])
@@ -290,22 +333,22 @@ model ModuloSala {
 }
 
 model VinculoModuloSala {
-  id                    String                     @id @default(cuid())
+  id                    String                    @id @default(cuid())
   moduloSalaId          String
   membroSalaId          String
   usuarioId             String
   moduloPessoalId       String
   situacao              SituacaoVinculoModuloSala @default(ATIVO)
-  compartilharDashboard Boolean                    @default(true)
-  permitirComparacao    Boolean                    @default(false)
-  permitirIa            Boolean                    @default(false)
-  vinculadoEm           DateTime                   @default(now())
-  dadosDesde             DateTime?
+  compartilharDashboard Boolean                   @default(true)
+  permitirComparacao    Boolean                   @default(false)
+  permitirIa            Boolean                   @default(false)
+  vinculadoEm           DateTime                  @default(now())
+  dadosDesde            DateTime?
   desvinculadoEm        DateTime?
-  moduloSala            ModuloSala                 @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
-  membroSala            MembroSala                 @relation(fields: [membroSalaId], references: [id], onDelete: Cascade)
-  usuario               Usuario                    @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  moduloPessoal         ModuloAprendizagem         @relation(fields: [moduloPessoalId], references: [id], onDelete: Restrict)
+  moduloSala            ModuloSala                @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
+  membroSala            MembroSala                @relation(fields: [membroSalaId], references: [id], onDelete: Cascade)
+  usuario               Usuario                   @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  moduloPessoal         ModuloAprendizagem        @relation(fields: [moduloPessoalId], references: [id], onDelete: Restrict)
 
   @@unique([moduloSalaId, usuarioId])
   @@unique([moduloSalaId, moduloPessoalId])
@@ -315,36 +358,36 @@ model VinculoModuloSala {
 }
 
 model EvidenciaHistoricaModuloSala {
-  id                       String      @id @default(cuid())
-  moduloSalaId             String
-  referenciaSessaoHash     String      @unique
-  contribuinteAnonimoHash  String
-  encerradaEm              DateTime
-  duracaoMinutos           Int
-  dificuldadePercebida     Int?
-  compreensaoPercebida     Int?
-  metodosJson              String
-  formatosJson             String
-  criadaEm                 DateTime    @default(now())
-  moduloSala               ModuloSala  @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
+  id                      String     @id @default(cuid())
+  moduloSalaId            String
+  referenciaSessaoHash    String     @unique
+  contribuinteAnonimoHash String
+  encerradaEm             DateTime
+  duracaoMinutos          Int
+  dificuldadePercebida    Int?
+  compreensaoPercebida    Int?
+  metodosJson             String
+  formatosJson            String
+  criadaEm                DateTime   @default(now())
+  moduloSala              ModuloSala @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
 
   @@index([moduloSalaId, encerradaEm])
   @@index([moduloSalaId, contribuinteAnonimoHash])
 }
 
 model ComentarioSala {
-  id             String                @id @default(cuid())
+  id             String               @id @default(cuid())
   salaId         String
   autorId        String
   escopo         EscopoComentarioSala
   moduloSalaId   String?
   destinatarioId String?
   conteudo       String
-  criadoEm       DateTime              @default(now())
-  sala           Sala                  @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  autor          Usuario               @relation("AutorComentarioSala", fields: [autorId], references: [id], onDelete: Restrict)
-  moduloSala     ModuloSala?           @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
-  destinatario   Usuario?              @relation("DestinatarioComentarioSala", fields: [destinatarioId], references: [id], onDelete: Restrict)
+  criadoEm       DateTime             @default(now())
+  sala           Sala                 @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  autor          Usuario              @relation("AutorComentarioSala", fields: [autorId], references: [id], onDelete: Restrict)
+  moduloSala     ModuloSala?          @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
+  destinatario   Usuario?             @relation("DestinatarioComentarioSala", fields: [destinatarioId], references: [id], onDelete: Restrict)
 
   @@index([salaId, criadoEm])
   @@index([moduloSalaId, criadoEm])
@@ -352,10 +395,10 @@ model ComentarioSala {
 }
 
 model PerfilAluno {
-  id            String               @id @default(cuid())
-  usuarioId     String               @unique
-  pseudonimo    String               @unique
-  usuario       Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  usuarioId     String         @unique
+  pseudonimo    String         @unique
+  usuario       Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   matriculas    Matricula[]
   sessoesEstudo SessaoEstudo[]
 }
@@ -393,24 +436,29 @@ model Matricula {
 }
 
 model RecursoConteudo {
-  id               String                 @id @default(cuid())
-  identificador    String
-  titulo           String
-  descricao        String
-  formato          FormatoConteudo
-  minutosEstimados Int
-  moduloId         String
-  conteudoTexto    String?
-  url              String?
-  origem           OrigemMaterial         @default(TEXTO)
-  ativo            Boolean                @default(true)
-  criadoEm         DateTime               @default(now())
-  atualizadoEm     DateTime               @updatedAt
-  modulo           ModuloAprendizagem     @relation(fields: [moduloId], references: [id], onDelete: Cascade)
-  aprovacoes       AprovacaoRecurso[]
-  vinculosSessoes  MaterialSessaoEstudo[]
-  arquivo          ArquivoMaterial?
-  analise          AnaliseMaterial?
+  id                   String                 @id @default(cuid())
+  identificador        String
+  titulo               String
+  descricao            String
+  formato              FormatoConteudo
+  minutosEstimados     Int
+  moduloId             String
+  conteudoTexto        String?
+  url                  String?
+  origem               OrigemMaterial         @default(TEXTO)
+  ativo                Boolean                @default(true)
+  criadoEm             DateTime               @default(now())
+  atualizadoEm         DateTime               @updatedAt
+  funcao               FuncaoMaterial         @default(REFERENCIA)
+  dataEvento           DateTime?
+  dataEventoConfirmada Boolean                @default(false)
+  modulo               ModuloAprendizagem     @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  aprovacoes           AprovacaoRecurso[]
+  vinculosSessoes      MaterialSessaoEstudo[]
+  arquivo              ArquivoMaterial?
+  analise              AnaliseMaterial?
+  conceitos            ConceitoMaterial[]
+  evidencia            EvidenciaAprendizagem?
 
   @@unique([moduloId, identificador])
   @@index([moduloId, formato])
@@ -418,27 +466,30 @@ model RecursoConteudo {
 }
 
 model AnaliseMaterial {
-  id                    String                  @id @default(cuid())
-  recursoId             String                  @unique
-  situacao              SituacaoAnaliseMaterial @default(PENDENTE)
-  versao                String                  @default("analise-material-v1")
-  resumo                String?
-  conceitosJson         String                  @default("[]")
-  pontosRevisaoJson     String                  @default("[]")
-  metodosSugeridosJson  String                  @default("[]")
-  proximasSessoesJson   String                  @default("[]")
-  perguntasReflexaoJson String                  @default("[]")
-  origem                String?
-  modelo                String?
-  caracteresExtraidos   Int                     @default(0)
-  conteudoTruncado      Boolean                 @default(false)
-  tentativas            Int                     @default(0)
-  codigoFalha           String?
-  hashConteudo           String?
-  analisadaEm           DateTime?
-  criadaEm              DateTime                @default(now())
-  atualizadaEm          DateTime                @updatedAt
-  recurso               RecursoConteudo         @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  id                      String                  @id @default(cuid())
+  recursoId               String                  @unique
+  situacao                SituacaoAnaliseMaterial @default(PENDENTE)
+  versao                  String                  @default("analise-material-v1")
+  resumo                  String?
+  conceitosJson           String                  @default("[]")
+  pontosRevisaoJson       String                  @default("[]")
+  metodosSugeridosJson    String                  @default("[]")
+  proximasSessoesJson     String                  @default("[]")
+  perguntasReflexaoJson   String                  @default("[]")
+  trechosConceitosJson    String                  @default("[]")
+  afirmacoesJson          String                  @default("[]")
+  interpretacaoVisualJson String                  @default("[]")
+  origem                  String?
+  modelo                  String?
+  caracteresExtraidos     Int                     @default(0)
+  conteudoTruncado        Boolean                 @default(false)
+  tentativas              Int                     @default(0)
+  codigoFalha             String?
+  hashConteudo            String?
+  analisadaEm             DateTime?
+  criadaEm                DateTime                @default(now())
+  atualizadaEm            DateTime                @updatedAt
+  recurso                 RecursoConteudo         @relation(fields: [recursoId], references: [id], onDelete: Cascade)
 
   @@index([situacao, atualizadaEm])
 }
@@ -473,13 +524,13 @@ model AprovacaoRecurso {
 }
 
 model SessaoEstudo {
-  id                   String                 @id @default(cuid())
+  id                   String                   @id @default(cuid())
   usuarioId            String
   moduloId             String
   // Referência de compatibilidade com o modelo anterior. Novos registros não a preenchem.
   alunoId              String?
-  descricao            String                 @default("")
-  modoRegistro         ModoRegistroSessao     @default(CRONOMETRO)
+  descricao            String                   @default("")
+  modoRegistro         ModoRegistroSessao       @default(CRONOMETRO)
   dificuldadePercebida Int?
   compreensaoPercebida Int?
   // Campo legado preservado até a migração completa dos consumidores.
@@ -488,17 +539,19 @@ model SessaoEstudo {
   iniciadaEm           DateTime
   encerradaEm          DateTime?
   duracaoMinutos       Int?
-  situacao             SituacaoSessao         @default(ATIVA)
-  arquivada            Boolean                @default(false)
-  criadaEm             DateTime               @default(now())
-  atualizadaEm         DateTime               @default(now()) @updatedAt
-  usuario              Usuario                @relation("SessoesDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
-  modulo               ModuloAprendizagem     @relation("SessoesDoModulo", fields: [moduloId], references: [id], onDelete: Cascade)
-  aluno                PerfilAluno?           @relation(fields: [alunoId], references: [id], onDelete: SetNull)
-  desafio              DesafioExperimentacao? @relation(fields: [desafioId], references: [id], onDelete: SetNull)
+  situacao             SituacaoSessao           @default(ATIVA)
+  arquivada            Boolean                  @default(false)
+  criadaEm             DateTime                 @default(now())
+  atualizadaEm         DateTime                 @default(now()) @updatedAt
+  usuario              Usuario                  @relation("SessoesDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  modulo               ModuloAprendizagem       @relation("SessoesDoModulo", fields: [moduloId], references: [id], onDelete: Cascade)
+  aluno                PerfilAluno?             @relation(fields: [alunoId], references: [id], onDelete: SetNull)
+  desafio              DesafioExperimentacao?   @relation(fields: [desafioId], references: [id], onDelete: SetNull)
   metodos              MetodoSessaoEstudo[]
   formatos             FormatoSessaoEstudo[]
   materiais            MaterialSessaoEstudo[]
+  conceitos            ConceitoSessao[]
+  vinculosEvidencias   VinculoEvidenciaSessao[]
 
   @@index([usuarioId, moduloId, situacao])
   @@index([alunoId, situacao])
@@ -533,6 +586,119 @@ model MaterialSessaoEstudo {
 
   @@id([sessaoId, recursoId])
   @@index([recursoId])
+}
+
+model ConceitoAprendizagem {
+  id           String                     @id @default(cuid())
+  moduloId     String
+  nome         String
+  chave        String
+  aliasesJson  String                     @default("[]")
+  origem       String                     @default("ANALISE_MATERIAL")
+  ativo        Boolean                    @default(true)
+  criadoEm     DateTime                   @default(now())
+  atualizadoEm DateTime                   @updatedAt
+  modulo       ModuloAprendizagem         @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  materiais    ConceitoMaterial[]
+  sessoes      ConceitoSessao[]
+  evidencias   ConceitoEvidencia[]
+  questoes     ConceitoQuestaoEvidencia[]
+
+  @@unique([moduloId, chave])
+  @@index([moduloId, ativo])
+}
+
+model ConceitoMaterial {
+  conceitoId  String
+  recursoId   String
+  trechosJson String               @default("[]")
+  conceito    ConceitoAprendizagem @relation(fields: [conceitoId], references: [id], onDelete: Cascade)
+  recurso     RecursoConteudo      @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+
+  @@id([conceitoId, recursoId])
+  @@index([recursoId])
+}
+
+model ConceitoSessao {
+  conceitoId String
+  sessaoId   String
+  conceito   ConceitoAprendizagem @relation(fields: [conceitoId], references: [id], onDelete: Cascade)
+  sessao     SessaoEstudo         @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+
+  @@id([conceitoId, sessaoId])
+  @@index([sessaoId])
+}
+
+model EvidenciaAprendizagem {
+  id                   String                    @id @default(cuid())
+  moduloId             String
+  recursoId            String?                   @unique
+  titulo               String
+  tipo                 TipoEvidenciaAprendizagem
+  dataEvento           DateTime
+  situacaoConfirmacao  SituacaoConfirmacao       @default(PENDENTE)
+  desempenhoPercentual Float?
+  resumo               String?
+  dadosOrigemJson      String                    @default("{}")
+  confirmadaEm         DateTime?
+  criadaEm             DateTime                  @default(now())
+  atualizadaEm         DateTime                  @updatedAt
+  modulo               ModuloAprendizagem        @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  recurso              RecursoConteudo?          @relation(fields: [recursoId], references: [id], onDelete: SetNull)
+  questoes             QuestaoEvidencia[]
+  conceitos            ConceitoEvidencia[]
+  vinculosSessoes      VinculoEvidenciaSessao[]
+
+  @@index([moduloId, dataEvento])
+  @@index([moduloId, situacaoConfirmacao])
+}
+
+model QuestaoEvidencia {
+  id              String                     @id @default(cuid())
+  evidenciaId     String
+  identificador   String
+  resumo          String
+  tipo            TipoQuestaoEvidencia       @default(OUTRA)
+  resultado       ResultadoQuestaoEvidencia  @default(NAO_INFORMADO)
+  pontuacaoObtida Float?
+  pontuacaoMaxima Float?
+  evidencia       EvidenciaAprendizagem      @relation(fields: [evidenciaId], references: [id], onDelete: Cascade)
+  conceitos       ConceitoQuestaoEvidencia[]
+
+  @@unique([evidenciaId, identificador])
+  @@index([evidenciaId])
+}
+
+model ConceitoEvidencia {
+  conceitoId  String
+  evidenciaId String
+  conceito    ConceitoAprendizagem  @relation(fields: [conceitoId], references: [id], onDelete: Cascade)
+  evidencia   EvidenciaAprendizagem @relation(fields: [evidenciaId], references: [id], onDelete: Cascade)
+
+  @@id([conceitoId, evidenciaId])
+  @@index([evidenciaId])
+}
+
+model ConceitoQuestaoEvidencia {
+  conceitoId String
+  questaoId  String
+  conceito   ConceitoAprendizagem @relation(fields: [conceitoId], references: [id], onDelete: Cascade)
+  questao    QuestaoEvidencia     @relation(fields: [questaoId], references: [id], onDelete: Cascade)
+
+  @@id([conceitoId, questaoId])
+  @@index([questaoId])
+}
+
+model VinculoEvidenciaSessao {
+  evidenciaId String
+  sessaoId    String
+  origem      OrigemVinculoEvidenciaSessao @default(MANUAL)
+  confirmado  Boolean                      @default(true)
+  evidencia   EvidenciaAprendizagem        @relation(fields: [evidenciaId], references: [id], onDelete: Cascade)
+  sessao      SessaoEstudo                 @relation(fields: [sessaoId], references: [id], onDelete: Cascade)
+
+  @@id([evidenciaId, sessaoId])
+  @@index([sessaoId])
 }
 
 model DesafioExperimentacao {

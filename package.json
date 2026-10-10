@@ -21,6 +21,7 @@
     "testar:metricas": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-metricas-sinteticas.ts",
     "testar:metricas-sessoes": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-metricas-sessoes.ts",
     "testar:configuracoes-ia": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-configuracoes-ia.ts",
+    "testar:provedores-insights": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-provedores-insights.ts",
     "testar:arquivos": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-arquivos-materiais.ts",
     "testar:materiais-modulo": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-materiais-modulo.ts",
     "testar:desafios": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-desafios-experimentacao.ts",
@@ -30,6 +31,8 @@
     "banco:gerar": "node ./node_modules/prisma/build/index.js generate --schema prisma/schema.prisma",
     "banco:migrar": "node ./node_modules/tsx/dist/cli.mjs scripts/migrar-banco.ts",
     "banco:popular": "node ./node_modules/tsx/dist/cli.mjs prisma/seed.ts",
+    "banco:enriquecer-diego": "node ./node_modules/tsx/dist/cli.mjs scripts/enriquecer-cenario-diego.ts",
+    "banco:verificar-diego": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-cenario-diego.ts",
     "banco:reiniciar": "node ./node_modules/tsx/dist/cli.mjs scripts/reiniciar-banco.ts",
     "banco:verificar-cenario": "node ./node_modules/tsx/dist/cli.mjs scripts/verificar-cenario-sintetico.ts",
     "validar": "npm run verificar:segredos && npm run verificar-estilo && npm run verificar-tipos && npm run testar && npm run compilar"

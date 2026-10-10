@@ -6,16 +6,16 @@ import {
   alterarConsentimentosVinculo,
   criarModuloSala,
   criarSala,
-  decidirSolicitacaoSala,
   desvincularInstanciaModuloSala,
   ErroSala,
   excluirSala,
   gerarConviteSala,
+  listarSalasDaConta,
   obterSalaDaConta,
   publicarComentarioSala,
   removerMembroSala,
   revogarConviteSala,
-  solicitarEntradaSala,
+  entrarSalaComCodigo,
   vincularInstanciaModuloSala,
 } from "../src/servidor/salas";
 
@@ -28,7 +28,7 @@ async function deveFalhar(codigo: string, operacao: () => Promise<unknown>) {
 }
 
 try {
-  const [proprietario, membro, terceiro] = await Promise.all(["proprietario", "membro", "terceiro"].map(async (papel) => {
+  const [proprietario, membro, terceiro, legado] = await Promise.all(["proprietario", "membro", "terceiro", "legado"].map(async (papel) => {
     const usuario = await prisma.usuario.create({ data: { nome: `Conta ${papel}`, nomeUsuario: `salas-${papel}-${sufixo}`, senhaHash: "sintetica" } });
     idsUsuarios.push(usuario.id);
     return usuario;
@@ -49,15 +49,22 @@ try {
   let detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
   assert(detalheProprietario);
   assert.equal(detalheProprietario.modulos.length, 1);
+  assert.equal(await obterSalaDaConta(membro.id, sala.identificador), null);
+  assert.equal((await listarSalasDaConta(membro.id)).some((item) => item.id === sala.id), false);
 
   const convite = await gerarConviteSala(proprietario.id, { salaId: sala.id });
   const convitePersistido = await prisma.conviteSala.findUniqueOrThrow({ where: { id: convite.id } });
   assert.notEqual(convitePersistido.codigoHash, convite.codigo);
-  await solicitarEntradaSala(membro.id, { codigo: convite.codigo.toLowerCase() });
+  await entrarSalaComCodigo(membro.id, { codigo: convite.codigo.toLowerCase() });
   detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
-  assert.equal(detalheProprietario?.solicitacoes.length, 1);
-  await decidirSolicitacaoSala(proprietario.id, { solicitacaoId: detalheProprietario?.solicitacoes[0].id, aprovar: true });
+  assert.equal(await prisma.solicitacaoEntradaSala.count({ where: { salaId: sala.id, solicitanteId: membro.id, situacao: "PENDENTE" } }), 0);
   assert.equal((await obterSalaDaConta(membro.id, sala.identificador))?.papel, "MEMBRO");
+  await deveFalhar("SOLICITACAO_DUPLICADA", () => entrarSalaComCodigo(membro.id, { codigo: convite.codigo }));
+
+  const solicitacaoLegada = await prisma.solicitacaoEntradaSala.create({ data: { salaId: sala.id, conviteId: convite.id, solicitanteId: legado.id } });
+  await entrarSalaComCodigo(legado.id, { codigo: convite.codigo });
+  assert.equal((await obterSalaDaConta(legado.id, sala.identificador))?.papel, "MEMBRO");
+  assert.equal((await prisma.solicitacaoEntradaSala.findUniqueOrThrow({ where: { id: solicitacaoLegada.id } })).situacao, "APROVADA");
   assert.equal(await obterSalaDaConta(terceiro.id, sala.identificador), null);
 
   const moduloSalaId = detalheProprietario?.modulos[0].id ?? "";
@@ -93,12 +100,12 @@ try {
   assert.equal(await obterSalaDaConta(membro.id, sala.identificador), null);
 
   await revogarConviteSala(proprietario.id, convite.id);
-  await deveFalhar("CONVITE_INVALIDO", () => solicitarEntradaSala(terceiro.id, { codigo: convite.codigo }));
+  await deveFalhar("CONVITE_INVALIDO", () => entrarSalaComCodigo(terceiro.id, { codigo: convite.codigo }));
   await excluirSala(proprietario.id, { salaId: sala.id });
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: moduloExistente.id } }));
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: instanciaNovaId } }));
 
-  console.log("Serviços de salas verificados: convite aprovado, isolamento, consentimentos, comentários, limite e preservação das instâncias.");
+  console.log("Serviços de salas verificados: entrada imediata por código, compatibilidade, isolamento, consentimentos, comentários, limite e preservação das instâncias.");
 } finally {
   if (salaId) await prisma.sala.deleteMany({ where: { id: salaId } });
   if (idsUsuarios.length) {

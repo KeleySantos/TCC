@@ -8,11 +8,11 @@ type SessaoPersistidaParaMetricas = Omit<SessaoParaMetricasSessoes, "metodos" | 
   formatos: Array<{ formato: FormatoConteudo }>;
 };
 
-function mapearSessaoOficial(sessao: SessaoPersistidaParaMetricas): SessaoParaMetricasSessoes {
+export function mapearSessaoOficial(sessao: SessaoPersistidaParaMetricas): SessaoParaMetricasSessoes {
   return { ...sessao, metodos: sessao.metodos.map((item) => item.metodo), formatos: sessao.formatos.map((item) => item.formato) };
 }
 
-const selecaoSessaoOficial = {
+export const selecaoSessaoOficial = {
   id: true,
   moduloId: true,
   descricao: true,
@@ -28,25 +28,26 @@ const selecaoSessaoOficial = {
 } as const;
 
 /** Métricas oficiais da jornada centrada em sessões. Não consulta tópicos nem avaliações. */
-export async function obterMetricasSessoesModuloPessoal(usuarioId: string, identificadorModulo: string) {
+export async function obterMetricasSessoesModuloPessoal(usuarioId: string, identificadorModulo: string, periodo: { inicio?: Date | null; fim?: Date } = {}) {
   const modulo = await prisma.moduloAprendizagem.findFirst({
     where: { usuarioId, identificador: identificadorModulo, arquivado: false, rascunho: false },
     select: { id: true, identificador: true, titulo: true },
   });
   if (!modulo) return null;
-  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: modulo.id }, select: selecaoSessaoOficial });
+  const possuiPeriodo = Boolean(periodo.inicio || periodo.fim);
+  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: modulo.id, ...(possuiPeriodo ? { iniciadaEm: { ...(periodo.inicio ? { gte: periodo.inicio } : {}), ...(periodo.fim ? { lte: periodo.fim } : {}) } } : {}) }, select: selecaoSessaoOficial });
   return { modulo, metricas: calcularMetricasSessoes(sessoes.map(mapearSessaoOficial), modulo.id) };
 }
 
 /** Consolidação oficial da conta, restrita a módulos ativos e sessões próprias. */
-export async function obterMetricasSessoesPessoais(usuarioId: string) {
+export async function obterMetricasSessoesPessoais(usuarioId: string, periodo: { inicio?: Date | null; fim?: Date } = {}) {
   const modulos = await prisma.moduloAprendizagem.findMany({
     where: { usuarioId, arquivado: false, rascunho: false },
     select: { id: true, identificador: true, titulo: true },
     orderBy: { titulo: "asc" },
   });
   const idsModulos = modulos.map((modulo) => modulo.id);
-  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: { in: idsModulos } }, select: selecaoSessaoOficial });
+  const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId, moduloId: { in: idsModulos }, ...((periodo.inicio || periodo.fim) ? { iniciadaEm: { ...(periodo.inicio ? { gte: periodo.inicio } : {}), ...(periodo.fim ? { lte: periodo.fim } : {}) } } : {}) }, select: selecaoSessaoOficial });
   const mapeadas = sessoes.map(mapearSessaoOficial);
   return {
     versaoAlgoritmo: "metricas-sessoes-v1",

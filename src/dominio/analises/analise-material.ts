@@ -13,6 +13,16 @@ export const esquemaResultadoAnaliseMaterial = z.object({
 
 export type ResultadoAnaliseMaterial = z.infer<typeof esquemaResultadoAnaliseMaterial>;
 
+export function lerListaJson(valor: string | null | undefined): string[] {
+  if (!valor) return [];
+  try {
+    const dados: unknown = JSON.parse(valor);
+    return Array.isArray(dados) ? dados.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 const palavrasIgnoradas = new Set([
   "a", "ao", "aos", "as", "com", "como", "da", "das", "de", "do", "dos", "e", "em", "entre", "era", "essa", "esse", "esta", "este", "foi", "mais", "mas", "na", "nas", "no", "nos", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "que", "se", "sem", "ser", "sua", "suas", "seu", "seus", "sao", "tambem", "tem", "uma", "um", "uns", "das", "dos", "the", "and", "for", "from", "this", "that", "with",
 ]);

@@ -72,11 +72,10 @@ export async function listarCredenciaisAtivas(usuarioId: string, agora = new Dat
   const chaveMestra = registros.length ? await obterChaveMestraCredenciais() : null;
   return PROVEDORES_IA.flatMap((definicao) => {
     const registro = porProvedor.get(definicao.provedor);
-    if (!registro || !chaveMestra) return [];
-    return [{
-      ...definicao,
-      chave: decifrarCredencial(registro, contextoCredencial(usuarioId, registro.provedor), chaveMestra),
-    }];
+    if (registro && chaveMestra) return [{ ...definicao, chave: decifrarCredencial(registro, contextoCredencial(usuarioId, registro.provedor), chaveMestra) }];
+    const variavel = definicao.provedor === "GROQ" ? "GROQ_API_KEY" : definicao.provedor === "GEMINI" ? "GEMINI_API_KEY" : "DASHSCOPE_API_KEY";
+    const chaveAmbiente = process.env[variavel]?.trim();
+    return chaveAmbiente ? [{ ...definicao, chave: chaveAmbiente }] : [];
   });
 }
 

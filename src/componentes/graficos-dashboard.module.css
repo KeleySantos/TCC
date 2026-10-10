@@ -1,9 +1,17 @@
 .gradeGraficos {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(290px, 0.85fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
   min-width: 0;
 }
+
+.cartaoLargo {
+  grid-column: 1 / -1;
+}
+
+.cartaoEvolucao { min-height: 520px; }
+.cartaoAnel { align-self: start; }
+.cartaoAnel .cabecalhoGrafico { min-height: 112px; }
 
 .tituloOculto {
   position: absolute;
@@ -19,11 +27,11 @@
 
 .cartaoGrafico {
   min-width: 0;
-  padding: 22px;
-  border: 1px solid var(--laboratorio-borda);
-  border-radius: 20px;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 12px 36px rgb(39 43 98 / 7%);
+  padding: 24px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
 }
 
 .cabecalhoGrafico {
@@ -36,21 +44,21 @@
 
 .cabecalhoGrafico h3 {
   margin: 3px 0 0;
-  color: var(--laboratorio-tinta);
+  color: var(--cor-texto);
   font-size: 1.05rem;
   letter-spacing: -0.025em;
 }
 
 .cabecalhoGrafico p:not(.sobretitulo) {
   margin: 5px 0 0;
-  color: var(--laboratorio-texto);
+  color: var(--cor-texto-secundario);
   font-size: 0.78rem;
   line-height: 1.45;
 }
 
 .sobretitulo {
   margin: 0;
-  color: var(--laboratorio-roxo);
+  color: var(--cor-acao);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -67,16 +75,16 @@
   padding: 7px 9px;
   border: 1px solid transparent;
   border-radius: 9px;
-  color: #68739b;
-  background: #f5f5fb;
+  color: var(--cor-texto-secundario);
+  background: var(--cor-superficie-suave);
   font-size: 0.7rem;
   font-weight: 750;
   cursor: pointer;
 }
 
 .filtros button:hover {
-  color: var(--laboratorio-roxo);
-  background: #efecff;
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
 }
 
 .filtros button:focus-visible {
@@ -85,17 +93,48 @@
 }
 
 .filtros .filtroAtivo {
-  border-color: #d8d0ff;
-  color: var(--laboratorio-roxo);
-  background: #ede9ff;
+  border-color: #b8d9ff;
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
 }
 
 .areaGrafico {
   width: 100%;
-  height: 320px;
+  height: 300px;
   margin-top: 12px;
   overflow: hidden;
   font-size: 0.7rem;
+}
+
+.areaGraficoPrincipal {
+  width: 100%;
+  height: 360px;
+  margin-top: 12px;
+  overflow: hidden;
+  font-size: .72rem;
+}
+
+.contextosSecundarios {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.contextosSecundarios > summary {
+  width: fit-content;
+  padding: 9px 13px;
+  border-radius: 10px;
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
+  font-size: .8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.gradeContextos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 14px;
 }
 
 .estadoVazio {
@@ -104,10 +143,10 @@
   place-items: center;
   margin: 0;
   padding: 24px;
-  border: 1px dashed #d7daed;
+  border: 1px dashed var(--cor-borda);
   border-radius: 14px;
-  color: var(--laboratorio-texto);
-  background: #fafaff;
+  color: var(--cor-texto-secundario);
+  background: var(--cor-superficie-suave);
   text-align: center;
 }
 
@@ -118,7 +157,7 @@
 }
 
 .detalhes summary {
-  color: var(--laboratorio-roxo);
+  color: var(--cor-acao);
   font-size: 0.78rem;
   font-weight: 750;
   cursor: pointer;
@@ -154,6 +193,13 @@
   .gradeGraficos {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .cartaoLargo {
+    grid-column: auto;
+  }
+
+  .contextosSecundarios { grid-column: auto; }
+  .gradeContextos { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {
@@ -172,6 +218,10 @@
   .areaGrafico {
     height: 270px;
   }
+
+  .areaGraficoPrincipal { height: 300px; }
+
+  .cartaoEvolucao { min-height: 0; }
 }
 
 @media (max-width: 420px) {

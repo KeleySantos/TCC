@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compararConceitosComSessoes, gerarAnaliseMaterialLocal, normalizarConceito } from "./analise-material";
+import { compararConceitosComSessoes, gerarAnaliseMaterialLocal, lerListaJson, normalizarConceito } from "./analise-material";
 
 describe("análise local de materiais", () => {
   it("extrai conceitos recorrentes sem transformar o resultado em avaliação", () => {
@@ -18,5 +18,10 @@ describe("análise local de materiais", () => {
       { conceito: "algoritmos", quantidadeSessoes: 1, sessoes: ["s1"] },
       { conceito: "árvores", quantidadeSessoes: 0, sessoes: [] },
     ]);
+  });
+
+  it("lê apenas textos de uma lista JSON válida", () => {
+    expect(lerListaJson('["árvores",2,null,"algoritmos"]')).toEqual(["árvores", "algoritmos"]);
+    expect(lerListaJson("{" )).toEqual([]);
   });
 });

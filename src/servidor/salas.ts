@@ -39,7 +39,6 @@ const esquemaCriacaoSala = z.object({
 const esquemaCriacaoModulo = z.object({ salaId: z.string().min(1), titulo: textoTitulo, descricao: textoDescricao });
 const esquemaReferenciaSala = z.object({ salaId: z.string().min(1) });
 const esquemaReferenciaMembro = esquemaReferenciaSala.extend({ membroId: z.string().min(1) });
-const esquemaDecisao = z.object({ solicitacaoId: z.string().min(1), aprovar: z.boolean() });
 const esquemaCodigo = z.object({ codigo: z.string().trim().min(8).max(80) });
 const esquemaVinculo = z.object({
   moduloSalaId: z.string().min(1),
@@ -189,7 +188,7 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
   });
   if (!associacao) return null;
   const proprietario = associacao.papel === PapelMembroSala.PROPRIETARIO;
-  const [modulos, comentarios, membros, solicitacoes, convites] = await Promise.all([
+  const [modulos, comentarios, membros, convites] = await Promise.all([
     prisma.moduloSala.findMany({
       where: { salaId: associacao.sala.id, situacao: SituacaoModuloSala.ATIVO },
       select: {
@@ -227,18 +226,13 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
       select: { id: true, usuarioId: true, papel: true, usuario: { select: { nome: true, nomeUsuario: true } } },
       orderBy: { entrouEm: "asc" },
     }) : Promise.resolve([]),
-    proprietario ? prisma.solicitacaoEntradaSala.findMany({
-      where: { salaId: associacao.sala.id, situacao: SituacaoSolicitacaoSala.PENDENTE },
-      select: { id: true, solicitadaEm: true, solicitante: { select: { nome: true, nomeUsuario: true } } },
-      orderBy: { solicitadaEm: "asc" },
-    }) : Promise.resolve([]),
     proprietario ? prisma.conviteSala.findMany({
       where: { salaId: associacao.sala.id, revogadoEm: null, expiraEm: { gt: new Date() } },
       select: { id: true, criadoEm: true, expiraEm: true },
       orderBy: { criadoEm: "desc" },
     }) : Promise.resolve([]),
   ]);
-  return { ...associacao.sala, papel: associacao.papel, modulos, comentarios, membros, solicitacoes, convites };
+  return { ...associacao.sala, papel: associacao.papel, modulos, comentarios, membros, convites };
 }
 
 export async function gerarConviteSala(usuarioId: string, entrada: unknown) {
@@ -261,7 +255,7 @@ export async function revogarConviteSala(usuarioId: string, conviteId: string) {
   await prisma.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "CONVITE_SALA_REVOGADO", alvo: convite.id } });
 }
 
-export async function solicitarEntradaSala(usuarioId: string, entrada: unknown) {
+export async function entrarSalaComCodigo(usuarioId: string, entrada: unknown) {
   const { codigo } = validar(esquemaCodigo.safeParse(entrada));
   const convite = await prisma.conviteSala.findUnique({
     where: { codigoHash: resumirCodigo(codigo) },
@@ -270,38 +264,34 @@ export async function solicitarEntradaSala(usuarioId: string, entrada: unknown) 
   if (!convite || convite.revogadoEm || convite.expiraEm <= new Date() || convite.sala.situacao !== SituacaoSala.ATIVA || convite.sala.proprietarioId === usuarioId) {
     throw new ErroSala("CONVITE_INVALIDO");
   }
-  const [membro, pendente] = await Promise.all([
-    prisma.membroSala.findUnique({ where: { salaId_usuarioId: { salaId: convite.salaId, usuarioId } } }),
-    prisma.solicitacaoEntradaSala.findFirst({ where: { salaId: convite.salaId, solicitanteId: usuarioId, situacao: SituacaoSolicitacaoSala.PENDENTE } }),
-  ]);
-  if (membro?.situacao === SituacaoMembroSala.ATIVO || pendente) throw new ErroSala("SOLICITACAO_DUPLICADA");
-  const solicitacao = await prisma.solicitacaoEntradaSala.create({ data: { salaId: convite.salaId, conviteId: convite.id, solicitanteId: usuarioId } });
-  await prisma.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "ENTRADA_SALA_SOLICITADA", alvo: solicitacao.id, metadados: JSON.stringify({ salaId: convite.salaId }) } });
-  return convite.sala.identificador;
-}
-
-export async function decidirSolicitacaoSala(usuarioId: string, entrada: unknown) {
-  const dados = validar(esquemaDecisao.safeParse(entrada));
-  const solicitacao = await prisma.solicitacaoEntradaSala.findFirst({
-    where: { id: dados.solicitacaoId, situacao: SituacaoSolicitacaoSala.PENDENTE, sala: { proprietarioId: usuarioId, situacao: SituacaoSala.ATIVA } },
-  });
-  if (!solicitacao) throw new ErroSala("NAO_ENCONTRADO");
   await prisma.$transaction(async (transacao) => {
-    await transacao.solicitacaoEntradaSala.update({
-      where: { id: solicitacao.id },
-      data: { situacao: dados.aprovar ? SituacaoSolicitacaoSala.APROVADA : SituacaoSolicitacaoSala.REJEITADA, decididaEm: new Date(), decididaPorId: usuarioId },
+    const membro = await transacao.membroSala.findUnique({ where: { salaId_usuarioId: { salaId: convite.salaId, usuarioId } } });
+    if (membro?.situacao === SituacaoMembroSala.ATIVO) throw new ErroSala("SOLICITACAO_DUPLICADA");
+
+    const associado = await transacao.membroSala.upsert({
+      where: { salaId_usuarioId: { salaId: convite.salaId, usuarioId } },
+      create: { salaId: convite.salaId, usuarioId, papel: PapelMembroSala.MEMBRO },
+      update: { papel: PapelMembroSala.MEMBRO, situacao: SituacaoMembroSala.ATIVO, entrouEm: new Date(), encerrouEm: null },
     });
-    if (dados.aprovar) {
-      await transacao.membroSala.upsert({
-        where: { salaId_usuarioId: { salaId: solicitacao.salaId, usuarioId: solicitacao.solicitanteId } },
-        create: { salaId: solicitacao.salaId, usuarioId: solicitacao.solicitanteId, papel: PapelMembroSala.MEMBRO },
-        update: { papel: PapelMembroSala.MEMBRO, situacao: SituacaoMembroSala.ATIVO, entrouEm: new Date(), encerrouEm: null },
+
+    const pendente = await transacao.solicitacaoEntradaSala.findFirst({
+      where: { salaId: convite.salaId, solicitanteId: usuarioId, situacao: SituacaoSolicitacaoSala.PENDENTE },
+      orderBy: { solicitadaEm: "desc" },
+    });
+    const decididaEm = new Date();
+    const solicitacao = pendente
+      ? await transacao.solicitacaoEntradaSala.update({
+        where: { id: pendente.id },
+        data: { situacao: SituacaoSolicitacaoSala.APROVADA, decididaEm, decididaPorId: null },
+      })
+      : await transacao.solicitacaoEntradaSala.create({
+        data: { salaId: convite.salaId, conviteId: convite.id, solicitanteId: usuarioId, situacao: SituacaoSolicitacaoSala.APROVADA, decididaEm },
       });
-    }
     await transacao.eventoAuditoria.create({
-      data: { atorId: usuarioId, acao: dados.aprovar ? "ENTRADA_SALA_APROVADA" : "ENTRADA_SALA_REJEITADA", alvo: solicitacao.id, metadados: JSON.stringify({ salaId: solicitacao.salaId }) },
+      data: { atorId: usuarioId, acao: "ENTRADA_SALA_POR_CODIGO", alvo: associado.id, metadados: JSON.stringify({ salaId: convite.salaId, solicitacaoId: solicitacao.id }) },
     });
   });
+  return convite.sala.identificador;
 }
 
 export async function criarModuloSala(usuarioId: string, entrada: unknown) {

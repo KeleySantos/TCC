@@ -1,47 +1,60 @@
 # Cenário sintético e resultados esperados
 
-## Dados de demonstração
+## Base reproduzível
 
-- 5 contas pessoais sintéticas: Ana, Bruno, Carla, Diego e Elisa.
-- Cada conta possui o módulo JavaScript, com os tópicos Condicionais, Loops e Funções; Ana também possui Lógica/Proposições como segundo módulo completo para demonstrar recorrência contextual.
-- Cada tópico Loops possui três materiais ativos: texto de guia visual, vídeo guiado e exercício prático.
-- Cada conta possui um quiz objetivo de Loops com 5 questões classificadas nos níveis iniciais de Bloom.
-- Ana possui um desafio Feynman ativo com duas sessões vinculadas e duas sessões externas comparáveis no mesmo módulo e método. Bruno possui um desafio Pomodoro cancelado para demonstrar preservação do histórico.
-- O conjunto usa os seis métodos controlados da Entrega B e contém 87 respostas classificadas por Bloom.
+O `seed` cria cinco contas pessoais fictícias, seis módulos, 21 materiais ativos, 39 sessões concluídas válidas e uma sessão curta inválida. O conjunto não contém tópicos, avaliações, questões, tentativas, respostas, notas ou níveis de Bloom.
 
-## Padrões intencionais
+Ana, Bruno, Carla, Diego e Elisa usam a senha sintética `Laboratorio@2026`. Os registros existem somente para demonstração local e não representam pessoas reais.
 
-| Conta | Padrão em Loops | Uso na demonstração |
-|---|---|---|
-| Ana | Nota 46 após PDF; 78, 82 e 76 após exercício prático. | Associação contextual para exercício prático. |
-| Bruno | 70, 74 e 72 após vídeo; 68 após PDF. | Evidência recorrente para vídeo. |
-| Carla | Uma observação após PDF. | Estado de evidência insuficiente. |
-| Diego | 48, 51 e 47 em formatos distintos. | Resultado baixo e contraditório; não rotular estudante. |
-| Elisa | Notas altas em vários formatos. | Evitar falsa personalização quando desempenho é alto em alternativas distintas. |
+## Cenário rico de Diego
 
-## Verificações automatizadas obrigatórias
+O perfil `diego.alves` recebe um bloco determinístico próprio para validar o Dashboard pessoal, o módulo JavaScript e a entrada da interpretação opcional da IA:
 
-Após recriar a base, executar:
+- 24 sessões concluídas dentro da janela recente de 90 dias;
+- quatro métodos usados de forma recorrente: Técnica de Feynman, Recuperação ativa, Pomodoro e Repetição espaçada;
+- duas ou três modalidades em cada sessão, variando entre dez formatos;
+- dificuldade e compreensão percebidas preenchidas em todas as sessões, cobrindo os níveis 1 a 5;
+- dificuldade média de 3,3/5, suficiente para exercitar o card de maior dificuldade percebida;
+- cinco arquivos TXT sintéticos, fisicamente armazenados e com análise concluída;
+- 26 conceitos extraídos, cada um mencionado em quatro ou cinco sessões;
+- descrições detalhadas e vínculos com materiais para alimentar o DTO da IA.
+
+No banco criado pelo `seed`, o módulo JavaScript de Diego possui oito materiais: três materiais gerais e os cinco arquivos do cenário rico. O histórico do módulo possui 24 sessões. Ao aplicar somente o enriquecimento sobre um banco existente, sessões anteriores de Diego são preservadas, portanto o total histórico pode ser maior.
+
+## Resultados esperados para Diego
+
+Na referência de 22 de setembro de 2026:
+
+| Superfície | Resultado esperado |
+|---|---|
+| Dashboard pessoal | 24 sessões recentes e quatro métodos recentes distintos. |
+| Card “Método associado à maior compreensão” | Repetição espaçada, com média histórica de 4,1/5 em 8 sessões analisadas. |
+| Card “Maior dificuldade percebida” | JavaScript, média aproximada de 3,3/5 em 24 sessões. |
+| Card “Compreensão percebida” | Média aproximada de 3,3/5 em 24 sessões. |
+| Mapa de conceitos observados | 26 conceitos, com quatro ou cinco menções por conceito. |
+| Módulo JavaScript | Card “Conceitos observados” preenchido com os mesmos 26 conceitos. |
+| Entrada da IA | Pelo menos 24 descrições, quatro métodos e dez formatos disponíveis; no banco já existente, as sessões anteriores também podem entrar no histórico. |
+
+Essas leituras descrevem registros e autorrelatos. Elas não medem desempenho objetivo, domínio, eficácia de método ou causalidade.
+
+## Comandos
+
+Para recriar toda a base sintética:
 
 ```powershell
 npm run banco:reiniciar
 npm run banco:verificar-cenario
-npm run testar:metricas
-npm run testar:desafios
 ```
 
-Os verificadores conferem estrutura, quantidades, faixa das notas, exclusão da sessão inválida de Carla, os padrões analíticos de Ana a Elisa, os seis métodos, os desafios, a comparação contextual e as respostas classificadas por Bloom.
+Para enriquecer somente Diego no banco atual, preservando as outras contas e as sessões anteriores dele:
 
-## Verificações manuais complementares
+```powershell
+npm run banco:enriquecer-diego
+npm run banco:verificar-diego
+```
 
-1. Ana: exercício prático deve ter média aproximada de 78,7% e três evidências, desde que cada sessão tenha apenas uma tentativa elegível na janela.
-2. Carla: deve receber recomendação exploratória por possuir menos de duas evidências válidas.
-3. Sessão inválida de Carla, com um minuto, não pode compor evidência.
-4. Nota de qualquer tentativa deve permanecer entre 0 e 100.
-5. Cada tentativa deve ter `numeroTentativa` positivo e nota entre 0 e 100.
-6. O desafio Feynman de Ana deve ter duas evidências vinculadas e duas externas comparáveis; a comparação é contextual e não demonstra efeito do método.
-7. Um nível de Bloom com menos de duas respostas deve mostrar taxa indisponível; uma taxa de 0% só é exibida quando houver duas ou mais respostas classificadas.
+O enriquecimento é idempotente para o bloco rico: novas execuções substituem somente as 24 sessões marcadas e os cinco arquivos desse bloco, sem acumulá-los.
 
 ## Observação metodológica
 
-Esses padrões foram criados manualmente para testar a aplicação. Eles não representam pessoas reais, não devem aparecer no TCC como resultado de pesquisa empírica e não comprovam que um formato cause melhor aprendizagem.
+Os padrões foram definidos manualmente para testar estados visuais, agregações, filtros, conceitos e a composição do contexto da IA. Eles não devem aparecer no TCC como resultado de pesquisa empírica.

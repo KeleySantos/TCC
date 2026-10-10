@@ -1,0 +1,45 @@
+.componente {
+  display: grid;
+  grid-template-columns: minmax(125px, 145px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+}
+
+.anel {
+  position: relative;
+  width: min(100%, 145px);
+  aspect-ratio: 1;
+  justify-self: center;
+}
+
+.anel svg { width: 100%; height: 100%; overflow: visible; }
+.trilha, .primario, .secundario { fill: none; stroke-width: 17; }
+.trilha { stroke: #edf1f5; }
+.primario { stroke: #4d9bf9; stroke-linecap: round; }
+.secundario { stroke: #ff7a1a; stroke-linecap: round; }
+
+.centro {
+  position: absolute;
+  inset: 27%;
+  display: grid;
+  place-items: center;
+  color: var(--cor-texto);
+  font-size: .76rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.legenda { display: grid; gap: 15px; margin: 0; padding: 0; list-style: none; }
+.legenda li { display: grid; grid-template-columns: 11px minmax(0, 1fr); gap: 9px; align-items: start; }
+.ponto { width: 11px; height: 11px; margin-top: 4px; border-radius: 50%; background: #4d9bf9; }
+.legenda li:nth-child(2) .ponto { background: #ff7a1a; }
+.legenda strong { display: block; color: var(--cor-texto); font-size: .72rem; }
+.legenda small { display: block; margin-top: 3px; color: var(--cor-texto-secundario); font-size: .63rem; line-height: 1.4; }
+
+@media (max-width: 520px) {
+  .componente { grid-template-columns: 1fr; }
+  .anel { width: 168px; }
+  .legenda { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

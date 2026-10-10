@@ -1,16 +1,15 @@
 # Contas fictícias de demonstração
 
-Todas as contas abaixo são fictícias e existem somente no banco local sintético. As senhas são exemplos de demonstração; não devem ser reutilizadas fora deste projeto.
+Todas as contas abaixo são fictícias e existem somente no banco local sintético. A senha compartilhada é um dado de demonstração e não deve ser reutilizada fora deste projeto.
 
-| Papel | Nome exibido | Usuário | Senha |
-|---|---|---|---|
-| Administrador | Administrador da Demonstração | `admin` | `Admin@2026` |
-| Professor | Prof. Rafael Mendes | `prof.rafael` | `Professor@2026` |
-| Aluno | Ana Souza | `ana.souza` | `Aluno@2026` |
-| Aluno | Bruno Lima | `bruno.lima` | `Aluno@2026` |
-| Aluno | Carla Rocha | `carla.rocha` | `Aluno@2026` |
-| Aluno | Diego Alves | `diego.alves` | `Aluno@2026` |
-| Aluno | Elisa Martins | `elisa.martins` | `Aluno@2026` |
-| Aluno | Felipe Costa | `felipe.costa` | `Aluno@2026` |
+| Nome exibido | Usuário | Senha sintética |
+|---|---|---|
+| Ana Souza | `ana.souza` | `Laboratorio@2026` |
+| Bruno Lima | `bruno.lima` | `Laboratorio@2026` |
+| Carla Rocha | `carla.rocha` | `Laboratorio@2026` |
+| Diego Alves | `diego.alves` | `Laboratorio@2026` |
+| Elisa Martins | `elisa.martins` | `Laboratorio@2026` |
 
-O administrador pode criar professores adicionais pelo painel `/administrador`. Essas contas também devem ser fictícias enquanto o projeto permanecer em modo de demonstração.
+O cenário atual não cria contas administrativas ou docentes. Diego possui o maior volume analítico para inspeção do Dashboard pessoal, do módulo JavaScript e do contexto enviado à interpretação opcional da IA.
+
+A tela `/entrar?modo=cadastro` permite criar outras contas pessoais locais. Elas começam sem módulos, materiais ou sessões e não fazem parte do `seed`; neste protótipo, devem receber somente dados fictícios.

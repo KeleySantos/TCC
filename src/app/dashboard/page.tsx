@@ -1,58 +1,46 @@
 import Link from "next/link";
-import { BookOpenText, CalendarDays, ChartNoAxesCombined, Clock3, ShieldCheck, Trophy } from "lucide-react";
+import { ChartNoAxesCombined, ShieldCheck } from "lucide-react";
 import { formatarData } from "@/biblioteca/formatacao";
+import { CartoesInsightsDashboard } from "@/componentes/cartoes-insights-dashboard";
+import { ConsistenciaMetodosDashboard } from "@/componentes/consistencia-metodos-dashboard";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
-import { GraficosDashboard, type PontoEvolucaoDashboard, type ResumoMetodoDashboard } from "@/componentes/graficos-dashboard";
+import { GraficosDashboard } from "@/componentes/graficos-dashboard";
 import { InterpretacaoAutomatica } from "@/componentes/interpretacao-automatica";
-import { formatarMetodoEstudo } from "@/dominio/sessoes/metodos";
-import type { MetodoEstudo } from "@/gerado/prisma/enums";
+import { resolverPeriodoModulo } from "@/dominio/periodo-modulo";
 import { exigirUsuario } from "@/servidor/autenticacao";
-import { obterPainelPessoal } from "@/servidor/paineis";
+import { obterDashboardObservacionalPessoal } from "@/servidor/dashboard-observacional";
+import { FiltroPeriodoModulo } from "@/app/modulos/[identificador]/filtro-periodo-modulo";
 import estilos from "./page.module.css";
 
-function formatarDuracao(minutos: number) {
-  if (minutos < 60) return `${minutos} min`;
+function duracao(minutos: number) {
   const horas = Math.floor(minutos / 60);
   const restante = minutos % 60;
-  return restante ? `${horas}h ${restante}min` : `${horas}h`;
+  return horas ? `${horas}h${restante ? ` ${restante}min` : ""}` : `${minutos} min`;
 }
 
-export default async function PaginaDashboard() {
-  const usuario = await exigirUsuario();
-  const resumo = await obterPainelPessoal(usuario.id);
-  const evolucao: PontoEvolucaoDashboard[] = resumo.consolidado.evolucaoSemanal.pontos.map((ponto) => ({
-    id: ponto.periodoInicio.toISOString(), periodoInicio: ponto.periodoInicio.toISOString(), rotulo: formatarData(ponto.periodoInicio),
-    minutosTotais: ponto.minutosTotais, quantidadeSessoes: ponto.quantidadeSessoes,
-  }));
-  const gruposMetodos = new Map<MetodoEstudo, { quantidadeSessoes: number; minutosAssociados: number; modulos: Set<string> }>();
-  for (const item of resumo.metricasPorModulo) for (const metodo of item.metricas.porMetodo) {
-    const grupo = gruposMetodos.get(metodo.chave) ?? { quantidadeSessoes: 0, minutosAssociados: 0, modulos: new Set<string>() };
-    grupo.quantidadeSessoes += metodo.quantidadeSessoes;
-    grupo.minutosAssociados += metodo.minutosAssociados;
-    grupo.modulos.add(item.modulo.id);
-    gruposMetodos.set(metodo.chave, grupo);
-  }
-  const metodos: ResumoMetodoDashboard[] = [...gruposMetodos.entries()].map(([metodo, grupo]) => ({
-    id: metodo, metodo: formatarMetodoEstudo(metodo), minutosAssociados: grupo.minutosAssociados,
-    quantidadeSessoes: grupo.quantidadeSessoes, quantidadeModulos: grupo.modulos.size,
-  })).sort((a, b) => b.quantidadeSessoes - a.quantidadeSessoes || b.minutosAssociados - a.minutosAssociados || a.metodo.localeCompare(b.metodo));
-  const metodoDestaque = metodos[0] ?? null;
+function formatarLimitePeriodo(valor: Date) {
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeZone: "UTC" }).format(valor);
+}
+
+export default async function PaginaDashboard({ searchParams }: { searchParams: Promise<{ fim?: string | string[]; inicio?: string | string[] }> }) {
+  const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
+  const periodo = resolverPeriodoModulo({ inicio: parametros.inicio, fim: parametros.fim });
+  const dados = await obterDashboardObservacionalPessoal(usuario.id, { inicio: periodo.inicio, fim: periodo.fim });
   const primeiroNome = usuario.nome.trim().split(/\s+/)[0] || "estudante";
+  const periodoRecente = `${formatarLimitePeriodo(dados.periodoRecente.inicio)} a ${formatarLimitePeriodo(dados.periodoRecente.fim)}`;
 
   return <EstruturaAutenticada usuarioNome={usuario.nome}><main className={estilos.paginaDashboard} id="conteudo-principal" tabIndex={-1}>
     <header className={estilos.topoConta}><div className={estilos.contextoAtual}><ChartNoAxesCombined aria-hidden="true" /><span>Dashboard pessoal</span></div><Link className={estilos.conta} href="/perfil"><span className={estilos.avatar} aria-hidden="true">{primeiroNome.slice(0, 1).toUpperCase()}</span><span><strong>{usuario.nome}</strong><small>Ver perfil</small></span></Link></header>
     <div className={estilos.areaConteudo}>
-      <section className={estilos.boasVindas} aria-labelledby="titulo-dashboard"><div><p className={estilos.sobretitulo}>SUA JORNADA DE APRENDIZAGEM</p><h1 id="titulo-dashboard">Olá, {primeiroNome}! <span aria-hidden="true">👋</span></h1><p>Aqui está o panorama das sessões que você registrou até agora.</p></div><blockquote>“Disciplina hoje,<br />liberdade amanhã.”<cite>— James Clear</cite></blockquote></section>
-      <div className={estilos.gradeDashboard}><div className={estilos.colunaIndicadores}>
-        <section className={estilos.gradeResumo} aria-label="Resumo pessoal">
-          <article className={estilos.cartaoResumo}><span className={`${estilos.iconeResumo} ${estilos.iconeRoxo}`}><BookOpenText aria-hidden="true" /></span><div><p>Módulos ativos</p><strong>{resumo.modulos.length}</strong><small>Organizados na sua conta</small></div></article>
-          <article className={estilos.cartaoResumo}><span className={`${estilos.iconeResumo} ${estilos.iconeAzul}`}><CalendarDays aria-hidden="true" /></span><div><p>Sessões concluídas</p><strong>{resumo.consolidado.tempoEstudo.quantidadeSessoesValidas}</strong><small>{resumo.consolidado.frequencia.diasComEstudo} dia(s) com estudo</small></div></article>
-          <article className={estilos.cartaoResumo}><span className={`${estilos.iconeResumo} ${estilos.iconeRosa}`}><Clock3 aria-hidden="true" /></span><div><p>Tempo estudado</p><strong>{formatarDuracao(resumo.consolidado.tempoEstudo.minutosTotais)}</strong><small>Média de {resumo.consolidado.tempoEstudo.mediaMinutos === null ? "—" : `${Math.round(resumo.consolidado.tempoEstudo.mediaMinutos)} min`} por sessão</small></div></article>
-          <article className={estilos.cartaoResumo}><span className={`${estilos.iconeResumo} ${estilos.iconeAmarelo}`}><Trophy aria-hidden="true" /></span><div><p>Método mais registrado</p><strong className={estilos.valorMetodo}>{metodoDestaque?.metodo ?? "Dados insuficientes"}</strong><small>{metodoDestaque ? `${metodoDestaque.quantidadeSessoes} sessão(ões) · ${metodoDestaque.minutosAssociados} min associados` : "Registre uma sessão concluída com método"}</small></div></article>
-        </section>
-        <div className={estilos.avisoResponsavel}><ShieldCheck aria-hidden="true" /><p><strong>Leitura responsável.</strong> Os gráficos descrevem tempo, frequência e percepções registradas; eles não medem aprendizagem objetiva, capacidade ou efeito causal de um método.</p></div>
-        <GraficosDashboard evolucao={evolucao} metodos={metodos} />
-      </div><aside className={estilos.areaInterpretacao} aria-label="Insights da IA"><InterpretacaoAutomatica /></aside></div>
+      <section aria-labelledby="titulo-dashboard" className={estilos.boasVindas}><p className={estilos.sobretitulo}>SUA JORNADA DE APRENDIZAGEM</p><h1 id="titulo-dashboard">Olá, {primeiroNome}!</h1><p>Observe como você tem estudado e o que seus registros mostram.</p><small>{periodo.ativo ? "Período filtrado" : "Leitura recente"}: {periodoRecente} · {dados.versaoAlgoritmo}</small></section>
+      <FiltroPeriodoModulo periodo={{ inicio: periodo.inicioTexto, fim: periodo.fimTexto, hoje: periodo.hoje, ativo: periodo.ativo, erro: periodo.erro }} />
+      <CartoesInsightsDashboard dados={dados} />
+      <div className={estilos.gradeDashboard}><div className={estilos.colunaPrincipal}>
+        <GraficosDashboard dados={dados} />
+        <ConsistenciaMetodosDashboard itens={dados.consistenciaMetodos} />
+        <section aria-labelledby="titulo-base" className={estilos.cartao}><p className={estilos.sobretitulo}>CONTEXTO DAS ANÁLISES</p><h2 id="titulo-base">Base das análises</h2><p className={estilos.introducao}>{dados.baseHistorica.quantidadeSessoes ? `${periodo.ativo ? "Registros válidos no período" : "Todo o histórico válido dos módulos ativos"}, de ${formatarData(dados.baseHistorica.primeiraSessaoEm)} a ${formatarData(dados.baseHistorica.ultimaSessaoEm)}.` : periodo.ativo ? "Não há sessões válidas no período filtrado." : "Ainda não há sessões válidas nos módulos ativos."} {periodo.ativo ? `Os cards e gráficos usam somente o intervalo de ${periodoRecente}.` : `A janela recente dos cards e gráficos é de ${periodoRecente}.`}</p><dl className={estilos.base}><div><dt>Sessões válidas</dt><dd>{dados.baseHistorica.quantidadeSessoes}</dd></div><div><dt>Módulos com sessões</dt><dd>{dados.baseHistorica.quantidadeModulosComSessoes}</dd></div><div><dt>Métodos registrados</dt><dd>{dados.baseHistorica.quantidadeMetodosRegistrados}</dd></div><div><dt>Arquivos analisados com conceitos</dt><dd>{dados.baseHistorica.quantidadeMateriaisAnalisados}</dd></div></dl><div className={estilos.avisoResponsavel}><ShieldCheck aria-hidden="true" /><p>As percepções são autorrelatos, enquanto as evidências confirmadas registram desempenhos posteriores. As relações apresentadas são observacionais e não demonstram causalidade.</p></div><details className={estilos.criterios}><summary>Como interpretar estes dados</summary><ul>{dados.limitacoes.map((limite) => <li key={limite}>{limite}</li>)}</ul></details></section>
+        <details className={estilos.tradicionais}><summary>Ver métricas de atividade {periodo.ativo ? "do período" : "do histórico"}</summary><dl className={estilos.base}><div><dt>Tempo estudado</dt><dd>{duracao(dados.metricasSecundarias.minutosTotais)}</dd></div><div><dt>Sessões concluídas válidas</dt><dd>{dados.metricasSecundarias.quantidadeSessoes}</dd></div><div><dt>Dias com estudo</dt><dd>{dados.metricasSecundarias.diasComEstudo}</dd></div><div><dt>Duração média</dt><dd>{dados.metricasSecundarias.mediaMinutos === null ? "—" : duracao(Math.round(dados.metricasSecundarias.mediaMinutos))}</dd></div></dl></details>
+      </div><aside aria-label="Interpretação opcional" className={estilos.areaInterpretacao}><InterpretacaoAutomatica fim={periodo.ativo ? periodo.fimTexto : undefined} inicio={periodo.ativo ? periodo.inicioTexto : undefined} /></aside></div>
     </div>
   </main></EstruturaAutenticada>;
 }

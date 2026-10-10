@@ -69,13 +69,13 @@ SQLite local + migração + seed sintético
 
 **Consequência:** a interpretação por Gemini recebe essa limitação no DTO e não pode tratá-la como padrão conclusivo.
 
-### ADR-007 — Gemini como interpretadora opcional
+### ADR-007 — Provedores como intérpretes opcionais
 
-**Decisão:** Gemini interpreta somente um DTO sintético e agregado de métricas oficiais, produzindo padrões observados, feedbacks, conselhos e perguntas de reflexão.
+**Decisão:** Gemini e Groq interpretam somente um DTO sintético e agregado de métricas oficiais, produzindo insights com observação, evidência, confiança, reflexão e experimento opcional.
 
 **Motivo:** oferecer uma reflexão mais rica sem delegar cálculo, persistência ou autorização a serviço externo.
 
-**Consequência:** a saída estruturada deve ser validada contra schema e política de linguagem; não recebe nomes, respostas, observações livres ou chave de API. Timeout, cota, rede ausente ou resposta inválida retornam uma interpretação local. A IA não pode afirmar causalidade, criar métricas, alterar dados, notas ou permissões.
+**Consequência:** a saída estruturada é validada contra schema e política de linguagem. O DTO usa referências opacas, métricas calculadas e no máximo dez descrições recentes compactadas. Timeout, cota, autenticação, modelo inválido, rede ou resposta inválida avançam a fila e terminam em interpretação local. A IA não pode afirmar causalidade, criar métricas, alterar dados, notas ou permissões. Resultados não são persistidos e as rotas usam `no-store`.
 
 ## Fluxos essenciais
 
@@ -111,7 +111,7 @@ Conta pessoal → ação ou rota de servidor → valida entrada e propriedade
 ### Compartilhamento para salas
 
 ```text
-Proprietário cria sala e módulo-pai → código/link cria solicitação pendente
+Proprietário cria sala e módulo-pai → código/link válido cria associação ativa imediatamente
 → proprietário aprova → membro cria ou vincula módulo pessoal
 → vínculo expõe somente dashboard autorizado, nunca materiais ou sessões
 → consentimentos separados habilitam comparação e IA
@@ -137,7 +137,7 @@ vínculo ativo ─ consentimento de comparação ─ comparação nominal sem ra
 | Componente cliente | Interação e estado visual | Acessar Prisma ou confiar em autorização visual |
 | Rota/API ou ação de servidor | Validar entrada, conferir propriedade e orquestrar caso de uso | Construir visualização |
 | Domínio | Fórmulas, evidências e recomendação | Acessar HTTP, cookie ou React |
-| Adaptador Gemini | Interpretar DTO agregado e retornar estrutura validável | Calcular métrica, acessar banco, decidir autorização ou aceitar dados livres |
+| Adaptadores de IA | Interpretar DTO agregado com contrato compartilhado e retornar estrutura validável | Calcular métrica, acessar banco, decidir autorização ou aceitar dados livres |
 | Prisma | Persistência tipada | Decidir regra pedagógica |
 
 ## Observabilidade atual e evolução

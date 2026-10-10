@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { criarHashSenha, normalizarNomeUsuario, verificarSenha } from "./senhas";
+import { criarHashSenha, normalizarIdentificadorConta, normalizarNomeUsuario, verificarSenha } from "./senhas";
 
 describe("proteção de senhas", () => {
   it("valida a senha que originou o hash", () => {
@@ -15,5 +15,11 @@ describe("proteção de senhas", () => {
 
   it("normaliza o nome de usuário antes da consulta", () => {
     expect(normalizarNomeUsuario("  ANA.SOUZA  ")).toBe("ana.souza");
+  });
+
+  it("aceita nome completo ou usuário como identificador da conta", () => {
+    expect(normalizarIdentificadorConta(" Ana Souza ")).toBe("ana.souza");
+    expect(normalizarIdentificadorConta("ana.souza")).toBe("ana.souza");
+    expect(normalizarIdentificadorConta(" José D'Ávila ")).toBe("jose.d.avila");
   });
 });

@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { calcularDashboardObservacionalSala } from "@/dominio/analises/dashboard-sala";
 import { calcularMetricasSessoes, type MetricasSessoes, type SessaoParaMetricasSessoes } from "@/dominio/analises/metricas-sessoes";
 import { FormatoConteudo, MetodoEstudo, SituacaoSala, SituacaoVinculoModuloSala } from "@/gerado/prisma/enums";
 import { prisma } from "@/biblioteca/prisma";
+import { obterResumoAprendizagemVinculoSala, type ResumoAprendizagemSala } from "./aprendizagem-sala";
 import { criarReferenciaContribuinteAnonimo } from "./salas";
 
 export const MINIMO_CONTRIBUIDORES_AGREGADO_SALA = 3;
@@ -56,22 +58,26 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
   });
 
   const modulos = [];
-  const evidenciasSala: EvidenciaComContribuinte[] = [];
+  const evidenciasSalaVivas: EvidenciaComContribuinte[] = [];
+  const analisesSala: ResumoAprendizagemSala[] = [];
   for (const modulo of modulosPersistidos) {
     const evidenciasModulo: EvidenciaComContribuinte[] = [];
     const individuais = [];
     for (const vinculo of modulo.vinculos) {
-      const sessoes = await prisma.sessaoEstudo.findMany({
-        where: {
-          usuarioId: vinculo.usuarioId,
-          moduloId: vinculo.moduloPessoalId,
-          ...(vinculo.dadosDesde ? { encerradaEm: { gte: vinculo.dadosDesde } } : {}),
-        },
-        select: {
-          id: true, descricao: true, iniciadaEm: true, encerradaEm: true, duracaoMinutos: true, situacao: true, arquivada: true,
-          dificuldadePercebida: true, compreensaoPercebida: true, metodos: { select: { metodo: true } }, formatos: { select: { formato: true } },
-        },
-      });
+      const [sessoes, aprendizagem] = await Promise.all([
+        prisma.sessaoEstudo.findMany({
+          where: {
+            usuarioId: vinculo.usuarioId,
+            moduloId: vinculo.moduloPessoalId,
+            ...(vinculo.dadosDesde ? { iniciadaEm: { gte: vinculo.dadosDesde } } : {}),
+          },
+          select: {
+            id: true, descricao: true, iniciadaEm: true, encerradaEm: true, duracaoMinutos: true, situacao: true, arquivada: true,
+            dificuldadePercebida: true, compreensaoPercebida: true, metodos: { select: { metodo: true } }, formatos: { select: { formato: true } },
+          },
+        }),
+        obterResumoAprendizagemVinculoSala(vinculo.usuarioId, vinculo.moduloPessoalId, modulo.id, vinculo.dadosDesde),
+      ]);
       const sessoesMapeadas: SessaoParaMetricasSessoes[] = sessoes.map((sessao) => ({
         ...sessao,
         id: `vivo:${modulo.id}:${sessao.id}`,
@@ -81,7 +87,10 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
         formatos: sessao.formatos.map((item) => item.formato),
       }));
       const contribuinte = criarReferenciaContribuinteAnonimo(sala.id, vinculo.usuarioId);
-      evidenciasModulo.push(...sessoesMapeadas.map((sessao) => ({ sessao, contribuinte })));
+      const evidenciasVinculo = sessoesMapeadas.map((sessao) => ({ sessao, contribuinte }));
+      evidenciasModulo.push(...evidenciasVinculo);
+      evidenciasSalaVivas.push(...evidenciasVinculo);
+      if (aprendizagem) analisesSala.push(aprendizagem);
       individuais.push({
         vinculoId: vinculo.id,
         nome: vinculo.usuario.nome,
@@ -90,6 +99,7 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
         permitirComparacao: vinculo.permitirComparacao,
         permitirIa: vinculo.permitirIa,
         metricas: calcularMetricasSessoes(sessoesMapeadas, modulo.id),
+        aprendizagem,
       });
     }
     for (const historica of modulo.evidenciasHistoricas) {
@@ -114,7 +124,6 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
         },
       });
     }
-    evidenciasSala.push(...evidenciasModulo);
     modulos.push({
       id: modulo.id,
       titulo: modulo.titulo,
@@ -124,7 +133,14 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
       quantidadeHistoricas: modulo.evidenciasHistoricas.length,
     });
   }
-  return { sala, geral: estadoAgregado(evidenciasSala), modulos };
+  const estadoGeral = estadoAgregado(evidenciasSalaVivas);
+  const dadosGerais = estadoGeral.disponivel ? calcularDashboardObservacionalSala({
+    modulos: modulosPersistidos.map((modulo) => ({ id: modulo.id, identificador: modulo.id, titulo: modulo.titulo })),
+    sessoes: evidenciasSalaVivas.map((item) => item.sessao),
+    analises: analisesSala,
+    referencia: new Date(),
+  }) : null;
+  return { sala, geral: { ...estadoGeral, dados: dadosGerais }, modulos };
 }
 
 export async function obterDashboardIndividualAutorizado(usuarioId: string, identificadorSala: string, vinculoId: string) {

@@ -5,7 +5,7 @@ import { RefreshCw, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import estilos from "./page.module.css";
 
-const ACEITOS = ".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.mov";
+const ACEITOS = ".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods";
 
 export function AcoesArquivoMaterial({ materialId, podeAnalisar, situacao }: { materialId: string; podeAnalisar: boolean; situacao: string }) {
   const roteador = useRouter();

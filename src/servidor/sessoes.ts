@@ -257,11 +257,11 @@ export async function obterSessaoPessoal(usuarioId: string, id: string) {
   return sessao;
 }
 
-export async function listarSessoesModuloPessoal(usuarioId: string, moduloId: string, opcoes: { incluirArquivadas?: boolean } = {}) {
+export async function listarSessoesModuloPessoal(usuarioId: string, moduloId: string, opcoes: { incluirArquivadas?: boolean; inicio?: Date | null; fim?: Date } = {}) {
   const modulo = await prisma.moduloAprendizagem.findFirst({ where: { id: moduloId, usuarioId }, select: { id: true } });
   if (!modulo) throw new ErroSessao("NAO_ENCONTRADA");
   return prisma.sessaoEstudo.findMany({
-    where: { usuarioId, moduloId: modulo.id, ...(opcoes.incluirArquivadas ? {} : { arquivada: false }) },
+    where: { usuarioId, moduloId: modulo.id, ...(opcoes.incluirArquivadas ? {} : { arquivada: false }), ...((opcoes.inicio || opcoes.fim) ? { iniciadaEm: { ...(opcoes.inicio ? { gte: opcoes.inicio } : {}), ...(opcoes.fim ? { lte: opcoes.fim } : {}) } } : {}) },
     orderBy: [{ iniciadaEm: "desc" }, { id: "desc" }], include: inclusaoSessao,
   });
 }

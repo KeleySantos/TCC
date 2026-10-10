@@ -1,24 +1,29 @@
-.areaDashboards { display: grid; max-width: 1420px; gap: 18px; margin: 0 auto 22px; }
-.cabecalho { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 20px; border: 1px solid var(--laboratorio-borda); border-radius: 18px; background: #fff; }
+.areaDashboards { display: grid; max-width: var(--largura-conteudo); gap: 20px; margin: 0 auto 24px; }
+.dashboardGeral { display: grid; gap: 20px; }
+.tituloDashboardGeral { display: grid; gap: 6px; padding: 4px 2px; }
+.tituloDashboardGeral p { margin: 0; color: var(--cor-acao); font-size: .66rem; font-weight: 850; letter-spacing: .11em; }
+.tituloDashboardGeral h3 { margin: 0; color: var(--cor-texto); font-size: 1.35rem; }
+.tituloDashboardGeral span { color: var(--cor-texto-secundario); font-size: .76rem; }
+.cabecalho { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 22px; border: 1px solid var(--cor-borda); border-radius: var(--raio-cartao); background: var(--cor-superficie); box-shadow: var(--sombra-suave); }
 .cabecalho h2 { margin: 4px 0 0; font-size: 1.4rem; }
-.cabecalho p { margin: 0; color: var(--laboratorio-roxo); font-size: .66rem; font-weight: 850; letter-spacing: .11em; }
-.cabecalho span { color: #747d99; font-size: .72rem; }
-.painelMetricas { padding: 20px; border: 1px solid var(--laboratorio-borda); border-radius: 18px; background: #fbfbfe; }
-.avisoPrivacidade { margin: 0; padding: 16px; border: 1px dashed #d7d3ec; border-radius: 13px; color: #68718f; background: #faf9ff; font-size: .78rem; line-height: 1.55; }
-.modulo { border: 1px solid var(--laboratorio-borda); border-radius: 17px; background: #fff; overflow: hidden; }
+.cabecalho p { margin: 0; color: var(--cor-acao); font-size: .66rem; font-weight: 850; letter-spacing: .11em; }
+.cabecalho span { color: var(--cor-texto-secundario); font-size: .72rem; }
+.painelMetricas { padding: 22px; border: 1px solid var(--cor-borda); border-radius: var(--raio-cartao); background: var(--cor-superficie); }
+.avisoPrivacidade { margin: 0; padding: 16px; border: 1px dashed var(--cor-borda); border-radius: 13px; color: var(--cor-texto-secundario); background: var(--cor-superficie-suave); font-size: .78rem; line-height: 1.55; }
+.modulo { border: 1px solid var(--cor-borda); border-radius: var(--raio-cartao); background: var(--cor-superficie); overflow: hidden; }
 .modulo > summary { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 17px 20px; cursor: pointer; font-weight: 850; }
 .modulo > summary span { color: #747d99; font-size: .68rem; font-weight: 650; }
 .conteudoModulo { display: grid; gap: 16px; padding: 0 20px 20px; }
 .individuais { display: grid; gap: 12px; }
-.individual { border: 1px solid #e2e2ee; border-radius: 14px; background: #fafafe; overflow: hidden; }
+.individual { border: 1px solid var(--cor-borda); border-radius: 14px; background: var(--cor-superficie-suave); overflow: hidden; }
 .individual > summary { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; cursor: pointer; font-size: .82rem; font-weight: 800; }
 .individual > summary span { color: #6f7896; font-size: .64rem; font-weight: 650; }
 .conteudoIndividual { display: grid; gap: 14px; padding: 0 16px 16px; }
-.comparacao { display: grid; gap: 10px; padding: 18px; border: 1px solid #ddd9f5; border-radius: 15px; background: #f9f8ff; }
+.comparacao { display: grid; gap: 10px; padding: 18px; border: 1px solid var(--cor-borda); border-radius: 15px; background: var(--cor-superficie-suave); }
 .tituloComparacao { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.tituloComparacao p { margin: 0 0 4px; color: var(--laboratorio-roxo); font-size: .62rem; font-weight: 850; letter-spacing: .1em; }
+.tituloComparacao p { margin: 0 0 4px; color: var(--cor-acao); font-size: .62rem; font-weight: 850; letter-spacing: .1em; }
 .tituloComparacao h3 { margin: 0; font-size: 1rem; }
-.tituloComparacao button { min-height: 38px; padding: 8px 12px; border: 1px solid #cfc7f7; border-radius: 10px; color: #5d43c8; background: #fff; font-weight: 800; cursor: pointer; }
+.tituloComparacao button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--cor-borda); border-radius: var(--raio-controle); color: var(--cor-acao); background: var(--cor-superficie); font-weight: 800; cursor: pointer; }
 .comparacao > p { margin: 0; color: #6e7692; font-size: .7rem; line-height: 1.5; }
 .graficoComparacao { height: 260px; }
 .tabela { overflow-x: auto; }

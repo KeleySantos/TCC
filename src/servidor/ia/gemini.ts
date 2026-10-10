@@ -1,8 +1,7 @@
-import { criarInstrucaoInterpretacao, extrairRetryAfter, schemaRespostaInterpretacao } from "./contrato-provedores";
+import { criarInstrucaoInterpretacao, extrairRespostaEstruturada, extrairRetryAfter, schemaRespostaInterpretacao } from "./contrato-provedores";
+import { MODELO_GEMINI_CONTINGENCIA, MODELO_GEMINI_PADRAO } from "./catalogo-provedores";
 import { ErroProvedorInterpretacao, type ProvedorInterpretacoes } from "./provedor-interpretacoes";
 
-const MODELO_PRINCIPAL = "gemini-3.8-flash";
-const MODELO_CONTINGENCIA = "gemini-3.7-flash";
 const ATRASO_BASE_MS = 750;
 
 type OpcoesGemini = {
@@ -20,7 +19,7 @@ class FalhaTentativaGemini extends Error {
 }
 
 function modelosCandidatos(modelo: string) {
-  return modelo === MODELO_PRINCIPAL ? [MODELO_PRINCIPAL, MODELO_CONTINGENCIA] : [modelo];
+  return modelo === MODELO_GEMINI_PADRAO ? [MODELO_GEMINI_PADRAO, MODELO_GEMINI_CONTINGENCIA] : [modelo];
 }
 
 async function esperarPadrao(milissegundos: number) {
@@ -36,7 +35,7 @@ async function buscarComTempoLimite(url: string, init: RequestInit, tempoLimiteM
     if (erro instanceof Error && erro.name === "AbortError") {
       throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("TEMPO_ESGOTADO"), true);
     }
-    throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("INDISPONIVEL"), true);
+    throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("REDE"), true);
   } finally {
     clearTimeout(temporizador);
   }
@@ -48,6 +47,12 @@ function validarRespostaHttp(resposta: Response) {
   }
   if (resposta.status === 429) {
     throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("COTA", extrairRetryAfter(resposta)), false);
+  }
+  if (resposta.status === 404) {
+    throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("MODELO_INVALIDO"), false);
+  }
+  if (resposta.status === 400 || resposta.status === 422) {
+    throw new FalhaTentativaGemini(new ErroProvedorInterpretacao("REQUISICAO_INVALIDA"), false);
   }
   if (!resposta.ok) {
     const repetivel = resposta.status === 408 || resposta.status >= 500;
@@ -64,8 +69,8 @@ function extrairTexto(resposta: unknown) {
   return texto || null;
 }
 
-export function criarProvedorGemini(apiKey: string, modelo = MODELO_PRINCIPAL, tempoLimiteMs = 20_000, opcoes: OpcoesGemini = {}): ProvedorInterpretacoes {
-  const modeloSeguro = /^[a-zA-Z0-9._-]+$/.test(modelo) ? modelo : MODELO_PRINCIPAL;
+export function criarProvedorGemini(apiKey: string, modelo = MODELO_GEMINI_PADRAO, tempoLimiteMs = 20_000, opcoes: OpcoesGemini = {}): ProvedorInterpretacoes {
+  const modeloSeguro = /^[a-zA-Z0-9._-]+$/.test(modelo) ? modelo : MODELO_GEMINI_PADRAO;
   const modelos = modelosCandidatos(modeloSeguro);
   const esperar = opcoes.esperar ?? esperarPadrao;
   const aleatorio = opcoes.aleatorio ?? Math.random;
@@ -114,11 +119,8 @@ export function criarProvedorGemini(apiKey: string, modelo = MODELO_PRINCIPAL, t
           validarRespostaHttp(resposta);
           const texto = extrairTexto(await resposta.json());
           if (!texto) throw new ErroProvedorInterpretacao("RESPOSTA_INVALIDA");
-          try {
-            conteudo = JSON.parse(texto) as unknown;
-          } catch {
-            throw new ErroProvedorInterpretacao("RESPOSTA_INVALIDA");
-          }
+          conteudo = extrairRespostaEstruturada(texto);
+          if (!conteudo) throw new ErroProvedorInterpretacao("RESPOSTA_INVALIDA");
         });
         return conteudo;
       } catch (erro) {
@@ -127,13 +129,21 @@ export function criarProvedorGemini(apiKey: string, modelo = MODELO_PRINCIPAL, t
       }
     },
     async testarConexao() {
+      let confirmou = false;
       await executarComContingencia(async (modeloAtual) => {
-        const resposta = await buscarComTempoLimite(`https://generativelanguage.googleapis.com/v1beta/models/${modeloAtual}`, {
-          method: "GET",
-          headers: { "x-goog-api-key": apiKey },
+        const resposta = await buscarComTempoLimite(`https://generativelanguage.googleapis.com/v1beta/models/${modeloAtual}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Responda apenas: OK" }] }],
+            generationConfig: { temperature: 0, maxOutputTokens: 64, thinkingConfig: { thinkingLevel: "low" } },
+          }),
         }, Math.min(tempoLimiteMs, 8_000));
         validarRespostaHttp(resposta);
+        confirmou = /\bOK\b/i.test(extrairTexto(await resposta.json()) ?? "");
+        if (!confirmou) throw new ErroProvedorInterpretacao("RESPOSTA_INVALIDA");
       });
+      if (!confirmou) throw new ErroProvedorInterpretacao("RESPOSTA_INVALIDA");
     },
     obterModeloUtilizado() {
       return modeloUtilizado;

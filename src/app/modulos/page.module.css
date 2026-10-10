@@ -1,9 +1,7 @@
 .paginaModulos {
   min-height: 100vh;
-  color: var(--laboratorio-tinta);
-  background:
-    radial-gradient(circle at 72% 0%, rgb(189 178 255 / 17%), transparent 31rem),
-    #f7f8fd;
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -14,9 +12,8 @@
   justify-content: space-between;
   gap: 18px;
   padding: 12px clamp(20px, 3vw, 46px);
-  border-bottom: 1px solid #e7e8f2;
-  background: rgb(255 255 255 / 80%);
-  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
 }
 
 .contextoAtual,
@@ -27,7 +24,7 @@
 
 .contextoAtual {
   gap: 9px;
-  color: #69749b;
+  color: var(--cor-texto-secundario);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -35,7 +32,7 @@
 .contextoAtual svg {
   width: 19px;
   height: 19px;
-  color: var(--laboratorio-roxo);
+  color: var(--cor-acao);
 }
 
 .conta {
@@ -45,7 +42,7 @@
 }
 
 .conta:hover {
-  background: #f2f0ff;
+  background: var(--cor-acao-suave);
 }
 
 .conta span:last-child,
@@ -59,7 +56,7 @@
 
 .conta small {
   margin-top: 3px;
-  color: #7781a5;
+  color: var(--cor-texto-secundario);
   font-size: 0.68rem;
 }
 
@@ -69,13 +66,13 @@
   height: 40px;
   place-items: center;
   border-radius: 50%;
-  color: #fff;
-  background: linear-gradient(145deg, #8165fc, #5840db);
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
   font-weight: 800;
 }
 
 .areaConteudo {
-  width: min(100%, 1420px);
+  width: min(100%, var(--largura-conteudo));
   margin: 0 auto;
   padding: 34px clamp(20px, 3vw, 46px) 58px;
 }
@@ -97,13 +94,13 @@
 .apresentacaoPagina > div > p:last-child {
   max-width: 670px;
   margin: 0;
-  color: var(--laboratorio-texto);
+  color: var(--cor-texto-secundario);
   line-height: 1.55;
 }
 
 .sobretitulo {
   margin: 0;
-  color: var(--laboratorio-roxo);
+  color: var(--cor-acao);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -118,9 +115,9 @@
 .resumoPagina div {
   min-width: 112px;
   padding: 11px 14px;
-  border: 1px solid var(--laboratorio-borda);
+  border: 1px solid var(--cor-borda);
   border-radius: 13px;
-  background: rgb(255 255 255 / 84%);
+  background: var(--cor-superficie);
 }
 
 .resumoPagina dt {
@@ -157,20 +154,19 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid #d9d3fa;
+  border: 1px solid var(--cor-borda);
   border-radius: 12px;
-  color: var(--laboratorio-roxo);
-  background: rgb(255 255 255 / 88%);
-  box-shadow: 0 8px 22px rgb(67 53 151 / 8%);
+  color: var(--cor-acao);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
   cursor: pointer;
   transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 
 .botaoAdicionar:hover {
-  border-color: #a998ff;
+  border-color: var(--cor-acao);
   color: #fff;
-  background: var(--laboratorio-roxo);
-  transform: translateY(-1px);
+  background: var(--cor-acao);
 }
 
 .botaoAdicionar:focus-visible {
@@ -197,30 +193,29 @@
 
 .gradeModulos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
   margin-top: 16px;
 }
 
 .cartaoModulo {
   display: flex;
   min-width: 0;
-  min-height: 132px;
+  min-height: 118px;
   align-items: center;
   gap: 15px;
   padding: 20px;
-  border: 1px solid var(--laboratorio-borda);
-  border-radius: 17px;
-  color: var(--laboratorio-tinta);
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 9px 27px rgb(39 43 98 / 5%);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-suave);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .cartaoModulo:hover {
-  border-color: #bbb0f5;
-  box-shadow: 0 14px 32px rgb(65 46 161 / 10%);
-  transform: translateY(-2px);
+  border-color: #b8d9ff;
+  box-shadow: 0 14px 34px rgb(25 118 237 / 8%);
 }
 
 .cartaoModulo:focus-visible {
@@ -235,8 +230,8 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 13px;
-  color: var(--laboratorio-roxo);
-  background: var(--laboratorio-lilas);
+  color: var(--cor-acao);
+  background: var(--cor-acao-suave);
 }
 
 .iconeModulo svg {

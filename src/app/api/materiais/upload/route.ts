@@ -12,6 +12,12 @@ function respostaDeErro(erro: unknown) {
   return NextResponse.json({ erro: erro.codigo }, { status: 500 });
 }
 
+function tituloDoNomeArquivo(nomeOriginal: string) {
+  const semExtensao = nomeOriginal.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  const titulo = semExtensao.length >= 3 ? semExtensao : `Arquivo ${semExtensao || "enviado"}`;
+  return titulo.slice(0, 120);
+}
+
 export async function POST(requisicao: Request) {
   const acesso = autorizarUsuarioNaApi(await obterUsuarioAtual());
   if (!acesso.permitido) return NextResponse.json({ erro: acesso.erro }, { status: acesso.status });
@@ -28,9 +34,11 @@ export async function POST(requisicao: Request) {
   try {
     const material = await criarMaterialComArquivoPessoal(acesso.usuario.id, {
       moduloId: formulario.get("moduloId"),
-      titulo: formulario.get("titulo"),
-      descricao: formulario.get("descricao"),
-      minutosEstimados: formulario.get("minutosEstimados"),
+      titulo: tituloDoNomeArquivo(arquivo.name),
+      descricao: `Arquivo ${arquivo.name.slice(0, 430)} adicionado ao módulo.`,
+      minutosEstimados: 10,
+      funcao: formulario.get("funcao"),
+      dataEvento: formulario.get("dataEvento"),
     }, arquivo);
     return NextResponse.json({ material: { id: material.id, identificador: material.identificador, formato: material.formato, origem: material.origem }, analisar: material.analise?.situacao === "PENDENTE" }, { status: 201 });
   } catch (erro) {

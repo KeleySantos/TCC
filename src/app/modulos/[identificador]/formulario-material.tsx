@@ -1,45 +1,18 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { FileUp, Link2, Plus, Type, X } from "lucide-react";
+import { ClipboardCheck, FileText, Image, NotebookPen, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormStatus } from "react-dom";
-import { criarMaterial } from "../acoes";
 import estilos from "./page.module.css";
 
-type OrigemFormulario = "ARQUIVO" | "LINK" | "TEXTO";
+type FuncaoArquivo = "REFERENCIA" | "AVALIACAO" | "ANOTACAO" | "EVIDENCIA_VISUAL";
 
-const FORMATOS_LINK = [
-  ["TEXTO", "Página ou artigo"],
-  ["VIDEO", "Vídeo"],
-  ["AUDIO", "Áudio"],
-  ["PDF", "PDF"],
-  ["IMAGEM", "Imagem"],
-  ["DOCUMENTO", "Documento"],
-  ["PLANILHA", "Planilha"],
+const FUNCOES_ARQUIVO = [
+  ["REFERENCIA", "Material", FileText],
+  ["AVALIACAO", "Avaliação", ClipboardCheck],
+  ["ANOTACAO", "Anotação", NotebookPen],
+  ["EVIDENCIA_VISUAL", "Evidência visual", Image],
 ] as const;
-
-function BotaoAdicionar() {
-  const { pending } = useFormStatus();
-  return <button className={estilos.botaoPrimario} disabled={pending} type="submit">{pending ? "Adicionando..." : "Adicionar material"}</button>;
-}
-
-function CamposComuns() {
-  return <>
-    <div className={estilos.campo}>
-      <label htmlFor="titulo-novo-material">Nome do material</label>
-      <input autoFocus id="titulo-novo-material" maxLength={120} minLength={3} name="titulo" placeholder="Ex.: Resumo da aula 3" required type="text" />
-    </div>
-    <div className={estilos.campo}>
-      <label htmlFor="descricao-novo-material">Descrição</label>
-      <textarea id="descricao-novo-material" maxLength={500} minLength={3} name="descricao" placeholder="Como este material ajuda no estudo?" required rows={3} />
-    </div>
-    <div className={estilos.campo}>
-      <label htmlFor="minutos-novo-material">Tempo estimado</label>
-      <div className={estilos.campoComSufixo}><input defaultValue={10} id="minutos-novo-material" max={600} min={1} name="minutosEstimados" required type="number" /><span>min</span></div>
-    </div>
-  </>;
-}
 
 function mensagemUpload(codigo: string | null, status: number) {
   if (status === 413) return "O arquivo excede o limite permitido.";
@@ -49,18 +22,13 @@ function mensagemUpload(codigo: string | null, status: number) {
   return "Não foi possível armazenar o arquivo. Tente novamente.";
 }
 
-export function FormularioMaterial({
-  identificadorModulo,
-  moduloId,
-}: {
-  identificadorModulo: string;
-  moduloId: string;
-}) {
+export function FormularioMaterial({ moduloId }: { moduloId: string }) {
   const roteador = useRouter();
   const [aberto, definirAberto] = useState(false);
-  const [origem, definirOrigem] = useState<OrigemFormulario>("ARQUIVO");
+  const [funcao, definirFuncao] = useState<FuncaoArquivo>("REFERENCIA");
   const [processando, definirProcessando] = useState(false);
   const [mensagem, definirMensagem] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
+  const hoje = new Date().toISOString().slice(0, 10);
 
   async function enviarArquivo(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -77,7 +45,8 @@ export function FormularioMaterial({
       }
       const sucesso = corpo && typeof corpo === "object" ? corpo as { material?: { id?: unknown }; analisar?: unknown } : {};
       formulario.reset();
-      definirMensagem({ tipo: "sucesso", texto: sucesso.analisar ? "Arquivo adicionado. A análise automática foi iniciada." : "Arquivo adicionado ao módulo; este formato não recebe análise nesta fase." });
+      definirFuncao("REFERENCIA");
+      definirMensagem({ tipo: "sucesso", texto: sucesso.analisar ? "Arquivo adicionado. A análise automática foi iniciada." : "Arquivo adicionado ao módulo." });
       roteador.refresh();
       if (sucesso.analisar && typeof sucesso.material?.id === "string") {
         void fetch(`/api/materiais/${encodeURIComponent(sucesso.material.id)}/analise`, { method: "POST" }).finally(() => roteador.refresh());
@@ -103,47 +72,26 @@ export function FormularioMaterial({
     </button>
 
     {aberto && <div className={estilos.painelFormularioMaterial} id="formulario-novo-material">
-      <div className={estilos.seletorOrigem} aria-label="Origem do material" role="group">
-        {([
-          ["ARQUIVO", "Arquivo", FileUp],
-          ["LINK", "Link", Link2],
-          ["TEXTO", "Texto", Type],
-        ] as const).map(([valor, rotulo, Icone]) => <button aria-pressed={origem === valor} key={valor} onClick={() => { definirOrigem(valor); definirMensagem(null); }} type="button"><Icone aria-hidden="true" />{rotulo}</button>)}
+      <p className={estilos.instrucaoTipoArquivo}>Que tipo de arquivo você vai adicionar?</p>
+      <div className={estilos.seletorTipoMaterial} aria-label="Tipo do arquivo" role="group">
+        {FUNCOES_ARQUIVO.map(([valor, rotulo, Icone]) => <button aria-pressed={funcao === valor} key={valor} onClick={() => { definirFuncao(valor); definirMensagem(null); }} type="button"><Icone aria-hidden="true" />{rotulo}</button>)}
       </div>
 
-      {origem === "ARQUIVO" ? <form className={estilos.formularioMaterial} encType="multipart/form-data" onSubmit={enviarArquivo}>
+      <form className={estilos.formularioMaterial} encType="multipart/form-data" onSubmit={enviarArquivo}>
         <input name="moduloId" type="hidden" value={moduloId} />
-        <CamposComuns />
+        <input name="funcao" type="hidden" value={funcao} />
+        {funcao !== "REFERENCIA" && <div className={estilos.campo}>
+          <label htmlFor="data-evento-novo-material">Data do arquivo</label>
+          <input id="data-evento-novo-material" max={hoje} name="dataEvento" type="date" />
+          <small>Se não for informada, será usada a data do envio.</small>
+        </div>}
         <div className={estilos.campo}>
           <label htmlFor="arquivo-novo-material">Selecionar arquivo</label>
-          <input accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.mov" id="arquivo-novo-material" name="arquivo" required type="file" />
-          <small>Imagens, documentos, planilhas, áudios ou vídeos. O limite varia conforme o formato.</small>
+          <input accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods" autoFocus id="arquivo-novo-material" name="arquivo" required type="file" />
+          <small>PDF, planilhas, imagens e arquivos de texto. O limite varia conforme o arquivo.</small>
         </div>
         <button className={estilos.botaoPrimario} disabled={processando} type="submit">{processando ? "Enviando..." : "Enviar arquivo"}</button>
-      </form> : <form action={criarMaterial} className={estilos.formularioMaterial}>
-        <input name="identificadorModulo" type="hidden" value={identificadorModulo} />
-        <input name="moduloId" type="hidden" value={moduloId} />
-        <CamposComuns />
-        {origem === "LINK" ? <>
-          <input name="conteudoTexto" type="hidden" value="" />
-          <div className={estilos.campo}>
-            <label htmlFor="formato-link-material">Tipo do conteúdo</label>
-            <select defaultValue="TEXTO" id="formato-link-material" name="formato">{FORMATOS_LINK.map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}</select>
-          </div>
-          <div className={estilos.campo}>
-            <label htmlFor="url-novo-material">Endereço do link</label>
-            <input id="url-novo-material" name="url" placeholder="https://" required type="url" />
-          </div>
-        </> : <>
-          <input name="formato" type="hidden" value="TEXTO" />
-          <input name="url" type="hidden" value="" />
-          <div className={estilos.campo}>
-            <label htmlFor="texto-novo-material">Conteúdo</label>
-            <textarea id="texto-novo-material" maxLength={8000} name="conteudoTexto" placeholder="Registre aqui suas notas ou resumo." required rows={6} />
-          </div>
-        </>}
-        <BotaoAdicionar />
-      </form>}
+      </form>
 
       {mensagem && <p className={mensagem.tipo === "erro" ? estilos.mensagemErroLocal : estilos.mensagemSucessoLocal} role={mensagem.tipo === "erro" ? "alert" : "status"}>{mensagem.texto}</p>}
     </div>}

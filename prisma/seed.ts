@@ -3,6 +3,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
 import { EscopoComentarioSala, FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
 import { criarHashSenha } from "../src/servidor/senhas";
+import { aplicarCenarioSinteticoDiego } from "./cenario-diego";
 
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! }) });
 const referencia = new Date("2026-09-01T12:00:00.000Z");
@@ -73,22 +74,18 @@ async function principal() {
     [ana, ana.recursos.pdf, 180, 25, MetodoEstudo.FEYNMAN, 2, desafioAna.id], [ana, ana.recursos.pratica, 172, 21, MetodoEstudo.FEYNMAN, 4, desafioAna.id], [ana, ana.recursos.pratica, 164, 19, MetodoEstudo.FEYNMAN, 4, null], [ana, ana.recursos.pratica, 156, 17, MetodoEstudo.FEYNMAN, 4, null],
     [bruno, bruno.recursos.video, 148, 16, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [bruno, bruno.recursos.video, 140, 14, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [bruno, bruno.recursos.video, 132, 13, MetodoEstudo.REPETICAO_ESPACADA, 4, null], [bruno, bruno.recursos.pdf, 124, 18, MetodoEstudo.REPETICAO_ESPACADA, 3, null],
     [carla, carla.recursos.pdf, 116, 17, MetodoEstudo.POMODORO, 2, null],
-    [diego, diego.recursos.pratica, 108, 20, MetodoEstudo.INTERCALAMENTO, 2, null], [diego, diego.recursos.video, 100, 13, MetodoEstudo.PRATICA_DISTRIBUIDA, 3, null], [diego, diego.recursos.pratica, 92, 19, MetodoEstudo.INTERCALAMENTO, 2, null],
     [elisa, elisa.recursos.pdf, 84, 16, MetodoEstudo.POMODORO, 4, null], [elisa, elisa.recursos.video, 76, 12, MetodoEstudo.REPETICAO_ESPACADA, 4, null], [elisa, elisa.recursos.pdf, 68, 18, MetodoEstudo.RECUPERACAO_ATIVA, 4, null], [elisa, elisa.recursos.video, 60, 11, MetodoEstudo.PRATICA_DISTRIBUIDA, 4, null], [elisa, elisa.recursos.pratica, 52, 20, MetodoEstudo.INTERCALAMENTO, 4, null],
   ];
   for (const item of dados) await criarSessao(...item);
+  await aplicarCenarioSinteticoDiego(prisma, diego, referencia);
   await criarSegundoModulo(ana);
   const sala = await prisma.sala.create({ data: { proprietarioId: ana.usuario.id, identificador: "sala-sintetica-grupo-programacao", nome: "Grupo de Programação", descricao: "Sala sintética para acompanhar módulos pessoais sem expor materiais ou sessões." } });
-  const [membroAna, membroBruno, membroCarla] = await Promise.all([
-    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: ana.usuario.id, papel: PapelMembroSala.PROPRIETARIO } }),
-    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: bruno.usuario.id } }),
-    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: carla.usuario.id } }),
-  ]);
+  const membroAna = await prisma.membroSala.create({
+    data: { salaId: sala.id, usuarioId: ana.usuario.id, papel: PapelMembroSala.PROPRIETARIO },
+  });
   const moduloSala = await prisma.moduloSala.create({ data: { salaId: sala.id, titulo: "JavaScript", descricao: "Módulo-pai sintético para consolidar dashboards autorizados.", posicao: 1 } });
   await Promise.all([
     prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroAna.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id, permitirComparacao: true } }),
-    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroBruno.id, usuarioId: bruno.usuario.id, moduloPessoalId: bruno.modulo.id, permitirComparacao: true, permitirIa: true } }),
-    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroCarla.id, usuarioId: carla.usuario.id, moduloPessoalId: carla.modulo.id } }),
     prisma.comentarioSala.create({ data: { salaId: sala.id, autorId: ana.usuario.id, escopo: EscopoComentarioSala.SALA, conteudo: "Comentário sintético: registrem suas sessões normalmente; somente os dashboards autorizados serão consolidados." } }),
   ]);
   const inicio = diasAntes(2);

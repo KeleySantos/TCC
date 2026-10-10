@@ -56,6 +56,25 @@ async function principal() {
   };
 
   try {
+    await esperarErro("DADOS_INVALIDOS", () => registrarSessaoManualPessoal(ana.id, {
+      ...contexto,
+      iniciadaEm: "2001-01-09T10:00:00.000Z",
+      encerradaEm: "2001-01-09T10:30:00.000Z",
+      dificuldadePercebida: 3,
+      compreensaoPercebida: 3.5,
+    }), "registro manual deve recusar compreensão decimal.");
+    await esperarErro("DADOS_INVALIDOS", () => editarSessaoPessoal(ana.id, "sessao-inexistente", {
+      ...contexto,
+      iniciadaEm: "2001-01-09T10:00:00.000Z",
+      encerradaEm: "2001-01-09T10:30:00.000Z",
+      dificuldadePercebida: 3,
+      compreensaoPercebida: 3.5,
+    }), "edição deve recusar compreensão decimal antes de consultar a sessão.");
+    await esperarErro("DADOS_INVALIDOS", () => concluirSessaoPessoal(ana.id, "sessao-inexistente", {
+      dificuldadePercebida: 3,
+      compreensaoPercebida: 3.5,
+    }), "conclusão deve recusar compreensão decimal antes de consultar a sessão.");
+
     const manual = await registrarSessaoManualPessoal(ana.id, {
       ...contexto,
       iniciadaEm: "2001-01-10T10:00:00.000Z",
@@ -131,7 +150,7 @@ async function principal() {
     const restaurada = await desarquivarSessaoPessoal(ana.id, manual.id);
     afirmar(!restaurada.arquivada, "sessão arquivada deve poder ser restaurada.");
 
-    console.log("CRUD de sessões verificado: manual, planejamento, cronômetro, edição, sobreposição, arquivamento e isolamento.");
+    console.log("CRUD de sessões verificado: escala inteira, manual, planejamento, cronômetro, edição, sobreposição, arquivamento e isolamento.");
   } finally {
     if (ids.length) await prisma.sessaoEstudo.deleteMany({ where: { id: { in: ids } } });
     await prisma.$disconnect();

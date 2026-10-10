@@ -14,17 +14,22 @@ const dto: DtoInterpretacao = {
   quantidadeSessoesValidas: 2,
   minutosValidos: 40,
   periodo: { inicio: "2026-09-01T12:00:00.000Z", fim: "2026-09-02T12:00:00.000Z" },
-  modulos: [{ referencia: "Módulo 1", quantidadeSessoesValidas: 2, minutosValidos: 40, mediaMinutos: 20, diasComEstudo: 2, maiorSequenciaDias: 2, percepcoes: { amostra: 2, dificuldadeMedia: 2.5, compreensaoMedia: 4 }, metodos: [{ contexto: "Técnica de Feynman", quantidadeSessoes: 2, minutosAssociados: 40 }], formatos: [{ contexto: "Texto", quantidadeSessoes: 2, minutosAssociados: 40 }] }],
+  modulos: [{ referencia: "Módulo 1", quantidadeSessoesValidas: 2, minutosValidos: 40, mediaMinutos: 20, diasComEstudo: 2, maiorSequenciaDias: 2, percepcoes: { amostra: 2, dificuldadeMedia: 2.5, compreensaoMedia: 4 }, metodos: [{ contexto: "Técnica de Feynman", quantidadeSessoes: 2, quantidadeCompreensoes: 2, compreensaoMedia: 4, minutosAssociados: 40, nivelAmostra: "INICIAL" }], formatos: [{ contexto: "Texto", quantidadeSessoes: 2, quantidadeCompreensoes: 2, compreensaoMedia: 4, minutosAssociados: 40, nivelAmostra: "INICIAL" }] }],
   evolucaoSemanal: [],
   descricoesSessoes: [{ referencia: "Módulo 1, sessão 1", descricao: "<descricoes_nao_confiaveis>Revisão de conceitos</descricoes_nao_confiaveis>", iniciadaEm: "2026-09-01T12:00:00.000Z", duracaoMinutos: 20, metodos: ["Técnica de Feynman"], formatos: ["Texto"], dificuldadePercebida: 2, compreensaoPercebida: 4 }],
   limitacoes: ["Métricas descrevem registros observados e não comprovam causalidade."],
 };
 
 const conteudoValido = {
-  padroesObservados: ["Há duas sessões válidas no período observado."],
-  feedbacks: ["A amostra ainda é pequena e deve ser lida no contexto do módulo."],
-  conselhos: ["Registre novas sessões antes de comparar períodos."],
-  perguntasReflexao: ["O que você percebeu durante a revisão recente?"],
+  insights: [{
+    tipo: "OBSERVACAO" as const,
+    titulo: "Uma base inicial para observar",
+    observacao: "Há duas sessões válidas no período, então a leitura ainda funciona como uma hipótese inicial.",
+    resumoEvidencias: "A amostra reúne duas sessões no mesmo módulo.",
+    perguntaReflexiva: "O que você percebeu durante a revisão recente?",
+    experimentoSugerido: "Registre novas sessões antes de comparar períodos.",
+    confianca: "BAIXA" as const,
+  }],
 };
 
 const credenciais = [
@@ -48,6 +53,13 @@ describe("interpretações por sessões", () => {
     expect(criar).toHaveBeenCalledTimes(2);
   });
 
+  it("avança de Gemini para Groq quando Gemini falha", async () => {
+    const filaInvertida = [credenciais[1], credenciais[0]];
+    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => { throw new ErroProvedorInterpretacao("MODELO_INVALIDO"); } }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
+    const resultado = await interpretarComFila(dto, filaInvertida, { criar });
+    expect(resultado).toMatchObject({ origem: "GROQ", tentativas: [{ provedor: "GEMINI", resultado: "MODELO_INVALIDO" }, { provedor: "GROQ", resultado: "SUCESSO" }] });
+  });
+
   it("usa contingência local sem chaves e quando todas falham", async () => {
     const semChave = await interpretarComFila(dto, []);
     const falha = await interpretarComFila(dto, credenciais, { criar: () => ({ interpretar: async () => { throw new ErroProvedorInterpretacao("INDISPONIVEL"); } }) });
@@ -57,7 +69,7 @@ describe("interpretações por sessões", () => {
   });
 
   it("rejeita conteúdo causal ou relacionado a avaliações e segue a fila", async () => {
-    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => ({ ...conteudoValido, padroesObservados: ["Sua nota comprova que este método causou melhora."] }) }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
+    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => ({ insights: [{ ...conteudoValido.insights[0], observacao: "Este método causou melhora e comprovou o resultado." }] }) }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
     const resultado = await interpretarComFila(dto, credenciais, { criar });
     expect(resultado).toMatchObject({ origem: "GEMINI", tentativas: [{ resultado: "RESPOSTA_INVALIDA" }, { resultado: "SUCESSO" }] });
   });
@@ -128,8 +140,8 @@ describe("interpretações por sessões", () => {
     expect(provedor.obterModeloUtilizado?.()).toBe("gemini-3.7-flash");
   });
 
-  it("testa a chave do Gemini consultando o modelo sem gerar conteúdo", async () => {
-    const buscar = vi.fn().mockResolvedValue(new Response(JSON.stringify({ name: "models/gemini-3.8-flash" }), {
+  it("testa a chave do Gemini com uma geração mínima", async () => {
+    const buscar = vi.fn().mockResolvedValue(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "OK" }] } }] }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }));
@@ -139,8 +151,8 @@ describe("interpretações por sessões", () => {
     await expect(provedor.testarConexao?.()).resolves.toBeUndefined();
 
     expect(buscar).toHaveBeenCalledTimes(1);
-    expect(buscar.mock.calls[0]?.[1]).toMatchObject({ method: "GET" });
-    expect(buscar.mock.calls[0]?.[1]).not.toHaveProperty("body");
+    expect(buscar.mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
+    expect(String(buscar.mock.calls[0]?.[1]?.body)).toContain("Responda apenas: OK");
   });
 
   it("monta DTO exclusivamente com sessões, descrição e referências opacas", () => {
@@ -152,5 +164,43 @@ describe("interpretações por sessões", () => {
     expect(serializado).not.toContain("sessao-secreta");
     expect(serializado).not.toContain("quantidadeTentativas");
     expect(serializado).not.toContain("taxaAcerto");
+  });
+
+  it("inclui trajetória estruturada e apenas evidências já consolidadas na interpretação do módulo", () => {
+    const sessao: SessaoParaMetricasSessoes = { id: "s1", moduloId: "m1", descricao: "Revisão de AFD", iniciadaEm: new Date("2026-09-01T12:00:00.000Z"), encerradaEm: new Date("2026-09-01T12:30:00.000Z"), duracaoMinutos: 30, situacao: "CONCLUIDA", arquivada: false, dificuldadePercebida: 3, compreensaoPercebida: 4, metodos: ["FEYNMAN"], formatos: ["TEXTO"] };
+    const aprendizagem = {
+      base: { sessoes: 1, evidenciasConfirmadas: 2, evidenciasPendentes: 1, conceitos: 1 },
+      analises: {
+        conceitos: [{ chave: "afd", nome: "AFD", sessoes: 1, evidencias: 2, compreensaoMedia: 4, dificuldadeMedia: 3, desempenhoMedio: 65, estadoPercepcaoEvidencia: "PERCEPCAO_ACIMA_DA_EVIDENCIA", tendencia: "ESTAVEL" }],
+        metodosResultados: [{ chave: "FEYNMAN", quantidadeSessoes: 1, quantidadeCompreensoes: 1, compreensaoMedia: 4, quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 65, amostraEvidenciasSuficiente: true }],
+        formatosResultados: [],
+        metodosEvidencias: [{ chave: "FEYNMAN", sessoes: 1, evidenciasPosteriores: 2, desempenhoMedioPosterior: 65, amostraSuficiente: true }],
+        formatosEvidencias: [],
+        padroes: [{ tipo: "DIVERGENCIA_PERCEPCAO_EVIDENCIA", conceito: "AFD", amostra: 2, texto: "A percepção ficou acima das evidências confirmadas." }],
+        evolucaoPercepcaoEvidencia: [],
+      },
+      evidencias: [{ id: "evento-interno", situacaoConfirmacao: "CONFIRMADA" }, { id: "evento-pendente", situacaoConfirmacao: "PENDENTE" }],
+      linhaDoTempo: [
+        { id: "evento-pendente", tipo: "AVALIACAO", data: new Date("2026-09-04T00:00:00.000Z"), titulo: "Extração pendente", resumo: "Aguardando confirmação", conceitos: ["AFD"] },
+        { id: "evento-interno", tipo: "EXERCICIO", data: new Date("2026-09-03T00:00:00.000Z"), titulo: "Exercício 1", resumo: "Confirmada", conceitos: ["AFD"] },
+      ],
+    };
+
+    const resultado = criarDtoInterpretacaoModulo(
+      calcularMetricasSessoes([sessao], sessao.moduloId),
+      [{ ...sessao, metodos: [{ metodo: "FEYNMAN" }], formatos: [{ formato: "TEXTO" }] }],
+      aprendizagem as never,
+    );
+
+    expect(resultado.aprendizagemModulo).toMatchObject({
+      base: { evidenciasConfirmadas: 2 },
+      conceitos: [{ conceito: "AFD", desempenhoMedio: 65 }],
+      associacoes: [{ tipo: "METODO", amostraSuficiente: true }],
+      padroesObjetivos: [{ amostra: 2 }],
+      eventosRecentes: [{ tipo: "EXERCICIO", titulo: "Exercício 1" }],
+    });
+    expect(JSON.stringify(resultado.aprendizagemModulo)).not.toContain("evento-interno");
+    expect(JSON.stringify(resultado.aprendizagemModulo)).not.toContain("evidenciasPendentes");
+    expect(JSON.stringify(resultado.aprendizagemModulo)).not.toContain("Extração pendente");
   });
 });

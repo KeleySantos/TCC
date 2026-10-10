@@ -23,6 +23,8 @@ export type NivelAmostraSessao = "AUSENTE" | "INSUFICIENTE" | "INICIAL" | "RECOR
 export type ResumoContextualSessao<T extends string> = {
   chave: T;
   quantidadeSessoes: number;
+  quantidadeCompreensoes: number;
+  mediaCompreensaoPercebida: number | null;
   minutosAssociados: number;
   percentualSessoes: number;
   nivelAmostra: NivelAmostraSessao;
@@ -55,6 +57,12 @@ export type MetricasSessoes = {
     maiorSequenciaDias: number;
     primeiraSessaoEm: Date | null;
     ultimaSessaoEm: Date | null;
+  };
+  regularidade: {
+    semanasAtivas: number;
+    semanasNoPeriodo: number;
+    proporcaoSemanasAtivas: number;
+    classificacao: "SEM_DADOS" | "INSUFICIENTE" | "ESPORADICA" | "MODERADA" | "CONSTANTE";
   };
   percepcoes: {
     amostra: number;
@@ -91,7 +99,7 @@ export function classificarAmostraSessoes(quantidade: number): NivelAmostraSessa
   return "RECORRENTE";
 }
 
-function sessaoValida(sessao: SessaoParaMetricasSessoes): sessao is SessaoParaMetricasSessoes & { encerradaEm: Date; duracaoMinutos: number } {
+export function sessaoValida(sessao: SessaoParaMetricasSessoes): sessao is SessaoParaMetricasSessoes & { encerradaEm: Date; duracaoMinutos: number } {
   return sessao.situacao === "CONCLUIDA"
     && sessao.encerradaEm !== null
     && Number.isInteger(sessao.duracaoMinutos)
@@ -119,22 +127,35 @@ function calcularFrequencia(sessoes: Array<SessaoParaMetricasSessoes & { encerra
   return { diasComEstudo: dias.length, maiorSequenciaDias, primeiraSessaoEm: datas[0] ?? null, ultimaSessaoEm: datas.at(-1) ?? null };
 }
 
+function calcularRegularidade(sessoes: Array<SessaoParaMetricasSessoes & { encerradaEm: Date; duracaoMinutos: number }>) {
+  if (!sessoes.length) return { semanasAtivas: 0, semanasNoPeriodo: 0, proporcaoSemanasAtivas: 0, classificacao: "SEM_DADOS" as const };
+  const semanas = new Set(sessoes.map((sessao) => inicioSemanaUtc(sessao.encerradaEm).getTime()));
+  const limites = [...semanas].sort((a, b) => a - b);
+  const semanasNoPeriodo = Math.round(((limites.at(-1) ?? limites[0]) - limites[0]) / (7 * 86_400_000)) + 1;
+  const proporcaoSemanasAtivas = semanas.size / semanasNoPeriodo;
+  const classificacao = semanasNoPeriodo < 2 ? "INSUFICIENTE" : proporcaoSemanasAtivas >= 0.75 ? "CONSTANTE" : proporcaoSemanasAtivas >= 0.5 ? "MODERADA" : "ESPORADICA";
+  return { semanasAtivas: semanas.size, semanasNoPeriodo, proporcaoSemanasAtivas, classificacao } as const;
+}
+
 function agruparContextos<T extends string>(
   sessoes: Array<SessaoParaMetricasSessoes & { encerradaEm: Date; duracaoMinutos: number }>,
   selecionar: (sessao: SessaoParaMetricasSessoes) => T[],
 ): ResumoContextualSessao<T>[] {
-  const grupos = new Map<T, { ids: Set<string>; minutos: number }>();
+  const grupos = new Map<T, { ids: Set<string>; minutos: number; compreensoes: number[] }>();
   for (const sessao of sessoes) {
     for (const chave of new Set(selecionar(sessao))) {
-      const grupo = grupos.get(chave) ?? { ids: new Set<string>(), minutos: 0 };
+      const grupo = grupos.get(chave) ?? { ids: new Set<string>(), minutos: 0, compreensoes: [] };
       grupo.ids.add(sessao.id);
       grupo.minutos += sessao.duracaoMinutos;
+      if (sessao.compreensaoPercebida !== null) grupo.compreensoes.push(sessao.compreensaoPercebida);
       grupos.set(chave, grupo);
     }
   }
   return [...grupos.entries()].map(([chave, grupo]) => ({
     chave,
     quantidadeSessoes: grupo.ids.size,
+    quantidadeCompreensoes: grupo.compreensoes.length,
+    mediaCompreensaoPercebida: grupo.compreensoes.length >= MINIMO_SESSOES_PARA_MEDIA_PERCEPCAO ? media(grupo.compreensoes) : null,
     minutosAssociados: grupo.minutos,
     percentualSessoes: sessoes.length ? grupo.ids.size / sessoes.length : 0,
     nivelAmostra: classificarAmostraSessoes(grupo.ids.size),
@@ -187,6 +208,7 @@ export function calcularMetricasSessoes(sessoes: SessaoParaMetricasSessoes[], mo
     versaoAlgoritmo: VERSAO_METRICAS_SESSOES,
     tempoEstudo: { quantidadeSessoesValidas: validas.length, minutosTotais, mediaMinutos: validas.length ? minutosTotais / validas.length : null },
     frequencia: calcularFrequencia(validas),
+    regularidade: calcularRegularidade(validas),
     percepcoes: {
       amostra: percepcoes.length,
       mediaDificuldadePercebida: publicarPercepcoes ? media(percepcoes.map((sessao) => sessao.dificuldadePercebida)) : null,
