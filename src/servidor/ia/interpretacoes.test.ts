@@ -169,17 +169,17 @@ describe("interpretações por sessões", () => {
   it("inclui trajetória estruturada e apenas evidências já consolidadas na interpretação do módulo", () => {
     const sessao: SessaoParaMetricasSessoes = { id: "s1", moduloId: "m1", descricao: "Revisão de AFD", iniciadaEm: new Date("2026-09-01T12:00:00.000Z"), encerradaEm: new Date("2026-09-01T12:30:00.000Z"), duracaoMinutos: 30, situacao: "CONCLUIDA", arquivada: false, dificuldadePercebida: 3, compreensaoPercebida: 4, metodos: ["FEYNMAN"], formatos: ["TEXTO"] };
     const aprendizagem = {
-      base: { sessoes: 1, evidenciasConfirmadas: 2, evidenciasPendentes: 1, conceitos: 1 },
+      base: { sessoes: 1, evidenciasValidas: 2, evidenciasPendentes: 1, conceitos: 1 },
       analises: {
         conceitos: [{ chave: "afd", nome: "AFD", sessoes: 1, evidencias: 2, compreensaoMedia: 4, dificuldadeMedia: 3, desempenhoMedio: 65, estadoPercepcaoEvidencia: "PERCEPCAO_ACIMA_DA_EVIDENCIA", tendencia: "ESTAVEL" }],
         metodosResultados: [{ chave: "FEYNMAN", quantidadeSessoes: 1, quantidadeCompreensoes: 1, compreensaoMedia: 4, quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 65, amostraEvidenciasSuficiente: true }],
         formatosResultados: [],
         metodosEvidencias: [{ chave: "FEYNMAN", sessoes: 1, evidenciasPosteriores: 2, desempenhoMedioPosterior: 65, amostraSuficiente: true }],
         formatosEvidencias: [],
-        padroes: [{ tipo: "DIVERGENCIA_PERCEPCAO_EVIDENCIA", conceito: "AFD", amostra: 2, texto: "A percepção ficou acima das evidências confirmadas." }],
+        padroes: [{ tipo: "DIVERGENCIA_PERCEPCAO_EVIDENCIA", conceito: "AFD", amostra: 2, texto: "A percepção ficou acima das evidências válidas." }],
         evolucaoPercepcaoEvidencia: [],
       },
-      evidencias: [{ id: "evento-interno", situacaoConfirmacao: "CONFIRMADA" }, { id: "evento-pendente", situacaoConfirmacao: "PENDENTE" }],
+      evidencias: [{ id: "evento-interno", desempenhoPercentual: 65, dataEvento: new Date("2026-09-03") }, { id: "evento-pendente", desempenhoPercentual: null, dataEvento: new Date("2026-09-04") }],
       linhaDoTempo: [
         { id: "evento-pendente", tipo: "AVALIACAO", data: new Date("2026-09-04T00:00:00.000Z"), titulo: "Extração pendente", resumo: "Aguardando confirmação", conceitos: ["AFD"] },
         { id: "evento-interno", tipo: "EXERCICIO", data: new Date("2026-09-03T00:00:00.000Z"), titulo: "Exercício 1", resumo: "Confirmada", conceitos: ["AFD"] },
@@ -193,7 +193,7 @@ describe("interpretações por sessões", () => {
     );
 
     expect(resultado.aprendizagemModulo).toMatchObject({
-      base: { evidenciasConfirmadas: 2 },
+      base: { evidenciasValidas: 2 },
       conceitos: [{ conceito: "AFD", desempenhoMedio: 65 }],
       associacoes: [{ tipo: "METODO", amostraSuficiente: true }],
       padroesObjetivos: [{ amostra: 2 }],

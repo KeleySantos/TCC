@@ -275,7 +275,7 @@ export function calcularDashboardObservacional(
       semConceitosAnalisados: conceitos.length === 0,
     },
     limitacoes: [
-      "Duração, métodos e percepções descrevem contextos; evidências confirmadas registram desempenho posterior, sem demonstrar eficácia ou causalidade.",
+      "Duração, métodos e percepções descrevem contextos; evidências válidas registram desempenho posterior, sem demonstrar eficácia ou causalidade.",
       "Métodos simultâneos são contextos não exclusivos; os percentuais de uso podem somar mais de 100%.",
       "Conceitos extraídos de arquivos e mencionados em sessões não demonstram domínio ou dificuldade.",
       "No resultado por método, o nível da amostra informa a quantidade de compreensões preenchidas; nos demais indicadores, informa a quantidade de sessões. Nenhum nível representa significância estatística.",

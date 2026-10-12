@@ -65,7 +65,7 @@ function insightDeEstrategia(dto: DtoInterpretacao): InsightAprendizagem | null 
   return {
     tipo: "ESTRATEGIA", titulo: poucosDados ? "Uma hipótese inicial para testar" : "Um contexto que vale continuar observando",
     observacao: poucosDados
-      ? `Os resultados de ${metodo.contexto} parecem promissores, mas a amostra ainda é pequena. Por enquanto, isso funciona melhor como hipótese para novas sessões do que como um padrão estabelecido.`
+      ? `Os registros de ${metodo.contexto} ainda têm pouca base para comparação. Por enquanto, uma próxima sessão serve como exploração, sem indicar um padrão estabelecido.`
       : `${metodo.contexto} aparece com frequência nos registros e está associado a uma compreensão percebida média de ${metodo.compreensaoMedia!.toFixed(1)}/5. Vale observar se essa relação se repete em conteúdos de dificuldade parecida.`,
     resumoEvidencias: `${metodo.quantidadeCompreensoes} compreensão(ões) registrada(s) em ${metodo.quantidadeSessoes} sessão(ões).`,
     perguntaReflexiva: "Você percebeu essa diferença também?",

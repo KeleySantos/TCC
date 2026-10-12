@@ -101,8 +101,6 @@ async function reconciliarMudancaFuncaoMaterial(material: { id: string; origem: 
   await prisma.evidenciaAprendizagem.updateMany({
     where: { recursoId: material.id },
     data: {
-      situacaoConfirmacao: "REJEITADA",
-      confirmadaEm: null,
       resumo: "Esta evidência deixou de participar das análises porque o material não está mais classificado como avaliação.",
     },
   });
@@ -183,7 +181,7 @@ export async function criarMaterialPessoal(usuarioId: string, entrada: unknown) 
   const identificador = criarIdentificador(dados.titulo);
   const existente = await prisma.recursoConteudo.findFirst({ where: { moduloId: modulo.id, identificador } });
   if (existente) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-  return prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, dataEventoConfirmada: dados.dataEvento !== null, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
+  return prisma.recursoConteudo.create({ data: { moduloId: modulo.id, identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
 }
 
 export async function criarMaterialComArquivoPessoal(usuarioId: string, entrada: unknown, arquivo: File) {
@@ -218,7 +216,6 @@ export async function criarMaterialComArquivoPessoal(usuarioId: string, entrada:
         minutosEstimados: dados.minutosEstimados,
         funcao: dados.funcao,
         dataEvento,
-        dataEventoConfirmada: dados.dataEvento !== null,
         origem: OrigemMaterial.ARQUIVO,
         arquivo: {
           create: {
@@ -250,7 +247,7 @@ export async function atualizarMaterialPessoal(usuarioId: string, id: string, en
     const identificadorArquivo = criarIdentificador(dadosArquivo.titulo);
     const existenteArquivo = await prisma.recursoConteudo.findFirst({ where: { moduloId: atual.moduloId, identificador: identificadorArquivo, id: { not: atual.id } } });
     if (existenteArquivo) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-    const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador: identificadorArquivo, titulo: dadosArquivo.titulo, descricao: dadosArquivo.descricao, minutosEstimados: dadosArquivo.minutosEstimados, funcao: dadosArquivo.funcao, dataEvento: dadosArquivo.dataEvento, dataEventoConfirmada: dadosArquivo.dataEvento !== null } });
+    const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador: identificadorArquivo, titulo: dadosArquivo.titulo, descricao: dadosArquivo.descricao, minutosEstimados: dadosArquivo.minutosEstimados, funcao: dadosArquivo.funcao, dataEvento: dadosArquivo.dataEvento, } });
     await reconciliarMudancaFuncaoMaterial(atual, dadosArquivo.funcao);
     return atualizado;
   }
@@ -258,7 +255,7 @@ export async function atualizarMaterialPessoal(usuarioId: string, id: string, en
   const identificador = criarIdentificador(dados.titulo);
   const existente = await prisma.recursoConteudo.findFirst({ where: { moduloId: atual.moduloId, identificador, id: { not: atual.id } } });
   if (existente) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-  const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, dataEventoConfirmada: dados.dataEvento !== null, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
+  const atualizado = await prisma.recursoConteudo.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, formato: dados.formato, minutosEstimados: dados.minutosEstimados, funcao: dados.funcao, dataEvento: dados.dataEvento, ...normalizarConteudo(dados.conteudoTexto, dados.url) } });
   await reconciliarMudancaFuncaoMaterial(atual, dados.funcao);
   return atualizado;
 }

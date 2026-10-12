@@ -80,7 +80,7 @@ describe("contrato humanizado dos insights", () => {
   it("prioriza diferença entre percepção alta e evidência baixa sem diagnosticar", () => {
     const resultado = gerarRespostaLocal(dtoBase({
       aprendizagemModulo: {
-        base: { sessoes: 5, evidenciasConfirmadas: 3, conceitos: 1 },
+        base: { sessoes: 5, evidenciasValidas: 3, conceitos: 1 },
         conceitos: [{ conceito: "Funções", sessoes: 5, evidencias: 3, compreensaoMedia: 4.6, desempenhoMedio: 58, relacaoPercepcaoEvidencia: "POSSIVEL_SUPERESTIMACAO", tendencia: "ESTAVEL" }],
         associacoes: [], padroesObjetivos: [], eventosRecentes: [], evolucaoPercepcaoEvidencia: [],
       },
@@ -92,7 +92,7 @@ describe("contrato humanizado dos insights", () => {
 
   it("descreve estratégia muito usada associada a resultado baixo sem culpar o método", () => {
     const resultado = gerarRespostaLocal(dtoBase({ aprendizagemModulo: {
-      base: { sessoes: 10, evidenciasConfirmadas: 6, conceitos: 1 }, conceitos: [],
+      base: { sessoes: 10, evidenciasValidas: 6, conceitos: 1 }, conceitos: [],
       associacoes: [{ tipo: "METODO", contexto: "RELEITURA", sessoes: 10, compreensoes: 8, compreensaoMedia: 3.2, evidenciasPosteriores: 6, desempenhoMedioPosterior: 54, amostraSuficiente: true }],
       padroesObjetivos: [], eventosRecentes: [], evolucaoPercepcaoEvidencia: [],
     } }), "TODOS_INDISPONIVEIS");

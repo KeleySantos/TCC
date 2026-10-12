@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { DoorOpen, Plus, UsersRound } from "lucide-react";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { exigirUsuario } from "@/servidor/autenticacao";
@@ -24,15 +23,10 @@ const mensagensSucesso: Record<string, string> = {
 export default async function PaginaSalas({ searchParams }: { searchParams: Promise<{ erro?: string; sucesso?: string }> }) {
   const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
   const salas = await listarSalasDaConta(usuario.id);
-  const primeiroNome = usuario.nome.trim().split(/\s+/)[0] || "estudante";
   const quantidadeModulos = salas.reduce((total, sala) => total + sala._count.modulos, 0);
 
   return <EstruturaAutenticada usuarioNome={usuario.nome}>
     <main className={estilos.paginaSalas} id="conteudo-principal" tabIndex={-1}>
-      <header className={estilos.topoConta}>
-        <div className={estilos.contextoAtual}><UsersRound aria-hidden="true" /><span>Salas de aprendizagem</span></div>
-        <Link className={estilos.conta} href="/perfil"><span className={estilos.avatar} aria-hidden="true">{primeiroNome.slice(0, 1).toUpperCase()}</span><span><strong>{usuario.nome}</strong><small>Ver perfil</small></span></Link>
-      </header>
 
       <div className={estilos.areaConteudoSalas}>
         <header className={estilos.apresentacaoPagina}>

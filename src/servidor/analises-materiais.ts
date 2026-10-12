@@ -5,7 +5,7 @@ import { EXTENSOES_ANALISAVEIS, extrairTextoMaterial } from "./extracao-materiai
 import { analisarTextoMaterial } from "./ia/analise-materiais";
 import { criarChaveArmazenamentoArquivo, gravarArquivoMaterial, lerArquivoMaterial, prepararRemocaoArquivoMaterial, removerArquivoMaterial, validarArquivoMaterial } from "./arquivos-materiais";
 import { ErroModulo } from "./modulos";
-import { criarRascunhoEvidenciaDoMaterial, sincronizarConceitosMaterial } from "./aprendizagem-modulo";
+import { registrarEvidenciaDoMaterial, sincronizarConceitosMaterial } from "./aprendizagem-modulo";
 
 const VERSAO_ANALISE = "analise-material-v1";
 
@@ -69,7 +69,7 @@ export async function processarAnaliseMaterial(usuarioId: string, recursoId: str
       },
     });
     await sincronizarConceitosMaterial(usuarioId, recursoId, resultado.conceitos);
-    await criarRascunhoEvidenciaDoMaterial(usuarioId, recursoId, extracao.texto, resultado.conceitos);
+    await registrarEvidenciaDoMaterial(usuarioId, recursoId, extracao.texto, resultado.conceitos);
     return analise;
   } catch (erro) {
     const codigo = erro instanceof Error && /^[A-Z0-9_]+$/.test(erro.message) ? erro.message.slice(0, 60) : "FALHA_PROCESSAMENTO";
@@ -120,9 +120,7 @@ export async function substituirArquivoMaterial(usuarioId: string, recursoId: st
       prisma.analiseMaterial.upsert({ where: { recursoId }, create: { recursoId, ...dadosIniciaisAnalise(validado.extensaoNormalizada) }, update: { ...dadosIniciaisAnalise(validado.extensaoNormalizada), resumo: null, conceitosJson: "[]", pontosRevisaoJson: "[]", metodosSugeridosJson: "[]", proximasSessoesJson: "[]", perguntasReflexaoJson: "[]", trechosConceitosJson: "[]", afirmacoesJson: "[]", interpretacaoVisualJson: "[]", origem: null, modelo: null, caracteresExtraidos: 0, conteudoTruncado: false, codigoFalha: null, hashConteudo: null, analisadaEm: null } }),
       prisma.evidenciaAprendizagem.updateMany({
         where: { recursoId },
-        data: analisar
-          ? { situacaoConfirmacao: "PENDENTE", confirmadaEm: null, resumo: "O arquivo de origem foi substituído; revise a nova extração antes de usá-la nas análises." }
-          : { situacaoConfirmacao: "REJEITADA", confirmadaEm: null, resumo: "O novo formato do arquivo não permite extrair uma evidência para confirmação." },
+        data: { desempenhoPercentual: null, resumo: "Arquivo substituído; desempenho indisponível até uma nova extração válida." },
       }),
     ]);
     await remocaoAnterior?.confirmar();

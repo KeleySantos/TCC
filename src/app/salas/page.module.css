@@ -10,18 +10,6 @@
 .pagina { padding: 38px clamp(16px, 4vw, 54px) 64px; }
 .paginaSalas { min-height: 100vh; }
 .paginaCentralizada { display: grid; place-items: center; padding: 24px; }
-.topoConta { display: flex; min-height: 72px; align-items: center; justify-content: space-between; gap: 18px; padding: 12px clamp(20px, 3vw, 48px); border-bottom: 1px solid var(--cor-borda); background: var(--cor-superficie); }
-.contextoAtual,
-.conta { display: flex; align-items: center; }
-.contextoAtual { gap: 9px; color: var(--cor-texto-secundario); font-size: .82rem; font-weight: 700; }
-.contextoAtual svg { width: 19px; color: var(--cor-acao); }
-.conta { gap: 10px; padding: 5px 7px; border-radius: 12px; }
-.conta:hover { background: var(--cor-acao-suave); }
-.conta span:last-child,
-.conta small { display: block; }
-.conta strong { font-size: .8rem; }
-.conta small { margin-top: 3px; color: var(--cor-texto-secundario); font-size: .68rem; }
-.avatar { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: var(--cor-acao); background: var(--cor-acao-suave); font-weight: 800; }
 .areaConteudoSalas { width: min(100%, var(--largura-conteudo)); margin: 0 auto; padding: 40px clamp(24px, 3vw, 48px) 72px; }
 .apresentacaoPagina { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 34px; }
 .apresentacaoPagina h1 { margin: 4px 0 7px; font-size: clamp(2rem, 3vw, 2.75rem); letter-spacing: -.055em; }
@@ -128,8 +116,12 @@
 .painel > form > button,
 .painelConvite button,
 .areaConsentimento button { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 9px 13px; border: 0; border-radius: var(--raio-controle); color: #fff; background: var(--cor-acao); font-weight: 800; cursor: pointer; }
-button:disabled { opacity: .6; cursor: wait; }
-button:focus-visible,
+.pagina button:disabled,
+.paginaSalas button:disabled,
+.paginaCentralizada button:disabled { opacity: .6; cursor: wait; }
+.pagina button:focus-visible,
+.paginaSalas button:focus-visible,
+.paginaCentralizada button:focus-visible,
 .cartaoSala:focus-visible { outline: 3px solid #f0a528; outline-offset: 2px; }
 .estadoVazio { display: grid; min-height: 220px; place-items: center; align-content: center; padding: 24px; border: 1px dashed #d2d5e7; border-radius: 15px; color: var(--laboratorio-texto); text-align: center; }
 .estadoVazio svg { width: 34px; color: var(--laboratorio-roxo); }
@@ -182,9 +174,7 @@ button:focus-visible,
 
 @media (max-width: 540px) {
   .pagina { padding: 25px 14px 44px; }
-  .topoConta { padding: 10px 14px; }
   .areaConteudoSalas { padding: 25px 14px 44px; }
-  .conta span:last-child { display: none; }
   .resumoPagina { width: 100%; }
   .resumoPagina div { min-width: 0; flex: 1; }
   .cabecalhoBibliotecaSalas,

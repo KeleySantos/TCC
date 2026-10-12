@@ -236,7 +236,6 @@ describe("Dashboard observacional", () => {
     ]);
 
     expect(resultado.consistenciaMetodos).toEqual([
-      expect.objectContaining({ chave: MetodoEstudo.RECUPERACAO_ATIVA, modulosPositivos: 1, modulosAnalisaveis: 1, quantidadeEvidencias: 2, poucosDados: true }),
       expect.objectContaining({ chave: MetodoEstudo.FEYNMAN, modulosPositivos: 2, modulosAnalisaveis: 3, quantidadeEvidencias: 9, poucosDados: false }),
       expect.objectContaining({ chave: MetodoEstudo.POMODORO, modulosPositivos: 1, modulosAnalisaveis: 3, quantidadeEvidencias: 9, poucosDados: false }),
     ]);

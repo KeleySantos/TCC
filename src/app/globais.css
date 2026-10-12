@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --cor-fundo: #f4f7fb;
+  --cor-fundo: #FCFCFC;
   --cor-superficie: #ffffff;
   --cor-superficie-suave: #f8fafc;
   --cor-navegacao: #202326;

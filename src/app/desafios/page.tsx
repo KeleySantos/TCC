@@ -1,11 +1,9 @@
-import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpenText,
   BrainCircuit,
   CalendarClock,
   CalendarRange,
-  FlaskConical,
   RefreshCw,
   Shuffle,
   Timer,
@@ -29,18 +27,10 @@ function apresentacaoMetodo(metodo: string): { descricao: string; Icone: LucideI
 
 export default async function PaginaDesafios() {
   const usuario = await exigirUsuario();
-  const primeiroNome = usuario.nome.trim().split(/\s+/)[0] || "estudante";
 
   return (
     <EstruturaAutenticada usuarioNome={usuario.nome}>
       <main className={estilos.paginaDesafios} id="conteudo-principal" tabIndex={-1}>
-        <header className={estilos.topoConta}>
-          <div className={estilos.contextoAtual}><FlaskConical aria-hidden="true" /><span>Experimentos pessoais</span></div>
-          <Link className={estilos.conta} href="/perfil">
-            <span className={estilos.avatar} aria-hidden="true">{primeiroNome.slice(0, 1).toUpperCase()}</span>
-            <span><strong>{usuario.nome}</strong><small>Ver perfil</small></span>
-          </Link>
-        </header>
 
         <div className={estilos.areaConteudo}>
           <section className={estilos.apresentacao} aria-labelledby="titulo-experimentos">

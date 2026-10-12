@@ -17,7 +17,7 @@ function sessao(id: string, data: string) {
 }
 
 describe("gráficos observacionais do Dashboard", () => {
-  it("expõe resultados por método e percepção com tabelas equivalentes", () => {
+  it("expõe resultados por método e percepção sem rótulos e tabelas recolhíveis", () => {
     const dados = calcularDashboardObservacional(modulos, [sessao("s1", "2026-09-18T12:00:00.000Z"), sessao("s2", "2026-09-19T12:00:00.000Z")], [], referencia, null, [{
       metodosResultados: [{ chave: MetodoEstudo.FEYNMAN, quantidadeSessoes: 2, quantidadeCompreensoes: 2, compreensaoMedia: 4, quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 75, amostraEvidenciasSuficiente: true }],
       formatosResultados: [{ chave: FormatoConteudo.TEXTO, quantidadeSessoes: 2, quantidadeCompreensoes: 2, compreensaoMedia: 4, quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 75, amostraEvidenciasSuficiente: true }],
@@ -25,16 +25,27 @@ describe("gráficos observacionais do Dashboard", () => {
     }]);
     const html = renderToStaticMarkup(createElement(GraficosDashboard, { dados }));
     expect(html).toContain("Métodos × Resultados");
-    expect(html).toContain("Compreensão percebida");
-    expect(html).toContain("Evidência posterior");
-    expect(html).toContain("80%");
+    expect(html).toMatch(/compreensão percebida/i);
+    expect(html).toMatch(/evidência posterior/i);
+    expect(html).toContain("75/100");
     expect(html).toContain("75%");
     expect(html).toContain("Formatos × Resultados");
     expect(html).toContain("Evolução da percepção");
-    expect(html).toContain("Resumo em anel: 2 contextos em linha e 0 em desacordo");
+    expect(html).toContain("Resumo em anel: 0 contextos em linha e 0 em desacordo");
     expect(html).toContain("Associação observacional");
     expect(html).toContain("Técnica de Feynman");
-    expect(html).toContain("Ver dados em tabela");
+    expect(html).not.toContain("AUTORRELATO");
+    expect(html).not.toContain("SÍNTESE VISUAL");
+    expect(html).not.toContain("PERCEPÇÃO E EVIDÊNCIAS");
+    expect(html).not.toContain("Ver dados em tabela");
+    expect(html).not.toContain("<details");
+    expect(html).toContain('aria-label="Ver explicação sobre Evolução da percepção"');
+    expect(html).toContain('aria-label="Ver explicação sobre Percepção × evidências"');
+    expect(html.match(/Médias semanais de dificuldade e compreensão percebidas, de 1 a 5\. Cada ponto requer duas percepções na semana; não mede desempenho\./g)).toHaveLength(1);
+    expect(html.match(/Resume somente contextos com amostra suficiente; não demonstra causalidade\./g)).toHaveLength(1);
+    expect(html).toMatch(/<dialog[\s\S]*Médias semanais de dificuldade[\s\S]*<\/dialog>/);
+    expect(html).toMatch(/<dialog[\s\S]*Resume somente contextos[\s\S]*<\/dialog>/);
+    expect(html).not.toContain("Ver métodos e formatos");
     expect(html).not.toContain("Uso dos métodos");
     expect(html).not.toMatch(/eficácia comprovada|melhor método/i);
   });

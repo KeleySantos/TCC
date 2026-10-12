@@ -1,3 +1,4 @@
+import { evidenciaValida } from "@/dominio/analises/aprendizagem-modulo";
 import { formatarFormato } from "@/biblioteca/formatacao";
 import type { MetricasSessoes } from "@/dominio/analises/metricas-sessoes";
 import { gerarRespostaLocal } from "@/dominio/interpretacoes/resposta-local";
@@ -101,7 +102,7 @@ function mapearAprendizagemModulo(aprendizagem: AprendizagemModuloParaDto): NonN
   return {
     base: {
       sessoes: aprendizagem.base.sessoes,
-      evidenciasConfirmadas: aprendizagem.base.evidenciasConfirmadas,
+      evidenciasValidas: aprendizagem.base.evidenciasValidas,
       conceitos: aprendizagem.base.conceitos,
     },
     conceitos: aprendizagem.analises.conceitos.map((conceito) => ({
@@ -119,7 +120,7 @@ function mapearAprendizagemModulo(aprendizagem: AprendizagemModuloParaDto): NonN
     ],
     padroesObjetivos: aprendizagem.analises.padroes,
     eventosRecentes: aprendizagem.linhaDoTempo
-      .filter((evento) => !aprendizagem.evidencias.some((evidencia) => evidencia.id === evento.id) || aprendizagem.evidencias.some((evidencia) => evidencia.id === evento.id && evidencia.situacaoConfirmacao === "CONFIRMADA"))
+      .filter((evento) => !aprendizagem.evidencias.some((evidencia) => evidencia.id === evento.id) || aprendizagem.evidencias.some((evidencia) => evidencia.id === evento.id && evidenciaValida(evidencia)))
       .slice(0, 20)
       .map((evento) => ({ tipo: evento.tipo, data: evento.data.toISOString(), titulo: evento.titulo, conceitos: evento.conceitos })),
     evolucaoPercepcaoEvidencia: aprendizagem.analises.evolucaoPercepcaoEvidencia.map((item) => ({ periodoInicio: item.periodoInicio.toISOString(), quantidadePercepcoes: item.quantidadePercepcoes, compreensaoMedia: item.mediaCompreensaoPercebida, quantidadeEvidencias: item.quantidadeEvidencias, desempenhoMedio: item.desempenhoMedioEvidencias })),
@@ -138,8 +139,8 @@ export function criarDtoInterpretacaoModulo(metricas: MetricasSessoes, sessoes: 
     modulos: [mapearResumoModulo(metricas, "Módulo 1")],
     evolucaoSemanal: metricas.evolucaoSemanal.pontos.map((ponto) => ({ periodoInicio: ponto.periodoInicio.toISOString(), periodoFim: ponto.periodoFim.toISOString(), quantidadeSessoes: ponto.quantidadeSessoes, minutosTotais: ponto.minutosTotais, diasComEstudo: ponto.diasComEstudo, quantidadePercepcoes: ponto.quantidadePercepcoes, dificuldadeMedia: ponto.mediaDificuldadePercebida, compreensaoMedia: ponto.mediaCompreensaoPercebida })),
     descricoesSessoes: mapearDescricoes(sessoes, referencia),
-    ...(aprendizagem ? { aprendizagemModulo: mapearAprendizagemModulo(aprendizagem) } : {}),
-    limitacoes: [...metricas.limitacoes, "Evidências extraídas automaticamente só participam das análises após confirmação do usuário; associações temporais não comprovam causalidade."],
+    ...(aprendizagem ? { aprendizagemModulo: mapearAprendizagemModulo(aprendizagem), recomendacoes: aprendizagem.recomendacoes } : {}),
+    limitacoes: [...metricas.limitacoes, "Evidências extraídas automaticamente participam quando têm desempenho válido; associações temporais não comprovam causalidade."],
   };
 }
 

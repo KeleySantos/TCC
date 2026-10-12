@@ -72,3 +72,8 @@ O script de migração executa `PRAGMA foreign_key_check` após cada etapa. O ce
 - A exclusão permanente de material remove primeiro os vínculos opcionais com sessões, sem apagar as sessões, e então remove metadados, análise e binário.
 - O banco local contém apenas dados sintéticos e pode ser recriado com `npm run banco:reiniciar`.
 - Arquivos ficam em `.dados/arquivos-materiais`, fora do Git e de `public/`.
+
+
+## Compatibilidade de evidências — 2026-10-10
+
+`EvidenciaAprendizagem.situacaoConfirmacao`, `confirmadaEm`, `VinculoEvidenciaSessao.confirmado` e `RecursoConteudo.dataEventoConfirmada` são legados de armazenamento. Não determinam elegibilidade, vínculo analítico ou transição do produto. Nenhuma migração destrutiva foi aplicada; preservar esses campos evita eliminar histórico. Todo percentual válido é utilizável sem aprovação; ver o protocolo e contratos atuais.

@@ -32,11 +32,14 @@ describe("cards do Dashboard pessoal", () => {
     expect(html).toContain("Texto");
     expect(html).toContain("35 min");
     expect(html).toContain("Lógica");
+    expect(html).not.toContain("LEITURAS DO SEU HISTÓRICO");
     expect(html.match(/<article/g)).toHaveLength(4);
     expect(html).not.toContain("<h3");
     expect(html).not.toContain("<p>Compreensão percebida média");
     expect(html).not.toContain("sessões analisadas");
     expect(html).not.toContain("associação observacional");
+    expect(html).not.toContain("sessão(ões)");
+    expect(html).not.toContain("nos últimos 90 dias");
   });
 
   it("apresenta o estado sem dados sem valores inventados", () => {

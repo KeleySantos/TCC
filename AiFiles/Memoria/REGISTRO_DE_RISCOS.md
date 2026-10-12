@@ -27,3 +27,11 @@
 | R-23 | Dashboard apresentar percepção, duração ou menção de conceito como desempenho de aprendizagem | Alta | Alto | Contrato da Fase 0 separa autorrelato, contexto e menção de resultado objetivo; testes e revisão de linguagem exigem amostra, período, limites e estados vazios | Card ou gráfico usar “melhor”, “eficaz”, “calibração”, “acerto”, “domínio” ou “resultado” sem medida objetiva correspondente |
 | R-24 | Cadastro local receber dados reais ou ser exposto publicamente sem controles adicionais | Média | Alto | Interface declara uso exclusivo de dados fictícios; senha recebe hash com sal; usuário é único; ambiente permanece local | Implantação pública, contas reais ou criação automatizada em volume sem política de cadastro, limitação e recuperação de acesso |
 | R-25 | Contexto de IA exceder a cota de tokens e retirar o único provedor da fila | Alta | Médio | Métricas agregadas preservadas; descrições limitadas às dez mais recentes e truncadas; saída limitada; 429 respeita `retry-after`; segundo provedor e reflexão local mantêm o Dashboard funcional | HTTP 429 por tokens por minuto ou chamada seguinte aparecer como sem provedor disponível |
+
+
+## Riscos da prova de conceito revisada — 2026-10-10
+
+- Extração automática de desempenho usa percentual explicitamente rotulado; a integridade sintática não comprova correção factual da fonte. OCR, nota sem percentual e texto ambíguo podem resultar em ausência; checagem avançada fica futura.
+- Campos antigos de confirmação permanecem no SQLite por compatibilidade, sem consumidor de negócio. Remoção física futura exige migração revisada e preservação do histórico.
+- IA externa tem schema/filtro/fallback, mas sem verificador semântico completo. As 15 respostas atuais são mocks e não comprovam aprovação acadêmica de 14/15 respostas reais.
+- Associações método/formato não controlam dificuldade ou exposições sobrepostas; recomendações nunca afirmam superioridade causal. Bloom e tentativas educacionais não têm ciclo operacional atual.

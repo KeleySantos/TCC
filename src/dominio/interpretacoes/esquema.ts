@@ -1,3 +1,4 @@
+import type { RecomendacaoMaterial } from "@/dominio/analises/recomendacoes-materiais";
 import { z } from "zod";
 
 const textoTitulo = z.string().trim().min(3).max(100);
@@ -42,8 +43,9 @@ export type DtoInterpretacao = {
     dificuldadePercebida: number | null;
     compreensaoPercebida: number | null;
   }>;
+  recomendacoes?: RecomendacaoMaterial[];
   aprendizagemModulo?: {
-    base: { sessoes: number; evidenciasConfirmadas: number; conceitos: number };
+    base: { sessoes: number; evidenciasValidas: number; conceitos: number };
     conceitos: Array<{ conceito: string; sessoes: number; evidencias: number; compreensaoMedia: number | null; desempenhoMedio: number | null; relacaoPercepcaoEvidencia: string; tendencia: string }>;
     associacoes: Array<{ tipo: "METODO" | "FORMATO"; contexto: string; sessoes: number; compreensoes: number; compreensaoMedia: number | null; evidenciasPosteriores: number; desempenhoMedioPosterior: number | null; amostraSuficiente: boolean }>;
     padroesObjetivos: Array<{ tipo: string; conceito: string; amostra: number; texto: string }>;

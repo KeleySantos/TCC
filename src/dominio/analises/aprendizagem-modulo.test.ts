@@ -4,7 +4,7 @@ import { analisarAprendizagemModulo, normalizarChaveConceito, saoVariacoesDoMesm
 const referencia = new Date("2026-09-27T12:00:00.000Z");
 
 describe("análises de aprendizagem do módulo", () => {
-  it("normaliza conceitos e reúne percepção com evidências confirmadas", () => {
+  it("normaliza conceitos e reúne percepção com evidências válidas", () => {
     const resultado = analisarAprendizagemModulo({
       referencia,
       sessoes: [
@@ -12,17 +12,17 @@ describe("análises de aprendizagem do módulo", () => {
         { id: "s2", encerradaEm: new Date("2026-09-10T12:00:00.000Z"), compreensaoPercebida: 4, dificuldadePercebida: 3, duracaoMinutos: 35, metodos: ["FEYNMAN"], formatos: ["EXERCICIO_PRATICO"], conceitos: ["AFD"] },
       ],
       evidencias: [
-        { id: "e-pendente", dataEvento: new Date("2026-09-11T12:00:00.000Z"), confirmada: false, desempenhoPercentual: 10, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
-        { id: "e1", dataEvento: new Date("2026-09-12T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 55, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
-        { id: "e2", dataEvento: new Date("2026-09-13T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 65, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
+        { id: "e-pendente", dataEvento: new Date("2026-09-11T12:00:00.000Z"), desempenhoPercentual: 10, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
+        { id: "e1", dataEvento: new Date("2026-09-12T12:00:00.000Z"), desempenhoPercentual: 55, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
+        { id: "e2", dataEvento: new Date("2026-09-13T12:00:00.000Z"), desempenhoPercentual: 65, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
       ],
       conceitos: [{ chave: "afd", nome: "Autômato Finito Determinístico", aliases: ["AFD"] }],
     });
 
     expect(normalizarChaveConceito("  Autômato Finito Determinístico ")).toBe("automato finito deterministico");
     expect(resultado.conceitos).toHaveLength(1);
-    expect(resultado.conceitos[0]).toMatchObject({ nome: "Autômato Finito Determinístico", sessoes: 2, evidencias: 2, compreensaoMedia: 4.5, desempenhoMedio: 60, estadoPercepcaoEvidencia: "POSSIVEL_SUPERESTIMACAO" });
-    expect(resultado.metodosEvidencias[0]).toMatchObject({ chave: "FEYNMAN", sessoes: 2, evidenciasPosteriores: 2, desempenhoMedioPosterior: 60, amostraSuficiente: true });
+    expect(resultado.conceitos[0]).toMatchObject({ nome: "Autômato Finito Determinístico", sessoes: 2, evidencias: 3, compreensaoMedia: 4.5, desempenhoMedio: 130 / 3, estadoPercepcaoEvidencia: "POSSIVEL_SUPERESTIMACAO" });
+    expect(resultado.metodosEvidencias[0]).toMatchObject({ chave: "FEYNMAN", sessoes: 2, evidenciasPosteriores: 3, desempenhoMedioPosterior: 130 / 3, amostraSuficiente: true });
     expect(resultado.formatosEvidencias.some((item) => item.chave === "TEXTO")).toBe(true);
   });
 
@@ -31,17 +31,17 @@ describe("análises de aprendizagem do módulo", () => {
       referencia,
       sessoes: [],
       evidencias: [
-        { id: "e1", dataEvento: new Date("2026-08-01T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 40, conceitos: ["Órbitas"], sessaoIdsExplicitos: [] },
-        { id: "e2", dataEvento: new Date("2026-09-20T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 75, conceitos: ["Órbitas"], sessaoIdsExplicitos: [] },
-        { id: "e3", dataEvento: new Date("2026-09-21T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 90, conceitos: ["Gravitação"], sessaoIdsExplicitos: [] },
+        { id: "e1", dataEvento: new Date("2026-08-01T12:00:00.000Z"), desempenhoPercentual: 40, conceitos: ["Órbitas"], sessaoIdsExplicitos: [] },
+        { id: "e2", dataEvento: new Date("2026-09-20T12:00:00.000Z"), desempenhoPercentual: 75, conceitos: ["Órbitas"], sessaoIdsExplicitos: [] },
+        { id: "e3", dataEvento: new Date("2026-09-21T12:00:00.000Z"), desempenhoPercentual: 90, conceitos: ["Gravitação"], sessaoIdsExplicitos: [] },
       ],
       conceitos: [],
     });
-    expect(resultado.conceitos.find((item) => item.nome === "Órbitas")?.tendencia).toBe("EVOLUCAO_POSITIVA");
+    expect(resultado.conceitos.find((item) => item.nome === "Órbitas")?.tendencia).toBe("DADOS_INSUFICIENTES");
     expect(resultado.conceitos.find((item) => item.nome === "Gravitação")?.tendencia).toBe("DADOS_INSUFICIENTES");
   });
 
-  it("não inventa padrões sem dados confirmados", () => {
+  it("não inventa padrões sem evidências válidas", () => {
     const resultado = analisarAprendizagemModulo({ referencia, sessoes: [], evidencias: [], conceitos: [] });
     expect(resultado).toMatchObject({ conceitos: [], metodosEvidencias: [], formatosEvidencias: [], padroes: [] });
   });
@@ -67,10 +67,10 @@ describe("análises de aprendizagem do módulo", () => {
         { id: "s3", encerradaEm: new Date("2026-09-06T12:00:00.000Z"), compreensaoPercebida: 3, dificuldadePercebida: 3, duracaoMinutos: 30, metodos: ["POMODORO"], formatos: ["VIDEO"], conceitos: ["Outro conceito"] },
       ],
       evidencias: [
-        { id: "e1", dataEvento: new Date("2026-09-10T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 80, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
-        { id: "e2", dataEvento: new Date("2026-09-11T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 70, conceitos: [], sessaoIdsExplicitos: ["s3"] },
-        { id: "e3", dataEvento: new Date("2026-09-12T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 20, conceitos: ["Sem relação"], sessaoIdsExplicitos: [] },
-        { id: "e4", dataEvento: new Date("2026-10-15T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 100, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
+        { id: "e1", dataEvento: new Date("2026-09-10T12:00:00.000Z"), desempenhoPercentual: 80, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
+        { id: "e2", dataEvento: new Date("2026-09-11T12:00:00.000Z"), desempenhoPercentual: 70, conceitos: [], sessaoIdsExplicitos: ["s3"] },
+        { id: "e3", dataEvento: new Date("2026-09-12T12:00:00.000Z"), desempenhoPercentual: 20, conceitos: ["Sem relação"], sessaoIdsExplicitos: [] },
+        { id: "e4", dataEvento: new Date("2026-10-15T12:00:00.000Z"), desempenhoPercentual: 100, conceitos: ["AFD"], sessaoIdsExplicitos: [] },
       ],
       conceitos: [{ chave: "afd", nome: "AFD", aliases: [] }],
     });
@@ -90,7 +90,7 @@ describe("análises de aprendizagem do módulo", () => {
     const resultado = analisarAprendizagemModulo({
       referencia,
       sessoes: [{ id: "s1", encerradaEm, compreensaoPercebida: 4, dificuldadePercebida: 2, duracaoMinutos: 30, metodos: ["FEYNMAN"], formatos: ["TEXTO"], conceitos: ["AFD"] }],
-      evidencias: [{ id: "e1", dataEvento: encerradaEm, confirmada: true, desempenhoPercentual: 90, conceitos: ["AFD"], sessaoIdsExplicitos: ["s1"] }],
+      evidencias: [{ id: "e1", dataEvento: encerradaEm, desempenhoPercentual: 90, conceitos: ["AFD"], sessaoIdsExplicitos: ["s1"] }],
       conceitos: [{ chave: "afd", nome: "AFD", aliases: [] }],
     });
 
@@ -114,7 +114,7 @@ describe("análises de aprendizagem do módulo", () => {
       evidencias: nomes.map((nome, indice) => ({
         id: `e-${indice}`,
         dataEvento: new Date(`2026-09-${String(20 + indice).padStart(2, "0")}T12:00:00.000Z`),
-        confirmada: true,
+
         desempenhoPercentual: indice === 5 ? 95 : 45 + indice,
         conceitos: [nome],
         sessaoIdsExplicitos: [],
@@ -137,16 +137,16 @@ describe("análises de aprendizagem do módulo", () => {
         { id: "s3", encerradaEm: new Date("2026-09-15T12:00:00.000Z"), compreensaoPercebida: 5, dificuldadePercebida: 1, duracaoMinutos: 45, metodos: ["POMODORO"], formatos: ["VIDEO"], conceitos: ["C"] },
       ],
       evidencias: [
-        { id: "e1", dataEvento: new Date("2026-09-02T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 80, conceitos: ["A"], sessaoIdsExplicitos: [] },
-        { id: "e2", dataEvento: new Date("2026-09-09T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 60, conceitos: ["B"], sessaoIdsExplicitos: [] },
-        { id: "e3", dataEvento: new Date("2026-09-16T12:00:00.000Z"), confirmada: true, desempenhoPercentual: 65, conceitos: ["C"], sessaoIdsExplicitos: [] },
+        { id: "e1", dataEvento: new Date("2026-09-02T12:00:00.000Z"), desempenhoPercentual: 80, conceitos: ["A"], sessaoIdsExplicitos: [] },
+        { id: "e2", dataEvento: new Date("2026-09-09T12:00:00.000Z"), desempenhoPercentual: 60, conceitos: ["B"], sessaoIdsExplicitos: [] },
+        { id: "e3", dataEvento: new Date("2026-09-16T12:00:00.000Z"), desempenhoPercentual: 65, conceitos: ["C"], sessaoIdsExplicitos: [] },
       ],
       conceitos: [],
     });
 
     expect(resultado.resumoResultados.duracaoSessoesComMelhorResultado).toMatchObject({ mediaMinutos: 30, quantidadeSessoes: 1, compreensaoMinima: 4, desempenhoMinimo: 70 });
-    expect(resultado.resumoResultados.metodoMaiorCompreensao).toMatchObject({ chave: "FEYNMAN", compreensaoMedia: 4.5, quantidadeCompreensoes: 2 });
-    expect(resultado.resumoResultados.formatoMaiorCompreensao).toMatchObject({ chave: "TEXTO", compreensaoMedia: 4.5, quantidadeCompreensoes: 2 });
+    expect(resultado.resumoResultados.metodoMaiorCompreensao).toBeNull();
+    expect(resultado.resumoResultados.formatoMaiorCompreensao).toBeNull();
     expect(resultado.evolucaoPercepcaoEvidencia).toEqual(expect.arrayContaining([
       expect.objectContaining({ mediaCompreensaoPercebida: 5, desempenhoMedioEvidencias: 80, quantidadePercepcoes: 1, quantidadeEvidencias: 1 }),
     ]));

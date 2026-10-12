@@ -1,0 +1,42 @@
+.abrir,
+.fechar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--cor-borda);
+  border-radius: 50%;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  cursor: pointer;
+}
+
+.abrir:hover,
+.fechar:hover { background: var(--cor-acao-suave); }
+
+.abrir svg,
+.fechar svg { width: 15px; height: 15px; }
+
+.dialogo {
+  width: min(420px, calc(100vw - 28px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  color: var(--cor-texto);
+  background: transparent;
+  box-shadow: 0 24px 80px rgb(15 23 42 / 20%);
+}
+
+.dialogo::backdrop { background: rgb(20 20 20 / 35%); backdrop-filter: blur(2px); }
+
+.conteudo { padding: 22px; border-radius: inherit; background: var(--cor-superficie); }
+.conteudo header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.conteudo h2 { margin: 0; font-size: 1.1rem; letter-spacing: -.025em; }
+.conteudo p { margin: 16px 0 0; color: var(--cor-texto-secundario); font-size: .88rem; line-height: 1.6; }
+
+@media (max-width: 420px) {
+  .conteudo { padding: 18px; }
+}

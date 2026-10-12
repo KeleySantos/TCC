@@ -1,5 +1,6 @@
 # Execução do módulo de aprendizagem por fases
 
+> Atualização 2026-10-10: protocolo e execução atuais estão em PLANO_AJUSTES_TCC_2026_10_10.md e no relatório de ajustes. Confirmação manual foi removida definitivamente; os passos históricos abaixo não autorizam restaurá-la.
 **Origem:** `especificacao_detalhada_modulo_tcc.md` e `plano_implementacao_por_fases_modulo_tcc.md`, fornecidos pelo autor em 2026-09-27.
 
 **Estado:** concluído em 2026-09-27.
@@ -13,7 +14,7 @@
 | Percepções | inteiros opcionais em `SessaoEstudo`, validados no CRUD | escala discreta de 1 a 5 já concluída; médias continuam decimais |
 | Métricas | `metricas-sessoes-v1`, função pura e painel do módulo | evoluir formatos, regularidade, série temporal e dificuldade × compreensão |
 | Materiais | `RecursoConteudo`, `ArquivoMaterial` e `AnaliseMaterial` | adicionar função do material, data do evento e resultados estruturados |
-| Análise | extração segura e resumo/conceitos em JSON | materializar conceitos e produzir rascunhos de evidência que exigem confirmação |
+| Análise | extração segura e resumo/conceitos em JSON | materializar conceitos e produzir evidências utilizáveis automaticamente quando válidas |
 | Conceitos | listas textuais em `AnaliseMaterial` | criar identidade por módulo, aliases e relações com material, sessão e questão |
 | Evidências | inexistentes desde a remoção do modelo antigo | criar evidência datada, questões, conceitos e estado de confirmação |
 | IA | análise de material e interpretação opcional do módulo | alimentar interpretação com padrões estruturados e eventos confirmados |
@@ -22,7 +23,7 @@
 
 1. Concluir o Dashboard do módulo com os dados atuais: métodos e formatos × compreensão, regularidade, evolução temporal e dificuldade × compreensão.
 2. Criar conceitos persistentes e classificação funcional dos materiais.
-3. Criar evidências, questões e confirmação do usuário.
+3. Criar evidências, questões e uso automático dos dados válidos.
 4. Unificar sessões, materiais e evidências em uma linha do tempo.
 5. Calcular percepção × evidência, evolução por conceito e associações posteriores de métodos/formatos.
 6. Produzir padrões determinísticos, integrar a interpretação da IA e finalizar estados de confiança, transparência e UX.
@@ -38,7 +39,7 @@
 ## Resultado por fase
 
 - Fases 0–2: auditoria, escala discreta, sessão elegível única e dashboard reformulado.
-- Fases 3–5: conceitos persistentes, funções de material, evidências, questões e confirmação humana.
+- Fases 3–5: conceitos persistentes, funções de material, evidências, questões e uso automático dos dados válidos.
 - Fases 6–10: linha do tempo, percepção × evidência, evolução, associações posteriores e padrões determinísticos.
 - Fase 11: interpretação da IA alimentada por resumo estruturado da trajetória confirmada.
 - Fase 12: amostras mínimas, transparência, estados vazios, acessibilidade e responsividade validadas.

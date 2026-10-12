@@ -1,5 +1,6 @@
 # Plano de implementação da reorganização do módulo em sub-abas
 
+> Atualização 2026-10-10: protocolo e execução atuais estão em PLANO_AJUSTES_TCC_2026_10_10.md e no relatório de ajustes. Confirmação manual foi removida definitivamente; os passos históricos abaixo não autorizam restaurá-la.
 > **Para agentes executores:** SUB-SKILL OBRIGATÓRIO: usar `superpowers:executing-plans` para executar este plano tarefa por tarefa. As etapas usam caixas de seleção para acompanhamento.
 
 **Objetivo:** reorganizar a página do módulo em três sub-abas internas, consolidar resultados por métodos e formatos e apresentar rankings explicáveis de conceitos.
@@ -14,7 +15,7 @@
 
 - Manter uma única página em `/modulos/[identificador]`; as três áreas são sub-abas internas.
 - Preservar o cabeçalho do módulo durante a troca de sub-aba.
-- Usar somente sessões válidas e evidências confirmadas e não futuras.
+- Usar somente sessões válidas e evidências válidas e não futuras.
 - Não afirmar causalidade entre método, formato e resultado.
 - Não inventar dados para completar rankings ou resultados.
 - Manter regras analíticas fora dos componentes React.
@@ -130,7 +131,7 @@ Com mocks do Prisma, verificar que:
 - somente conceitos pertencentes ao módulo são resolvidos;
 - datas futuras não entram nas análises;
 - a linha do tempo mantém os tipos de evento existentes;
-- a confirmação de evidências continua disponível.
+- evidências válidas ficam disponíveis automaticamente.
 
 - [x] **Etapa 2: executar os testes e confirmar a falha**
 
@@ -232,7 +233,7 @@ Exibir dois cartões compactos. Não mostrar o índice interno como se fosse uma
 
 Verificar ordem recebida, data, tipo, título, resumo, conceitos e estado vazio. Extrair a marcação existente sem recalcular eventos na interface.
 
-- [x] **Etapa 6: escrever e implementar o teste da confirmação de evidências**
+- [x] **Etapa 6: escrever e implementar o teste do registro automático de evidências**
 
 Preservar data, desempenho, conceitos gerais, conceitos por questão, tipo, resultado, pontuações, confirmação e rejeição.
 
@@ -298,7 +299,7 @@ Verificar que:
 - o cabeçalho fica fora de `SubabasModulo`;
 - Dashboard recebe métricas, resultados contextuais, rankings e IA;
 - Linha do tempo recebe somente a trajetória;
-- Sessões e Materiais recebe sessões, biblioteca e confirmação de evidências;
+- Sessões e Materiais recebe sessões, biblioteca e registro automático de evidências;
 - cada título analítico aparece em apenas uma área.
 
 - [x] **Etapa 2: executar o teste e confirmar a falha**
@@ -370,7 +371,7 @@ Com a conta sintética Diego Alves, verificar:
 - operação por mouse e teclado;
 - rankings e resultados contextuais com dados reais do cenário;
 - estados vazios em módulo sem dados;
-- confirmação de evidência e formulários operacionais visíveis na sub-aba correta;
+- registro de evidência e formulários operacionais visíveis na sub-aba correta;
 - viewport de 390 px sem rolagem horizontal;
 - console sem erros ou alertas relacionados.
 

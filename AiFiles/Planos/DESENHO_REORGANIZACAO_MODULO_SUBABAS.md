@@ -1,5 +1,6 @@
 # Desenho da reorganização do módulo em sub-abas
 
+> Atualização 2026-10-10: protocolo e execução atuais estão em PLANO_AJUSTES_TCC_2026_10_10.md e no relatório de ajustes. Confirmação manual foi removida definitivamente; os passos históricos abaixo não autorizam restaurá-la.
 > Estado: aprovado pelo autor em 2026-09-27 e implementado
 > Origem: solicitação anexada em 2026-09-27 e refinamento confirmado na conversa
 > Agente executor previsto: Guanabara
@@ -89,7 +90,7 @@ Conterá:
 - arquivos, links, textos e uploads;
 - ações de análise e substituição de arquivos;
 - edição e arquivamento de materiais;
-- confirmação ou rejeição de evidências extraídas.
+- registro automático de evidências válidas.
 
 As funcionalidades atuais serão preservadas.
 
@@ -109,7 +110,7 @@ Uma sessão com múltiplos métodos ou formatos contribuirá para todos os conte
 
 ### 4.1 Relação com evidências posteriores
 
-Somente evidências confirmadas, não futuras e com desempenho registrado serão utilizadas.
+Somente evidências válidas, não futuras e com desempenho registrado serão utilizadas.
 
 A relação seguirá esta ordem:
 
@@ -132,7 +133,7 @@ As escalas percebidas de 1 a 5 serão convertidas para 0 a 100:
 valor normalizado = ((média - 1) / 4) × 100
 ```
 
-O desempenho confirmado já utiliza a escala de 0 a 100.
+O desempenho registrado já utiliza a escala de 0 a 100.
 
 ### 5.2 Conceitos com maior dificuldade
 
@@ -141,7 +142,7 @@ O índice interno de dificuldade será a média aritmética dos sinais disponív
 ```text
 dificuldade percebida normalizada
 100 - compreensão percebida normalizada
-100 - desempenho confirmado
+100 - desempenho registrado
 ```
 
 O índice será usado somente para ordenação. A interface mostrará os valores que explicam a posição, a base utilizada e a situação das evidências.
@@ -153,14 +154,14 @@ O índice interno de compreensão será a média aritmética dos sinais disponí
 ```text
 compreensão percebida normalizada
 100 - dificuldade percebida normalizada
-desempenho confirmado
+desempenho registrado
 ```
 
 Empates serão resolvidos pela observação mais recente, depois pela maior quantidade de observações e, por fim, pelo nome do conceito.
 
 ### 5.4 Elegibilidade e insuficiência
 
-Um conceito precisará de pelo menos duas observações independentes no período, somando sessões com percepção e evidências confirmadas com desempenho.
+Um conceito precisará de pelo menos duas observações exploratórias no período, somando sessões com percepção e evidências válidas com desempenho.
 
 - Conceitos com percepção suficiente e menos de duas evidências poderão aparecer com a mensagem **“Evidências ainda insuficientes”**.
 - Conceitos sem a base mínima não serão classificados.
@@ -176,7 +177,7 @@ Serão reutilizados:
 - catálogo e resolvedor de conceitos;
 - relação por conceito e janela temporal já usada nas evidências posteriores;
 - linha do tempo produzida pelo serviço de aprendizagem;
-- componentes de sessões, materiais, interpretação da IA e confirmação de evidências;
+- componentes de sessões, materiais, interpretação da IA e registro automático de evidências;
 - estilos e hierarquia visual existentes.
 
 As novas regras analíticas permanecerão em funções puras no domínio. A página apenas comporá DTOs e componentes.

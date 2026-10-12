@@ -12,7 +12,6 @@ export type SessaoAprendizagemModulo = {
 export type EvidenciaAprendizagemModulo = {
   id: string;
   dataEvento: Date;
-  confirmada: boolean;
   desempenhoPercentual: number | null;
   conceitos: string[];
   sessaoIdsExplicitos: string[];
@@ -27,14 +26,14 @@ export type PadraoAprendizagemModulo = {
   texto: string;
 };
 
-export const MINIMO_EVIDENCIAS_PARA_TENDENCIA = 2;
-export const MINIMO_EVIDENCIAS_PARA_ASSOCIACAO = 2;
-export const MINIMO_EVIDENCIAS_PARA_COMPARACAO = 2;
+export const MINIMO_EVIDENCIAS_PARA_TENDENCIA = 3;
+export const MINIMO_EVIDENCIAS_PARA_ASSOCIACAO = 3;
+export const MINIMO_EVIDENCIAS_PARA_COMPARACAO = 3;
 export const JANELA_EVIDENCIA_POSTERIOR_DIAS = 30;
 export const JANELA_CONCEITOS_DIAS = 90;
 export const LIMITE_CONCEITOS_DESTAQUE = 5;
 export const MINIMO_OBSERVACOES_CONCEITO = 2;
-export const MINIMO_COMPREENSOES_PARA_DESTAQUE_CONTEXTO = 2;
+export const MINIMO_COMPREENSOES_PARA_DESTAQUE_CONTEXTO = 3;
 export const COMPREENSAO_MINIMA_MELHOR_RESULTADO = 4;
 export const DESEMPENHO_MINIMO_MELHOR_RESULTADO = 70;
 
@@ -54,6 +53,8 @@ export type ClassificacaoConceitoAprendizagem = {
   sessoes: number;
   evidencias: number;
   observacoes: number;
+  quantidadeCompreensoes: number;
+  quantidadeDificuldades: number;
   compreensaoMedia: number | null;
   dificuldadeMedia: number | null;
   desempenhoMedio: number | null;
@@ -109,7 +110,7 @@ function criarResolvedorConceitos(catalogo: ConceitoCatalogadoModulo[]) {
 
 function estadoPercepcaoEvidencia(compreensao: number | null, desempenho: number | null, quantidadeEvidencias: number) {
   if (compreensao === null || desempenho === null || quantidadeEvidencias < MINIMO_EVIDENCIAS_PARA_COMPARACAO) return "DADOS_INSUFICIENTES" as const;
-  const percepcaoAlta = compreensao * 20 >= 70;
+  const percepcaoAlta = normalizarEscalaPercebida(compreensao) >= 70;
   const evidenciaAlta = desempenho >= 70;
   if (percepcaoAlta && evidenciaAlta) return "ALINHAMENTO_POSITIVO" as const;
   if (percepcaoAlta) return "POSSIVEL_SUPERESTIMACAO" as const;
@@ -165,6 +166,7 @@ function evidenciasPosterioresDaSessao(
   return evidencias.filter((evidencia): evidencia is EvidenciaAprendizagemModulo & { desempenhoPercentual: number } => {
     if (evidencia.desempenhoPercentual === null || evidencia.dataEvento <= sessao.encerradaEm) return false;
     const vinculadaExplicitamente = evidencia.sessaoIdsExplicitos.includes(sessao.id);
+    if (evidencia.sessaoIdsExplicitos.length) return vinculadaExplicitamente;
     const dentroDaJanela = evidencia.dataEvento.getTime() - sessao.encerradaEm.getTime() <= JANELA_EVIDENCIA_POSTERIOR_DIAS * 86_400_000;
     const possuiConceitoComum = evidencia.conceitos.some((nome) => conceitosSessao.has(resolver(nome).chave));
     return vinculadaExplicitamente || (dentroDaJanela && possuiConceitoComum);
@@ -223,7 +225,7 @@ function agruparEvolucaoPercepcaoEvidencia(sessoes: SessaoAprendizagemModulo[], 
   }));
 }
 
-function normalizarEscalaPercebida(valor: number) {
+export function normalizarEscalaPercebida(valor: number) {
   return ((valor - 1) / 4) * 100;
 }
 
@@ -258,6 +260,8 @@ function classificarConceitosRecentes(
       sessoes: sessoesComPercepcao.length,
       evidencias: evidencias.length,
       observacoes,
+      quantidadeCompreensoes: sessoes.filter((item) => item.compreensaoPercebida !== null).length,
+      quantidadeDificuldades: sessoes.filter((item) => item.dificuldadePercebida !== null).length,
       compreensaoMedia,
       dificuldadeMedia,
       desempenhoMedio,
@@ -276,6 +280,10 @@ function classificarConceitosRecentes(
   };
 }
 
+export function evidenciaValida(item: { desempenhoPercentual: number | null; dataEvento: Date }) {
+  return item.desempenhoPercentual !== null && Number.isFinite(item.desempenhoPercentual) && item.desempenhoPercentual >= 0 && item.desempenhoPercentual <= 100 && Number.isFinite(item.dataEvento.getTime());
+}
+
 export function analisarAprendizagemModulo(entrada: {
   referencia: Date;
   sessoes: SessaoAprendizagemModulo[];
@@ -284,7 +292,7 @@ export function analisarAprendizagemModulo(entrada: {
 }) {
   const resolver = criarResolvedorConceitos(entrada.conceitos);
   const sessoes = entrada.sessoes.filter((item) => item.encerradaEm <= entrada.referencia);
-  const evidencias = entrada.evidencias.filter((item) => item.confirmada && item.dataEvento <= entrada.referencia);
+  const evidencias = [...new Map(entrada.evidencias.filter((item) => evidenciaValida(item) && item.dataEvento <= entrada.referencia).map((item) => [item.id, item])).values()];
   const grupos = new Map<string, { nome: string; sessoes: Map<string, SessaoAprendizagemModulo>; evidencias: Map<string, EvidenciaAprendizagemModulo> }>();
   const obterGrupo = (nome: string) => {
     const conceito = resolver(nome);
@@ -325,9 +333,9 @@ export function analisarAprendizagemModulo(entrada: {
   const evolucaoPercepcaoEvidencia = agruparEvolucaoPercepcaoEvidencia(sessoes, evidencias);
   const classificacoes = classificarConceitosRecentes(grupos, entrada.referencia);
   const padroes = conceitos.flatMap<PadraoAprendizagemModulo>((conceito) => {
-    if (conceito.estadoPercepcaoEvidencia === "POSSIVEL_SUPERESTIMACAO") return [{ tipo: "DIVERGENCIA_PERCEPCAO_EVIDENCIA" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `A compreensão percebida em ${conceito.nome} ficou alta enquanto o desempenho médio nas evidências confirmadas ficou abaixo de 70%.` }];
-    if (conceito.estadoPercepcaoEvidencia === "PONTO_DE_ATENCAO") return [{ tipo: "PONTO_DE_ATENCAO" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `A compreensão percebida e o desempenho confirmado em ${conceito.nome} ficaram abaixo dos níveis de referência nesta amostra.` }];
-    if (conceito.tendencia === "EVOLUCAO_POSITIVA") return [{ tipo: "EVOLUCAO_POSITIVA" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `O desempenho confirmado em ${conceito.nome} aumentou entre a primeira e a evidência mais recente.` }];
+    if (conceito.estadoPercepcaoEvidencia === "POSSIVEL_SUPERESTIMACAO") return [{ tipo: "DIVERGENCIA_PERCEPCAO_EVIDENCIA" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `A compreensão percebida em ${conceito.nome} ficou alta enquanto o desempenho médio nas evidências válidas ficou abaixo de 70%.` }];
+    if (conceito.estadoPercepcaoEvidencia === "PONTO_DE_ATENCAO") return [{ tipo: "PONTO_DE_ATENCAO" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `A compreensão percebida e o desempenho registrado em ${conceito.nome} ficaram abaixo dos níveis de referência nesta amostra.` }];
+    if (conceito.tendencia === "EVOLUCAO_POSITIVA") return [{ tipo: "EVOLUCAO_POSITIVA" as const, conceito: conceito.nome, amostra: conceito.evidencias, texto: `O desempenho registrado em ${conceito.nome} aumentou entre a primeira e a evidência mais recente.` }];
     return [];
   });
   return { conceitos, metodosResultados, formatosResultados, resumoResultados, evolucaoPercepcaoEvidencia, ...classificacoes, metodosEvidencias, formatosEvidencias, padroes };

@@ -16,6 +16,11 @@ describe("consistência dos métodos entre módulos", () => {
     expect(html).toContain(">9<");
     expect(html).toContain("Poucos dados");
     expect(html).toContain("associação observacional");
+    expect(html).toContain('aria-label="Ver explicação sobre Consistência dos métodos entre módulos"');
+    expect(html.match(/Mostra em quantos módulos analisáveis cada método apresentou compreensão percebida de pelo menos 4\/5 e evidência posterior de pelo menos 70%\. É uma associação observacional\./g)).toHaveLength(1);
+    expect(html).toMatch(/<dialog[\s\S]*Mostra em quantos módulos analisáveis[\s\S]*<\/dialog>/);
+    expect(html).not.toContain("RESULTADOS EM DIFERENTES CONTEXTOS");
+    expect(html).not.toContain("Métodos ordenados da maior para a menor consistência observada");
   });
 
   it("orienta novos registros quando não há módulos analisáveis", () => {

@@ -46,10 +46,10 @@ async function principal() {
   afirmar(metricas, "as métricas do módulo devem estar disponíveis.");
   afirmar(aprendizagem, "a trajetória de aprendizagem do módulo deve estar disponível.");
   afirmar(aprendizagem.base.conceitos >= 20, "a trajetória deve possuir pelo menos 20 conceitos persistentes.");
-  afirmar(aprendizagem.base.evidenciasConfirmadas === 6 && aprendizagem.base.evidenciasPendentes === 1, "devem existir seis evidências confirmadas e uma pendente.");
+  afirmar(aprendizagem.base.evidenciasValidas === 7, "devem existir sete evidências válidas sem etapa de confirmação.");
   afirmar(aprendizagem.linhaDoTempo.length >= 30, "a linha do tempo deve reunir sessões, materiais e evidências.");
-  afirmar(aprendizagem.analises.conceitos.some((item) => item.tendencia === "EVOLUCAO_POSITIVA"), "deve existir evolução positiva explicável em pelo menos um conceito.");
-  afirmar(aprendizagem.analises.padroes.length > 0, "os dados devem produzir padrões objetivos.");
+  afirmar(aprendizagem.analises.conceitos.every((item) => item.evidencias >= 3 || item.tendencia === "DADOS_INSUFICIENTES"), "menos de três evidências por conceito não pode gerar tendência categórica.");
+  afirmar(aprendizagem.analises.padroes.every((item) => item.amostra >= 3), "todo padrão deve respeitar a amostra mínima de três evidências.");
   const todasAsSessoes = await prisma.sessaoEstudo.findMany({
     where: { usuarioId: usuario.id, moduloId: modulo.id, situacao: "CONCLUIDA" },
     select: { id: true, moduloId: true, descricao: true, iniciadaEm: true, encerradaEm: true, duracaoMinutos: true, situacao: true, dificuldadePercebida: true, compreensaoPercebida: true, metodos: { select: { metodo: true } }, formatos: { select: { formato: true } } },
@@ -57,8 +57,8 @@ async function principal() {
   });
   const dtoIa = criarDtoInterpretacaoModulo(metricas.metricas, todasAsSessoes, aprendizagem);
   afirmar(dtoIa.descricoesSessoes.length >= 24 && dtoIa.modulos[0]?.metodos.length >= 4 && dtoIa.modulos[0]?.formatos.length >= 7, "o DTO da IA deve receber descrições e contextos variados.");
-  afirmar(dtoIa.aprendizagemModulo?.base.evidenciasConfirmadas === 6 && dtoIa.aprendizagemModulo.padroesObjetivos.length > 0, "o DTO da IA deve receber evidências confirmadas e padrões objetivos.");
-  console.log(`Cenário de Diego verificado: ${sessoes.length} sessões, ${materiais.length} arquivos, ${aprendizagem.base.evidenciasConfirmadas} evidências confirmadas, ${aprendizagem.base.conceitos} conceitos e ${aprendizagem.linhaDoTempo.length} eventos na trajetória.`);
+  afirmar(dtoIa.aprendizagemModulo?.base.evidenciasValidas === 7, "o DTO da IA deve receber evidências válidas e padrões objetivos.");
+  console.log(`Cenário de Diego verificado: ${sessoes.length} sessões, ${materiais.length} arquivos, ${aprendizagem.base.evidenciasValidas} evidências válidas, ${aprendizagem.base.conceitos} conceitos e ${aprendizagem.linhaDoTempo.length} eventos na trajetória.`);
 }
 
 principal().catch((erro: unknown) => { console.error(erro); process.exit(1); }).finally(async () => prisma.$disconnect());

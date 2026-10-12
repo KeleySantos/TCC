@@ -1,14 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { extrairRascunhoEvidencia, obterAprendizagemModuloPessoal } from "./aprendizagem-modulo";
+import { extrairEvidenciaMaterial, obterAprendizagemModuloPessoal } from "./aprendizagem-modulo";
 
 const consultas = vi.hoisted(() => ({ buscarModulo: vi.fn() }));
 
 vi.mock("@/biblioteca/prisma", () => ({ prisma: { moduloAprendizagem: { findFirst: consultas.buscarModulo } } }));
 
-describe("rascunho de evidência de aprendizagem", () => {
+describe("extração e consulta de evidência de aprendizagem", () => {
   beforeEach(() => consultas.buscarModulo.mockReset());
-  it("extrai desempenho e questões sem transformar o rascunho em dado confirmado", () => {
-    const resultado = extrairRascunhoEvidencia([
+  it("não usa porcentagem incidental nem nota fora da escala e reconhece incorreta", () => {
+    expect(extrairEvidenciaMaterial("O capítulo cobre 80% do conteúdo").desempenhoPercentual).toBeNull();
+    expect(extrairEvidenciaMaterial("Resultado: 120%").desempenhoPercentual).toBeNull();
+    expect(extrairEvidenciaMaterial("Nota: -10%").desempenhoPercentual).toBeNull();
+    expect(extrairEvidenciaMaterial("Questão 1 — incorreta").questoes[0].resultado).toBe("ERRO");
+  });
+  it("extrai desempenho e questões sem inferir resultados ausentes", () => {
+    const resultado = extrairEvidenciaMaterial([
       "Resultado: 72,5%",
       "Questão 1 — correta: definição de AFD",
       "Q. 2 — erro na transição",
@@ -24,8 +30,8 @@ describe("rascunho de evidência de aprendizagem", () => {
     ]);
   });
 
-  it("mantém campos desconhecidos como ausentes para revisão humana", () => {
-    expect(extrairRascunhoEvidencia("Atividade sem correção legível")).toEqual({
+  it("mantém campos desconhecidos como ausentes sem inventar desempenho", () => {
+    expect(extrairEvidenciaMaterial("Atividade sem correção legível")).toEqual({
       desempenhoPercentual: null,
       questoes: [],
     });
@@ -55,7 +61,7 @@ describe("rascunho de evidência de aprendizagem", () => {
 
     const resultado = await obterAprendizagemModuloPessoal("u1", "m1", new Date("2026-09-27T12:00:00.000Z"));
 
-    expect(resultado?.analises.metodosResultados[0]).toMatchObject({ chave: "FEYNMAN", quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 80 });
+    expect(resultado?.analises.metodosResultados[0]).toMatchObject({ chave: "FEYNMAN", quantidadeEvidenciasPosteriores: 3, desempenhoMedioPosterior: 170 / 3 });
     expect(resultado?.linhaDoTempo.map((evento) => evento.tipo)).toEqual(expect.arrayContaining(["AVALIACAO", "EXERCICIO"]));
     expect(resultado?.linhaDoTempo.find((evento) => evento.id === "e2")?.conceitos).toEqual(["AFD"]);
 
@@ -65,6 +71,6 @@ describe("rascunho de evidência de aprendizagem", () => {
     });
     expect(filtrado?.linhaDoTempo.map((evento) => evento.id)).toEqual(["e2"]);
     expect(filtrado?.analises.metodosResultados).toEqual([]);
-    expect(filtrado?.base).toMatchObject({ sessoes: 0, evidenciasConfirmadas: 1, evidenciasPendentes: 0 });
+    expect(filtrado?.base).toMatchObject({ sessoes: 0, evidenciasValidas: 1 });
   });
 });

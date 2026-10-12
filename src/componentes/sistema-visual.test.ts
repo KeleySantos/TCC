@@ -19,7 +19,6 @@ const destinos = [
   ["Módulos", "/modulos"],
   ["Salas", "/salas"],
   ["Desafios", "/desafios"],
-  ["Histórico", "/historico"],
   ["Configurações IA", "/configuracoes/ia"],
   ["Perfil", "/perfil"],
 ] as const;

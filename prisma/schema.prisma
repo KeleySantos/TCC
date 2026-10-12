@@ -168,6 +168,7 @@ enum FuncaoMaterial {
   EVIDENCIA_VISUAL
 }
 
+// Legado de armazenamento: não usado para elegibilidade ou fluxo de negócio.
 enum SituacaoConfirmacao {
   PENDENTE
   CONFIRMADA
@@ -451,6 +452,7 @@ model RecursoConteudo {
   atualizadoEm         DateTime               @updatedAt
   funcao               FuncaoMaterial         @default(REFERENCIA)
   dataEvento           DateTime?
+  // Metadado legado de data explícita; sem consumidor funcional.
   dataEventoConfirmada Boolean                @default(false)
   modulo               ModuloAprendizagem     @relation(fields: [moduloId], references: [id], onDelete: Cascade)
   aprovacoes           AprovacaoRecurso[]
@@ -636,6 +638,7 @@ model EvidenciaAprendizagem {
   titulo               String
   tipo                 TipoEvidenciaAprendizagem
   dataEvento           DateTime
+  // Preservados para evitar perda histórica; sem consumidor de negócio.
   situacaoConfirmacao  SituacaoConfirmacao       @default(PENDENTE)
   desempenhoPercentual Float?
   resumo               String?
@@ -693,6 +696,7 @@ model VinculoEvidenciaSessao {
   evidenciaId String
   sessaoId    String
   origem      OrigemVinculoEvidenciaSessao @default(MANUAL)
+  // Compatibilidade histórica; vínculos existentes não exigem aprovação.
   confirmado  Boolean                      @default(true)
   evidencia   EvidenciaAprendizagem        @relation(fields: [evidenciaId], references: [id], onDelete: Cascade)
   sessao      SessaoEstudo                 @relation(fields: [sessaoId], references: [id], onDelete: Cascade)

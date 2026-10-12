@@ -57,3 +57,16 @@
 ## Regra de alteração
 
 Uma decisão só pode mudar com registro do impacto em requisitos, dados, testes e documentação.
+
+
+## D-051 — Núcleo da prova de conceito revisada (2026-10-10)
+
+A solicitação do autor em `Planos/PLANO_AJUSTES_TCC_2026_10_10.md` remove definitivamente confirmação manual de evidências. Percentual válido entra automaticamente; campos antigos ficam apenas no armazenamento para evitar perda histórica. Normalização 1–5 usa ((v−1)/4)×100. Tendências e suficiência das associações exigem três evidências; destaque de compreensão exige três compreensões. Rankings com duas observações permanecem índices exploratórios com fontes separadas. D-049 fica superada no mínimo de duas observações: passam a ser três por fonte/contexto. Recomendação computacional seleciona referências do módulo/conceito por sinais de atenção, sem preferência de formato por ausência de controle de dificuldade. A avaliação isolada usa 5 contas, 15 módulos, 150 sessões e 150 atividades de desempenho separadas; 15 interpretações mock testam o contrato, não qualidade real da IA. Não ampliar taxa agregada, tentativas educacionais ou Bloom nesta entrega; a tabela de decisão está no relatório. Nenhum PDF ou banco pessoal é alterado.
+
+## D-052 — Compilador consistente no desenvolvimento e build (2026-10-10)
+
+Usar `--webpack` nos scripts desenvolver e compilar. O servidor já recorria a Webpack após panic interno do Turbopack; o build padrão Turbopack havia aceitado seletores globais em CSS Module que Webpack rejeitou ao abrir Salas, causando falhas de compilação em outras rotas. Corrigir os seletores para as classes locais das páginas e validar produção com o mesmo compilador evita essa divergência. A externalização de pdf-parse permanece. Não altera banco ou regras analíticas.
+
+## D-053 — Remoção da página global de Histórico (2026-10-10)
+
+Por solicitação explícita do usuário, remover integralmente `src/app/historico/page.tsx` e o destino Histórico do menu autenticado. A antiga URL retorna404, sem redirecionamento ou página substituta. A remoção é da página: sessões persistidas, métricas, linha do tempo e histórico dentro de cada módulo são preservados. A consulta interna de histórico permanece para a verificação dos serviços.

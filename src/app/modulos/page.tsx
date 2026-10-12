@@ -22,18 +22,10 @@ export default async function PaginaModulos({
     : parametros.erro
       ? "Revise os dados do módulo."
       : null;
-  const primeiroNome = usuario.nome.trim().split(/\s+/)[0] || "estudante";
 
   return (
     <EstruturaAutenticada usuarioNome={usuario.nome}>
       <main className={estilos.paginaModulos} id="conteudo-principal" tabIndex={-1}>
-        <header className={estilos.topoConta}>
-          <div className={estilos.contextoAtual}><BookOpenText aria-hidden="true" /><span>Módulos de aprendizagem</span></div>
-          <Link className={estilos.conta} href="/perfil">
-            <span className={estilos.avatar} aria-hidden="true">{primeiroNome.slice(0, 1).toUpperCase()}</span>
-            <span><strong>{usuario.nome}</strong><small>Ver perfil</small></span>
-          </Link>
-        </header>
 
         <div className={estilos.areaConteudo}>
           <header className={estilos.apresentacaoPagina}>

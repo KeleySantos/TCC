@@ -1,5 +1,6 @@
 # Dashboards da sala espelhados — Plano de implementação
 
+> Atualização 2026-10-10: protocolo e execução atuais estão em PLANO_AJUSTES_TCC_2026_10_10.md e no relatório de ajustes. Confirmação manual foi removida definitivamente; os passos históricos abaixo não autorizam restaurá-la.
 > **Para agentes executores:** SUB-SKILL OBRIGATÓRIA: use `superpowers:executing-plans` para implementar este plano tarefa por tarefa. Os passos usam caixas (`- [x]`) para acompanhamento.
 
 **Objetivo:** Espelhar o Dashboard do Módulo nos painéis individuais autorizados e o Dashboard Principal no agregado da sala.
@@ -24,7 +25,7 @@
 
 - Vínculo revogado entre a consulta da sala e a montagem do painel não pode continuar fornecendo dados.
 - Sessão anterior a `dadosDesde` não pode entrar em nenhum cálculo do vínculo.
-- Análise inexistente ou sem evidência confirmada deve produzir estado vazio, sem quebrar o dashboard.
+- Análise inexistente ou sem evidência válida deve produzir estado vazio, sem quebrar o dashboard.
 - Um membro ligado a mais de um módulo da sala deve contribuir uma vez por sessão em cada escopo correto.
 - O DTO retornado ao administrador não pode carregar campos privados por conveniência interna.
 
@@ -81,7 +82,7 @@
 - `obterDashboardsSalaDoProprietario` passa a retornar `geral.dados` quando o mínimo de contribuidores for atingido.
 
 - [x] Escrever testes com três membros autorizados distribuídos em dois módulos e exigir os mesmos quatro cards e séries de métodos, formatos e evolução do Dashboard Principal.
-- [x] Acrescentar testes para membro não autorizado, sessão anterior a `dadosDesde`, sessão duplicada e ausência de evidência confirmada.
+- [x] Acrescentar testes para membro não autorizado, sessão anterior a `dadosDesde`, sessão duplicada e ausência de evidência válida.
 - [x] Executar `npm run testar -- src/dominio/analises/dashboard-sala.test.ts` e confirmar as falhas esperadas.
 - [x] Implementar o adaptador para reutilizar `calcularDashboardObservacional`, sem duplicar seus cálculos.
 - [x] Integrar o cálculo ao estado geral apenas quando houver três contribuidores válidos.

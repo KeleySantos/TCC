@@ -35,8 +35,8 @@ const aprendizagem = {
   },
   metodosResultados: [resultado],
   formatosResultados: [{ ...resultado, chave: FormatoConteudo.TEXTO }],
-  conceitosMaiorDificuldade: [{ chave: "promessas", nome: "Promessas", sessoes: 3, evidencias: 2, observacoes: 5, dificuldadeMedia: 4, compreensaoMedia: 3, desempenhoMedio: 60, evidenciasSuficientes: true, indice: 2, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") }],
-  conceitosMaiorCompreensao: [{ chave: "closures", nome: "Closures", sessoes: 3, evidencias: 2, observacoes: 5, dificuldadeMedia: 2, compreensaoMedia: 4, desempenhoMedio: 85, evidenciasSuficientes: true, indice: 2, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") }],
+  conceitosMaiorDificuldade: [{ chave: "promessas", nome: "Promessas", sessoes: 3, evidencias: 2, observacoes: 5, quantidadeCompreensoes: 3, quantidadeDificuldades: 3, dificuldadeMedia: 4, compreensaoMedia: 3, desempenhoMedio: 60, evidenciasSuficientes: true, indice: 2, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") }],
+  conceitosMaiorCompreensao: [{ chave: "closures", nome: "Closures", sessoes: 3, evidencias: 2, observacoes: 5, quantidadeCompreensoes: 3, quantidadeDificuldades: 3, dificuldadeMedia: 2, compreensaoMedia: 4, desempenhoMedio: 85, evidenciasSuficientes: true, indice: 2, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") }],
 };
 
 describe("composição compartilhada do Dashboard do Módulo", () => {
@@ -57,8 +57,8 @@ describe("composição compartilhada do Dashboard do Módulo", () => {
     expect(html).toContain("Regularidade do estudo");
     expect(html).toContain("Métodos × Resultados");
     expect(html).toContain("Formatos × Resultados");
-    expect(html).toContain("Conceitos com maior dificuldade");
-    expect(html).toContain("Conceitos com maior compreensão");
+    expect(html).toContain("Conceitos com maiores sinais de dificuldade");
+    expect(html).toContain("Conceitos com maiores sinais de compreensão");
     expect(html).toContain('id="dashboard-membro-1"');
     expect(html).toContain('id="dashboard-membro-1-resultados"');
   });

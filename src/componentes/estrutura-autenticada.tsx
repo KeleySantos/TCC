@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   FlaskConical,
-  History,
   LayoutDashboard,
   LogOut,
   Settings2,
@@ -27,7 +26,6 @@ const ITENS_NAVEGACAO = [
   { href: "/modulos", rotulo: "Módulos", Icone: BookOpenText },
   { href: "/salas", rotulo: "Salas", Icone: UsersRound },
   { href: "/desafios", rotulo: "Desafios", Icone: FlaskConical },
-  { href: "/historico", rotulo: "Histórico", Icone: History },
   { href: "/configuracoes/ia", rotulo: "Configurações IA", Icone: Settings2 },
   { href: "/perfil", rotulo: "Perfil", Icone: UserRound },
 ] as const;

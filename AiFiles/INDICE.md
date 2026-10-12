@@ -64,6 +64,7 @@ AiFiles/
 └── RELATORIOS/
     ├── AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md
     ├── PESQUISA_ARQUITETURA_CONTEXTO_IA.md
+    ├── RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md
     └── VALIDACAO_TECNICA_LOCAL.md
 ```
 
@@ -97,7 +98,15 @@ AiFiles/
 | Avaliar ética, privacidade ou dados reais | [`Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md`](Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md) | especificação científica, riscos e decisões |
 | Preparar avaliação do TCC | [`Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md`](Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md) | acompanhamento e relatório técnico |
 | Comparar a implementação atual com o TCC | [`RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md`](RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md) | código vigente, protocolo, matriz e cenário sintético |
+| Consultar fórmulas, ajustes e fluxos atuais das métricas | [`RELATORIOS/RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md`](RELATORIOS/RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md) | implementação dos ajustes, protocolo de medição e avaliação sintética |
 | Consultar evidência de validação anterior | [`RELATORIOS/VALIDACAO_TECNICA_LOCAL.md`](RELATORIOS/VALIDACAO_TECNICA_LOCAL.md) | acompanhamento e matriz |
+
+## Ajustes do núcleo de TCC — 2026-10-10
+
+- Escopo aprovado: [`Planos/PLANO_AJUSTES_TCC_2026_10_10.md`](Planos/PLANO_AJUSTES_TCC_2026_10_10.md).
+- Implementação e validação: [`RELATORIOS/AJUSTES_TCC_2026_10_10.md`](RELATORIOS/AJUSTES_TCC_2026_10_10.md).
+- Reprodução/rubrica: [`RELATORIOS/PROTOCOLO_AVALIACAO_TCC.md`](RELATORIOS/PROTOCOLO_AVALIACAO_TCC.md).
+- Resultados gerados: [`RELATORIOS/RESULTADOS_AVALIACAO_TCC.json`](RELATORIOS/RESULTADOS_AVALIACAO_TCC.json).
 
 ## Fontes canônicas
 

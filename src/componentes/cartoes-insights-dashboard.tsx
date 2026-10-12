@@ -11,7 +11,7 @@ export function CartoesInsightsDashboard({ dados }: { dados: DashboardObservacio
   const duracao = dados.duracaoSessoesMelhoresResultados;
   const atencao = dados.pontoAtencao;
   return <section aria-labelledby="titulo-insights-dashboard" className={estilos.secao}>
-    <div className={estilos.cabecalho}><div><p>LEITURAS DO SEU HISTÓRICO</p><h2 id="titulo-insights-dashboard">O que seus registros mostram</h2></div><span>{dados.periodoRecente.quantidadeSessoes} sessão(ões) {dados.periodoFiltrado ? "no período filtrado" : "nos últimos 90 dias"}</span></div>
+    <div className={estilos.cabecalho}><h2 id="titulo-insights-dashboard">O que seus registros mostram</h2></div>
     <div className={estilos.grade}>
       <article className={estilos.cartao}>
         <span className={estilos.icone}><ChartNoAxesCombined aria-hidden="true" /></span>

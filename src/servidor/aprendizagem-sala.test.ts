@@ -6,7 +6,7 @@ import { serializarResumoAprendizagemSala } from "./aprendizagem-sala";
 describe("resumo de aprendizagem compartilhado com a Sala", () => {
   it("projeta somente os resultados necessários para o dashboard", () => {
     const resultado = { chave: MetodoEstudo.FEYNMAN, quantidadeSessoes: 3, quantidadeCompreensoes: 3, compreensaoMedia: 4.2, quantidadeEvidenciasPosteriores: 2, desempenhoMedioPosterior: 82, amostraEvidenciasSuficiente: true };
-    const conceito = { chave: "closures", nome: "Closures", sessoes: 3, evidencias: 2, observacoes: 5, compreensaoMedia: 4, dificuldadeMedia: 2, desempenhoMedio: 85, evidenciasSuficientes: true, indice: 3, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") };
+    const conceito = { chave: "closures", nome: "Closures", sessoes: 3, evidencias: 2, observacoes: 5, quantidadeCompreensoes: 3, quantidadeDificuldades: 3, compreensaoMedia: 4, dificuldadeMedia: 2, desempenhoMedio: 85, evidenciasSuficientes: true, indice: 3, ultimaObservacaoEm: new Date("2026-09-20T10:00:00.000Z") };
     const resumo = serializarResumoAprendizagemSala({
       resumoResultados: {
         duracaoSessoesComMelhorResultado: { mediaMinutos: 35, quantidadeSessoes: 3, compreensaoMinima: 4, desempenhoMinimo: 70 },
