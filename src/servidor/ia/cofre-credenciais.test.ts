@@ -14,8 +14,8 @@ describe("cofre de credenciais de IA", () => {
 
   it("detecta qualquer alteração no conteúdo autenticado", () => {
     const chaveMestra = randomBytes(32);
-    const cifrado = cifrarCredencial("chave-ficticia", "conta:GEMINI", chaveMestra);
+    const cifrado = cifrarCredencial("chave-ficticia", "conta:GROQ", chaveMestra);
     const adulterado = { ...cifrado, chaveCifrada: Buffer.from("adulterado").toString("base64") };
-    expect(() => decifrarCredencial(adulterado, "conta:GEMINI", chaveMestra)).toThrow();
+    expect(() => decifrarCredencial(adulterado, "conta:GROQ", chaveMestra)).toThrow();
   });
 });

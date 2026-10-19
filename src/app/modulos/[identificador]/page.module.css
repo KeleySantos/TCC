@@ -1783,3 +1783,100 @@
 @media (max-width: 1480px) {
   .gradeDashboardModulo { grid-template-columns: 1fr; }
 }
+
+.acoesCabecalhoModulo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tituloEditavel h1 {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2.4rem, 4.8vw, 4rem);
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.barraAbasModulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.barraAbasModulo .listaSubabas {
+  align-self: flex-end;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.acoesAbasModulo {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.acoesAbasModulo .painelFiltroPeriodo {
+  max-width: min(510px, calc(100vw - 40px));
+}
+
+.dashboardEnxuto .blocoAprendizagem {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 24px;
+}
+
+.dashboardEnxuto .blocoAprendizagem h2,
+.dashboardEnxuto .blocoAprendizagem h3 {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: -.025em;
+  text-transform: none;
+}
+
+.dashboardEnxuto .listaConceitosDestaque li {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.visualmenteOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .barraAbasModulo {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .barraAbasModulo .listaSubabas {
+    width: 100%;
+  }
+
+  .acoesAbasModulo {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboardEnxuto .blocoAprendizagem {
+    padding: 17px 13px;
+  }
+}

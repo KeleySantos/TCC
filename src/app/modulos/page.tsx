@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpenText, Plus } from "lucide-react";
+import { BookOpenText, Plus, Share2 } from "lucide-react";
+import { AtualizarAoRetomar } from "@/componentes/atualizar-ao-retomar";
 import { criarRascunhoModulo } from "@/app/modulos/acoes";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { exigirUsuario } from "@/servidor/autenticacao";
@@ -24,8 +25,9 @@ export default async function PaginaModulos({
       : null;
 
   return (
-    <EstruturaAutenticada usuarioNome={usuario.nome}>
+    <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
       <main className={estilos.paginaModulos} id="conteudo-principal" tabIndex={-1}>
+        <AtualizarAoRetomar />
 
         <div className={estilos.areaConteudo}>
           <header className={estilos.apresentacaoPagina}>
@@ -62,6 +64,7 @@ export default async function PaginaModulos({
                   >
                     <span className={estilos.iconeModulo}><BookOpenText aria-hidden="true" /></span>
                     <h3>{modulo.rascunho ? "Módulo sem nome" : modulo.titulo}</h3>
+                    {modulo.quantidadeCompartilhamentosAtivos > 0 && <span className={estilos.indicadorCompartilhamento}><Share2 aria-hidden="true" size={14} />Compartilhado · {modulo.quantidadeCompartilhamentosAtivos}/3</span>}
                   </Link>
                 ))}
               </div>

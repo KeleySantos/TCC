@@ -1,6 +1,6 @@
 import { KeyRound, LockKeyhole, ShieldCheck, Wifi, WifiOff } from "lucide-react";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
-import { exigirUsuario } from "@/servidor/autenticacao";
+import { exigirAdministradorIa } from "@/servidor/autenticacao";
 import { listarConfiguracoesIaSeguras } from "@/servidor/ia/configuracoes";
 import { alternarProvedorIa, removerChaveIa, salvarChaveIa, testarChaveIa, usarSomenteInterpretacaoLocal } from "./acoes";
 import { BotaoEnvio } from "./botao-envio";
@@ -25,12 +25,12 @@ function mensagem(parametros: { erro?: string; sucesso?: string; teste?: string 
 }
 
 export default async function PaginaConfiguracoesIa({ searchParams }: { searchParams: Promise<{ erro?: string; sucesso?: string; teste?: string; provedor?: string }> }) {
-  const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
+  const [usuario, parametros] = await Promise.all([exigirAdministradorIa(), searchParams]);
   const configuracoes = await listarConfiguracoesIaSeguras(usuario.id);
   const aviso = mensagem(parametros);
-  return <EstruturaAutenticada usuarioNome={usuario.nome}>
+  return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
     <main className={estilos.pagina} id="conteudo-principal" tabIndex={-1}>
-      <header className={estilos.cabecalho}><div><p>CONFIGURAÇÕES</p><h1>Provedores de IA</h1><span>Fila atual: {configuracoes.map((item) => item.nome).join(" → ")} → resposta local.</span></div><div className={estilos.seloSeguro}><ShieldCheck aria-hidden="true" />Cofre local criptografado</div></header>
+      <header className={estilos.cabecalho}><div><p>CONFIGURAÇÕES GLOBAIS — ADMIN</p><h1>Provedor de IA</h1><span>A chave e a ativação configuradas aqui se aplicam a todos os usuários da plataforma.</span></div><div className={estilos.seloSeguro}><ShieldCheck aria-hidden="true" />Cofre local criptografado</div></header>
       {aviso && <p className={aviso.tipo === "erro" ? "mensagem-erro" : "mensagem-sucesso"} role={aviso.tipo === "erro" ? "alert" : "status"}>{aviso.texto}</p>}
 
       <section className={estilos.avisoSeguranca} aria-labelledby="titulo-seguranca-chave"><LockKeyhole aria-hidden="true" /><div><h2 id="titulo-seguranca-chave">Suas chaves não são recuperáveis pela interface</h2><p>Depois de salvas, elas ficam cifradas e nunca retornam ao navegador, aos logs ou ao Git. Uma chave só é enviada por HTTPS ao próprio provedor quando você solicita uma análise ou clica em testar.</p><strong>Para garantir custo zero, mantenha o faturamento automático desativado também na conta de cada provedor.</strong></div></section>
@@ -53,7 +53,7 @@ export default async function PaginaConfiguracoesIa({ searchParams }: { searchPa
         </article>)}
       </div>
 
-      <section className={estilos.contingencia}><div><KeyRound aria-hidden="true" /><div><h2>Usar somente análise local</h2><p>Desativa os três provedores sem apagar as chaves cifradas. Você poderá reativá-los individualmente depois.</p></div></div><form action={usarSomenteInterpretacaoLocal}><BotaoEnvio>Desativar chamadas externas</BotaoEnvio></form></section>
+      <section className={estilos.contingencia}><div><KeyRound aria-hidden="true" /><div><h2>Usar somente análise local</h2><p>Desativa o Groq sem apagar a chave cifrada. Você poderá reativá-lo depois.</p></div></div><form action={usarSomenteInterpretacaoLocal}><BotaoEnvio>Desativar chamada externa</BotaoEnvio></form></section>
     </main>
   </EstruturaAutenticada>;
 }

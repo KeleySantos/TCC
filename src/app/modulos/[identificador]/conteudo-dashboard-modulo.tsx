@@ -17,16 +17,18 @@ export function ConteudoDashboardModulo({
   metricas,
   tituloModulo,
   tituloPainel,
+  visualEnxuto = false,
 }: {
   aprendizagem: AprendizagemDashboardModulo;
   idTitulo?: string;
   metricas: MetricasSessoesExibicao;
   tituloModulo: string;
   tituloPainel?: string;
+  visualEnxuto?: boolean;
 }) {
   return <>
-    <PainelMetricasSessoes aprendizagem={aprendizagem.resumoResultados} idTitulo={idTitulo} metricas={metricas} tituloModulo={tituloModulo} tituloPainel={tituloPainel} />
-    <PainelResultadosContextuais formatos={aprendizagem.formatosResultados} idTitulo={idTitulo ? `${idTitulo}-resultados` : undefined} metodos={aprendizagem.metodosResultados} />
-    <PainelConceitosDestaque maiorCompreensao={aprendizagem.conceitosMaiorCompreensao} maiorDificuldade={aprendizagem.conceitosMaiorDificuldade} />
+    <PainelMetricasSessoes aprendizagem={aprendizagem.resumoResultados} idTitulo={idTitulo} metricas={metricas} tituloModulo={tituloModulo} tituloPainel={tituloPainel} visualEnxuto={visualEnxuto} />
+    <PainelResultadosContextuais formatos={aprendizagem.formatosResultados} idTitulo={idTitulo ? `${idTitulo}-resultados` : undefined} metodos={aprendizagem.metodosResultados} visualEnxuto={visualEnxuto} />
+    <PainelConceitosDestaque maiorCompreensao={aprendizagem.conceitosMaiorCompreensao} maiorDificuldade={aprendizagem.conceitosMaiorDificuldade} visualEnxuto={visualEnxuto} />
   </>;
 }

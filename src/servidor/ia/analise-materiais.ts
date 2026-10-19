@@ -1,10 +1,10 @@
 import { esquemaResultadoAnaliseMaterial, gerarAnaliseMaterialLocal, type ResultadoAnaliseMaterial } from "@/dominio/analises/analise-material";
-import type { ProvedorIa } from "@/gerado/prisma/enums";
+import type { ProvedorIaAtivo } from "./catalogo-provedores";
 import { listarCredenciaisAtivas } from "./configuracoes";
 import { registrarEstadoConfiguracaoIa } from "./configuracoes";
 
-type Credencial = { provedor: ProvedorIa; modelo: string; chave: string };
-type ResultadoComOrigem = ResultadoAnaliseMaterial & { origem: ProvedorIa | "LOCAL"; modelo: string | null };
+type Credencial = { provedor: ProvedorIaAtivo; modelo: string; chave: string };
+type ResultadoComOrigem = ResultadoAnaliseMaterial & { origem: ProvedorIaAtivo | "LOCAL"; modelo: string | null };
 
 class FalhaAnaliseMaterial extends Error {
   constructor(public readonly codigo: "AUTENTICACAO" | "COTA" | "INDISPONIVEL" | "RESPOSTA_INVALIDA") { super(codigo); }
@@ -31,13 +31,6 @@ function extrairTextoOpenAi(corpo: unknown) {
   return typeof valor === "string" ? valor : null;
 }
 
-function extrairTextoGemini(corpo: unknown) {
-  if (!corpo || typeof corpo !== "object") return null;
-  const candidatos = (corpo as { candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }> }).candidates;
-  const valor = candidatos?.[0]?.content?.parts?.map((parte) => typeof parte.text === "string" ? parte.text : "").join("");
-  return valor || null;
-}
-
 async function buscarJson(url: string, init: RequestInit, tempo = 20_000) {
   const controlador = new AbortController();
   const temporizador = setTimeout(() => controlador.abort(), tempo);
@@ -54,23 +47,12 @@ async function buscarJson(url: string, init: RequestInit, tempo = 20_000) {
 
 async function analisarComCredencial(credencial: Credencial, texto: string, truncado: boolean): Promise<ResultadoComOrigem> {
   const prompt = instrucao(texto, truncado);
-  let respostaTexto: string | null;
-  if (credencial.provedor === "GEMINI") {
-    const corpo = await buscarJson(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(credencial.modelo)}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": credencial.chave },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { thinkingConfig: { thinkingLevel: "low" }, responseMimeType: "application/json" } }),
-    });
-    respostaTexto = extrairTextoGemini(corpo);
-  } else {
-    const endpoint = credencial.provedor === "GROQ" ? "https://api.groq.com/openai/v1/chat/completions" : "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
-    const corpo = await buscarJson(endpoint, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${credencial.chave}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: credencial.modelo, messages: [{ role: "user", content: prompt }], temperature: 0.2, max_completion_tokens: 1_600, response_format: { type: "json_object" }, ...(credencial.provedor === "QWEN" ? { enable_thinking: false } : {}) }),
-    });
-    respostaTexto = extrairTextoOpenAi(corpo);
-  }
+  const corpo = await buscarJson("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${credencial.chave}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: credencial.modelo, messages: [{ role: "user", content: prompt }], temperature: 0.2, max_completion_tokens: 1_600, response_format: { type: "json_object" } }),
+  });
+  const respostaTexto = extrairTextoOpenAi(corpo);
   if (!respostaTexto) throw new FalhaAnaliseMaterial("RESPOSTA_INVALIDA");
   let objeto: unknown;
   try { objeto = JSON.parse(respostaTexto); } catch { throw new FalhaAnaliseMaterial("RESPOSTA_INVALIDA"); }
@@ -80,7 +62,7 @@ async function analisarComCredencial(credencial: Credencial, texto: string, trun
 }
 
 export async function analisarTextoMaterial(usuarioId: string, texto: string, truncado: boolean, opcoes: { credenciais?: Credencial[] } = {}): Promise<ResultadoComOrigem> {
-  const credenciais = opcoes.credenciais ?? await listarCredenciaisAtivas(usuarioId);
+  const credenciais = (opcoes.credenciais ?? await listarCredenciaisAtivas()).filter((credencial) => credencial.provedor === "GROQ");
   if (!credenciais.length || !permitirUsoExterno(usuarioId)) return { ...gerarAnaliseMaterialLocal(texto), origem: "LOCAL", modelo: null };
   for (const credencial of credenciais) {
     try {

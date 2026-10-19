@@ -1,0 +1,27 @@
+.dialogo { position: fixed; inset: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 0; border: 1px solid var(--cor-borda, #e2e5e9); border-radius: 18px; color: var(--cor-texto, #242932); background: var(--cor-superficie, #fff); box-shadow: 0 24px 80px rgb(0 0 0 / 25%); }
+.dialogo::backdrop { background: rgb(15 23 42 / 52%); }
+.cabecalho { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #e7e9ee; background: #fff; }
+.cabecalho p { margin: 0 0 5px; color: #707884; font-size: .65rem; font-weight: 750; letter-spacing: .08em; }
+.cabecalho h2 { margin: 0; font-size: 1.2rem; }
+.cabecalho button { display: grid; width: 36px; height: 36px; flex-shrink: 0; place-items: center; border: 0; border-radius: 9px; background: #f2f3f5; color: inherit; cursor: pointer; }
+.conteudo { padding: 0 24px 24px; }
+.secao { padding: 20px 0; border-bottom: 1px solid #e7e9ee; }
+.secao h3 { margin: 0 0 14px; font-size: .95rem; }
+.secao fieldset { display: grid; min-width: 0; gap: 12px; margin: 0; padding: 0; border: 0; }
+.secao label { display: grid; gap: 6px; font-size: .78rem; font-weight: 650; }
+.secao input { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid #d7dce3; border-radius: 9px; color: inherit; background: #fff; font: inherit; }
+.secao input[readonly] { background: #f2f3f5; color: #67707d; }
+.secao p { margin: 0; color: #6b7280; font-size: .76rem; line-height: 1.6; }
+.secao button { justify-self: start; padding: 10px 15px; border: 0; border-radius: 9px; color: #fff; background: var(--cor-acao, #242932); font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.secao fieldset:disabled { opacity: .65; }
+.secao button:disabled { cursor: wait; }
+.dialogo button:focus-visible, .dialogo input:focus-visible, .dialogo summary:focus-visible { outline: 3px solid #8ec5ff; outline-offset: 2px; }
+.foto { border-radius: 50%; object-fit: cover; }
+.exclusao { border-bottom: 0; padding-bottom: 0; }
+.exclusao summary { color: #b42332; font-size: .8rem; cursor: pointer; }
+.exclusao details > p { margin: 12px 0; }
+.exclusao button { background: #b42332; }
+.erro, .sucesso { padding: 12px; margin: 16px 0 0; border-radius: 9px; font-size: .8rem; line-height: 1.5; }
+.erro { color: #9f1d2b; background: #fff0f1; }
+.sucesso { color: #166349; background: #eaf8f0; }
+@media (max-width: 480px) { .cabecalho { padding: 16px; } .conteudo { padding: 0 16px 16px; } }

@@ -111,11 +111,7 @@ describe("contrato humanizado dos insights", () => {
     expect(texto).not.toMatch(/caus|prova|você não entende/i);
   });
 
-  it("permite escolher Gemini ou Groq como provedor principal", () => {
-    vi.stubEnv("AI_PRIMARY_PROVIDER", "gemini");
-    expect(montarCatalogoProvedores()[0].provedor).toBe("GEMINI");
-    vi.stubEnv("AI_PRIMARY_PROVIDER", "groq");
-    expect(montarCatalogoProvedores()[0].provedor).toBe("GROQ");
-    vi.unstubAllEnvs();
+  it("mantém somente Groq no catálogo de provedores externos", () => {
+    expect(montarCatalogoProvedores()).toEqual([expect.objectContaining({ provedor: "GROQ", prioridade: 1 })]);
   });
 });

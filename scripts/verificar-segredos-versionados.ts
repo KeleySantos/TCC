@@ -6,7 +6,7 @@ const padroes = [
   /gsk_[A-Za-z0-9]{20,}/,
   /AIza[0-9A-Za-z_-]{30,}/,
   /sk-[A-Za-z0-9_-]{24,}/,
-  /(?:GROQ_API_KEY|GEMINI_API_KEY|DASHSCOPE_API_KEY|CHAVE_MESTRA_CREDENCIAIS_IA)\s*=\s*["']?[^\s"']{16,}/,
+  /(?:[A-Z0-9_]+_API_KEY|CHAVE_MESTRA_CREDENCIAIS_IA)\s*=\s*["']?[^\s"']{16,}/,
 ];
 
 const saida = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { encoding: "utf8" });

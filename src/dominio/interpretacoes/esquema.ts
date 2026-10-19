@@ -71,7 +71,7 @@ export const esquemaConteudoInterpretacao = z.object({ insights: z.array(esquema
 
 export type InsightAprendizagem = z.infer<typeof esquemaInsightAprendizagem>;
 export type ConteudoInterpretacao = z.infer<typeof esquemaConteudoInterpretacao>;
-export type OrigemInterpretacao = "GROQ" | "GEMINI" | "QWEN" | "LOCAL";
+export type OrigemInterpretacao = "GROQ" | "LOCAL";
 export type MotivoContingencia = "SEM_CHAVE" | "COTA_LOCAL" | "ENTRADA_EXCEDIDA" | "TODOS_INDISPONIVEIS" | "RESPOSTA_INVALIDA" | "DADOS_INSUFICIENTES" | null;
 export type CodigoTentativaProvedor = "SUCESSO" | "TEMPO_ESGOTADO" | "COTA" | "AUTENTICACAO" | "MODELO_INVALIDO" | "REQUISICAO_INVALIDA" | "REDE" | "INDISPONIVEL" | "RESPOSTA_INVALIDA";
 

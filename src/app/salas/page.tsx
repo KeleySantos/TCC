@@ -5,6 +5,9 @@ import { listarSalasDaConta } from "@/servidor/salas";
 import { BotaoEnvio } from "./botao-envio";
 import { criarNovaSala, entrarEmSala } from "./acoes";
 import { GradeSalas } from "./cartoes-salas";
+import { AbasSalas } from "./abas-salas";
+import { ModulosCompartilhados } from "./modulos-compartilhados";
+import { listarModulosCompartilhados } from "@/servidor/compartilhamento-modulos";
 import estilos from "./page.module.css";
 
 const mensagensErro: Record<string, string> = {
@@ -20,12 +23,12 @@ const mensagensSucesso: Record<string, string> = {
   excluida: "Sala excluída sem apagar os módulos pessoais vinculados.",
 };
 
-export default async function PaginaSalas({ searchParams }: { searchParams: Promise<{ erro?: string; sucesso?: string }> }) {
+export default async function PaginaSalas({ searchParams }: { searchParams: Promise<{ aba?: string; erro?: string; sucesso?: string }> }) {
   const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
-  const salas = await listarSalasDaConta(usuario.id);
+  const [salas, compartilhados] = await Promise.all([listarSalasDaConta(usuario.id), listarModulosCompartilhados(usuario.id)]);
   const quantidadeModulos = salas.reduce((total, sala) => total + sala._count.modulos, 0);
 
-  return <EstruturaAutenticada usuarioNome={usuario.nome}>
+  return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
     <main className={estilos.paginaSalas} id="conteudo-principal" tabIndex={-1}>
 
       <div className={estilos.areaConteudoSalas}>
@@ -37,7 +40,7 @@ export default async function PaginaSalas({ searchParams }: { searchParams: Prom
         {parametros.erro && <p className="mensagem-erro" role="alert">{mensagensErro[parametros.erro] ?? "A operação não pôde ser concluída."}</p>}
         {parametros.sucesso && <p className="mensagem-sucesso" role="status">{mensagensSucesso[parametros.sucesso] ?? "Operação concluída."}</p>}
 
-        <section aria-labelledby="titulo-salas">
+        <AbasSalas abaInicial={parametros.aba} compartilhados={<ModulosCompartilhados iniciais={compartilhados} />} salas={<section aria-labelledby="titulo-salas">
           <div className={estilos.cabecalhoBibliotecaSalas}>
             <div><p className={estilos.sobretitulo}>SUAS SALAS</p><h2 id="titulo-salas">Espaços que você participa</h2></div>
             <div className={estilos.acoesBibliotecaSalas}>
@@ -65,7 +68,7 @@ export default async function PaginaSalas({ searchParams }: { searchParams: Prom
 
           <GradeSalas salas={salas} />
           {salas.length === 0 && <div className={estilos.estadoVazio}><UsersRound aria-hidden="true" /><h3>Sua primeira sala começa aqui</h3><p>Crie uma sala ou use um código para entrar em um espaço existente.</p></div>}
-        </section>
+        </section>} />
       </div>
     </main>
   </EstruturaAutenticada>;

@@ -19,7 +19,7 @@ export function calcularIndiceSubaba(atual: number, tecla: TeclaNavegacao, quant
   return (atual - 1 + quantidade) % quantidade;
 }
 
-export function SubabasModulo({ abaInicial = "dashboard", dashboard, linhaDoTempo, periodo, sessoesMateriais }: { abaInicial?: typeof SUBABAS[number]["id"]; dashboard: ReactNode; linhaDoTempo: ReactNode; periodo: PeriodoFiltroExibicao; sessoesMateriais: ReactNode }) {
+export function SubabasModulo({ abaInicial = "dashboard", acoesDashboard, dashboard, linhaDoTempo, periodo, sessoesMateriais }: { abaInicial?: typeof SUBABAS[number]["id"]; acoesDashboard?: ReactNode; dashboard: ReactNode; linhaDoTempo: ReactNode; periodo: PeriodoFiltroExibicao; sessoesMateriais: ReactNode }) {
   const indiceInicial = Math.max(0, SUBABAS.findIndex((subaba) => subaba.id === abaInicial));
   const [ativa, setAtiva] = useState(indiceInicial);
   const botoes = useRef<Array<HTMLButtonElement | null>>([]);
@@ -41,7 +41,8 @@ export function SubabasModulo({ abaInicial = "dashboard", dashboard, linhaDoTemp
   }
 
   return <section className={estilos.areaSubabas} aria-label="Áreas do módulo">
-    <div aria-label="Navegação interna do módulo" className={estilos.listaSubabas} role="tablist">
+    <div className={estilos.barraAbasModulo}>
+      <div aria-label="Navegação interna do módulo" className={estilos.listaSubabas} role="tablist">
       {SUBABAS.map((subaba, indice) => <button
         aria-controls={`painel-subaba-${subaba.id}`}
         aria-selected={ativa === indice}
@@ -55,8 +56,12 @@ export function SubabasModulo({ abaInicial = "dashboard", dashboard, linhaDoTemp
         tabIndex={ativa === indice ? 0 : -1}
         type="button"
       >{subaba.rotulo}</button>)}
+      </div>
+      <div aria-label="Ações do módulo" className={estilos.acoesAbasModulo} role="group">
+        <FiltroPeriodoModulo aba={SUBABAS[ativa].id} periodo={periodo} />
+        {ativa === 0 && acoesDashboard}
+      </div>
     </div>
-    <FiltroPeriodoModulo aba={SUBABAS[ativa].id} periodo={periodo} />
     {SUBABAS.map((subaba, indice) => <div
       aria-labelledby={`subaba-${subaba.id}`}
       className={estilos.painelSubaba}

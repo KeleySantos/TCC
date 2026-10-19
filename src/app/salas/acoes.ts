@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import {
-  alterarConsentimentosVinculo,
   arquivarSala,
   criarModuloSala,
   criarSala,
@@ -13,7 +12,6 @@ import {
   ErroSala,
   excluirSala,
   gerarConviteSala,
-  publicarComentarioSala,
   removerMembroSala,
   revogarConviteSala,
   sairDaSala,
@@ -25,10 +23,6 @@ export type EstadoGeracaoConvite = { codigo?: string; link?: string; expiraEm?: 
 function texto(formulario: FormData, campo: string) {
   const valor = formulario.get(campo);
   return typeof valor === "string" ? valor : "";
-}
-
-function booleano(formulario: FormData, campo: string) {
-  return formulario.get(campo) === "on" || formulario.get(campo) === "true";
 }
 
 function codigoErro(erro: unknown) {
@@ -128,22 +122,6 @@ export async function aderirModuloSala(formulario: FormData) {
   redirect(`${caminho}?sucesso=vinculo`);
 }
 
-export async function atualizarConsentimentos(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoSala(formulario);
-  try {
-    await alterarConsentimentosVinculo(usuario.id, {
-      vinculoId: texto(formulario, "vinculoId"),
-      permitirComparacao: booleano(formulario, "permitirComparacao"),
-      permitirIa: booleano(formulario, "permitirIa"),
-    });
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  redirect(`${caminho}?sucesso=consentimentos`);
-}
-
 export async function desvincularInstancia(formulario: FormData) {
   const usuario = await exigirUsuario();
   const caminho = caminhoSala(formulario);
@@ -154,24 +132,6 @@ export async function desvincularInstancia(formulario: FormData) {
   }
   revalidatePath(caminho);
   redirect(`${caminho}?sucesso=desvinculado`);
-}
-
-export async function publicarComentario(formulario: FormData) {
-  const usuario = await exigirUsuario();
-  const caminho = caminhoSala(formulario);
-  try {
-    await publicarComentarioSala(usuario.id, {
-      salaId: texto(formulario, "salaId"),
-      escopo: texto(formulario, "escopo"),
-      moduloSalaId: texto(formulario, "moduloSalaId") || undefined,
-      destinatarioId: texto(formulario, "destinatarioId") || undefined,
-      conteudo: texto(formulario, "conteudo"),
-    });
-  } catch (erro) {
-    redirect(`${caminho}?erro=${codigoErro(erro)}`);
-  }
-  revalidatePath(caminho);
-  redirect(`${caminho}?sucesso=comentario`);
 }
 
 export async function removerMembro(formulario: FormData) {

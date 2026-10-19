@@ -10,9 +10,9 @@
 
 `vincularInstanciaModuloSala` exige membro ativo e aceita exatamente uma alternativa: criar módulo pessoal vazio a partir do título/descrição do módulo-pai ou selecionar módulo próprio ativo e configurado. O vínculo não copia conteúdo. Uma pessoa possui no máximo uma instância ativa por módulo-pai.
 
-`alterarConsentimentosVinculo` é exclusiva do titular do vínculo. Comparação e IA começam falsas. `desvincularInstanciaModuloSala`, saída, remoção ou exclusão lógica desligam dashboard, comparação e IA, preservando o módulo pessoal.
+Ao criar ou reativar um vínculo, o compartilhamento do dashboard, a comparação e a interpretação por IA ficam obrigatoriamente ativos. Não existe operação para desligá-los separadamente. `desvincularInstanciaModuloSala`, saída, remoção ou exclusão lógica encerram conjuntamente o acesso, preservando o módulo pessoal.
 
-`publicarComentarioSala` é exclusiva do proprietário. Escopo `SALA` não recebe alvo; `MODULO` exige módulo-pai da sala; `MEMBRO` exige destinatário ativo. Membros leem somente comentários gerais, dos módulos em que possuem vínculo ativo e os destinados à própria conta.
+Comentários foram retirados do escopo em 2026-10-18. Não existe operação para publicar ou consultar comentários de sala, módulo ou membro; o detalhe da sala não inclui mensagens.
 
 Nenhuma operação de sala autoriza o proprietário a consultar material, sessão ou descrição interna da instância de um membro. Recursos inexistentes e alheios são tratados como indisponíveis.
 
@@ -20,9 +20,9 @@ Nenhuma operação de sala autoriza o proprietário a consultar material, sessã
 
 `obterDashboardsSalaDoProprietario` é exclusiva do proprietário ativo. Ela calcula a visão geral, os agregados por módulo-pai e os dashboards individuais ativos a partir das métricas oficiais. Agregados com menos de três contribuidores com sessão válida devolvem apenas insuficiência de amostra.
 
-A comparação nominal usa somente vínculos ativos com `permitirComparacao = true`, pode ser ocultada na interface e não ordena, classifica ou atribui desempenho. O consentimento não é inferido do compartilhamento comum.
+A comparação nominal usa todos os vínculos ativos com dashboard compartilhado. Ela pode ser ocultada visualmente na interface, mas esse controle não altera o compartilhamento. A comparação não ordena, classifica ou atribui desempenho.
 
-`gerarInterpretacaoMembroSala` exige proprietário, vínculo ativo e `permitirIa = true` no momento da chamada. O DTO contém nome, contexto e métricas, com lista de descrições vazia; materiais e textos de sessão nunca atravessam essa fronteira.
+`gerarInterpretacaoMembroSala` exige proprietário e vínculo ativo com dashboard compartilhado. O DTO contém nome, contexto e métricas, com lista de descrições vazia; materiais e textos de sessão nunca atravessam essa fronteira.
 
 Antes de desvincular, sair ou remover, o servidor preserva os campos analíticos das sessões válidas em `EvidenciaHistoricaModuloSala`. A evidência não contém usuário, módulo pessoal, descrição ou material e só participa de agregados. Uma reativação define nova janela de dados vivos para não duplicar o histórico.
 
@@ -46,11 +46,15 @@ Saída de sucesso: cria uma conta pessoal vazia, armazena somente o hash `scrypt
 
 Falhas esperadas: retorna ao modo de cadastro com mensagem específica para dados inválidos, senhas diferentes ou nome já cadastrado. A senha nunca é incluída em URL, mensagem, log ou retorno da operação.
 
-## `atualizarPerfilPessoal`
+## Configurações do próprio perfil
 
-Entrada de formulário: `nome`, e-mail sintético opcional e, em formulário separado, senha atual e nova senha opcional.
+O nome e o avatar no rodapé da navegação abrem um modal nativo acessível; o item Perfil e a página `/perfil` foram removidos. `GET /api/perfil` devolve nome exibido, identificador de login, permissão administrativa e versão da foto da sessão, sem hash, bytes da imagem ou credenciais de IA.
 
-Pré-condição: conta autenticada. A operação valida os campos, exige a senha atual para alterar a senha, impede e-mail duplicado e atualiza somente a própria conta. O nome de usuário não é alterado neste protótipo.
+`PATCH /api/perfil` recebe FormData com `operacao` igual a `NOME`, `SENHA` ou `FOTO`. A alteração de nome valida `nome` (2–80 caracteres) e `nomeUsuario` (2–40 caracteres, letras minúsculas, números e separadores `.`, `_`, `-`), com unicidade no banco. A senha exige senha atual correta e nova senha com 8–128 caracteres e confirmação idêntica. A foto aceita somente JPG, PNG e WebP válidos até 2 MB e até 16 milhões de pixels; é recodificada em WebP 256 × 256, sem metadados. `GET /api/perfil/foto` serve somente a imagem da conta autenticada, com `no-store` e `nosniff`.
+
+`DELETE /api/perfil` exige senha atual e confirmação literal `EXCLUIR`. A exclusão transacional remove a conta e seus dados, inclusive Salas próprias; preserva os módulos de outros participantes. Vínculos ativos com Salas alheias deixam somente a evidência analítica pseudonimizada antes da remoção dos registros pessoais. Arquivos são colocados em quarentena reversível antes da transação, restaurados se ela falhar e removidos após o commit. A sessão é encerrada após sucesso. Identificadores recebidos pelo cliente não definem a conta alvo: ela sempre vem da sessão.
+
+O identificador `admin` permanece reservado; o servidor bloqueia sua alteração e a exclusão de ADMIN para preservar a configuração global da IA. Sua senha, foto e nome exibido continuam editáveis. Endpoints sem sessão retornam 401, duplicidade de login retorna 409, proteção de ADMIN retorna 403 e dados inválidos retornam 400.
 
 ## Operações de módulo e material
 
@@ -82,7 +86,7 @@ Exige sessão e localiza arquivo ativo diretamente pelo módulo e pela conta pro
 
 ## Análise e ciclo de vida dos arquivos — Fase 14
 
-`POST /api/materiais/{id}/analise` exige propriedade e processa PDF, TXT, DOCX, CSV, XLSX ou imagem. O texto é extraído localmente, limitado a 60.000 caracteres, tratado como conteúdo não confiável e descartado. A fila Groq → Gemini → Qwen recebe o texto limitado; sem provedor disponível, a contingência local produz conceitos e sugestões. O resultado compacto é persistido em `AnaliseMaterial`.
+`POST /api/materiais/{id}/analise` exige propriedade e processa PDF, TXT, DOCX, CSV, XLSX ou imagem. O texto é extraído localmente, limitado a 60.000 caracteres, tratado como conteúdo não confiável e descartado. O Groq recebe o texto limitado; sem credencial ou diante de falha, a contingência local produz conceitos e sugestões. O resultado compacto é persistido em `AnaliseMaterial`.
 
 `POST /api/materiais/{id}/arquivo/substituir` valida o novo binário, move o anterior para remoção reversível, atualiza arquivo e material em transação e invalida a análise anterior. Após a confirmação do banco, remove o binário antigo e a interface inicia nova análise quando o formato for compatível.
 
@@ -185,7 +189,7 @@ Entrada: não recebe métrica, identificador de outra conta, prompt livre ou cha
 
 Pré-condição: conta autenticada com dados do próprio painel. A integração externa é opcional e não pode bloquear a abertura do painel. A cota local aceita até cinco solicitações por conta em uma hora.
 
-Saída de sucesso: de um a três insights validados com tipo, título, observação, resumo opcional da evidência, confiança, pergunta opcional e experimento opcional, além de contexto, amostra, limitação, provedor/modelo e caminho seguro do fallback. `AI_PRIMARY_PROVIDER` escolhe Gemini ou Groq como primeira tentativa; o outro vem em seguida, Qwen legado permanece opcional e a resposta local encerra a fila. Limite, timeout, autenticação, modelo ou requisição inválidos, rede, indisponibilidade e schema inválido recebem classificações distintas. Contexto sem sessões não chama provedor. Nenhuma resposta externa calcula ou altera métricas, e o resultado permanece apenas no estado da interface, sem persistência ou cache.
+Saída de sucesso: de um a três insights validados com tipo, título, observação, resumo opcional da evidência, confiança, pergunta opcional e experimento opcional, além de contexto, amostra, limitação, provedor/modelo e caminho seguro da contingência. O fluxo externo tenta somente o Groq e usa a resposta local em seguida. Limite, timeout, autenticação, modelo ou requisição inválidos, rede, indisponibilidade e schema inválido recebem classificações distintas. Contexto sem sessões não chama o provedor. Nenhuma resposta externa calcula ou altera métricas, e o resultado permanece apenas no estado da interface, sem persistência ou cache.
 
 ## `POST /api/modulos/{identificador}/interpretacoes`
 
@@ -193,7 +197,7 @@ Exige sessão e analisa somente módulo configurado, ativo e pertencente à cont
 
 ## Configurações de IA
 
-`/configuracoes/ia` exige conta autenticada. Ações de salvar, substituir, testar, ativar, desativar e remover sempre obtêm `usuarioId` da sessão. A API Key entra somente no formulário de senha, é cifrada no servidor e nunca é retornada, nem parcialmente, ao navegador. O teste externo só ocorre após comando explícito e faz a geração mínima “OK”; salvar não testa nem chama a rede. `GROQ_MODEL` e `GEMINI_MODEL` centralizam modelos, com `openai/gpt-oss-20b` e `gemini-3.8-flash` como padrões. O Gemini repete falhas transitórias e tenta `gemini-3.7-flash` quando aplicável. Como alternativa ao cofre por conta, `GROQ_API_KEY` e `GEMINI_API_KEY` podem existir somente no servidor; mudanças em `.env` exigem reinício. Desativar todos mantém as chaves cifradas e força a interpretação local; remover apaga definitivamente o registro.
+`/configuracoes/ia` e suas ações exigem a conta reservada `admin` com `administradorIa = true`, obtida da sessão assinada; contas comuns são redirecionadas ao Dashboard. Os serviços de gestão também verificam essa permissão no banco antes de qualquer leitura ou alteração. A API Key é cifrada e nunca retorna ao navegador. Salvar não chama a rede; testar exige comando explícito. A chave, sua ativação e o bloqueio são globais: dashboards pessoais, módulos, salas e materiais consultam somente a configuração Groq de ADMIN a cada requisição. Configurações pessoais antigas e `GROQ_API_KEY` não contornam remoção, desativação ou bloqueio. `GROQ_MODEL` mantém o modelo padrão `openai/gpt-oss-20b`. Remover elimina somente a configuração global. O provisionamento local cria ADMIN sem resetar o banco e recifra a chave ativa anterior para seu contexto; reexecução não troca senha nem chave. O cadastro público reserva o identificador `admin`.
 
 O cofre usa AES-256-GCM e contexto autenticado por conta/provedor. Em produção, `CHAVE_MESTRA_CREDENCIAIS_IA` deve conter 32 bytes em Base64; no desenvolvimento, uma chave aleatória é criada em `.dados/segredos`, diretório ignorado. O scanner `verificar:segredos` examina todos os arquivos versionáveis sem imprimir valores encontrados. Credenciais só deixam o servidor no cabeçalho HTTPS destinado ao provedor correspondente.
 
@@ -205,7 +209,7 @@ O cofre usa AES-256-GCM e contexto autenticado por conta/provedor. Em produção
 - Dados derivados não usam sessões inválidas.
 - Senhas nunca são persistidas em texto simples nem enviadas para a interface após o cadastro.
 - O vínculo de desafio pertence à sessão e não altera as métricas oficiais.
-- Groq, Gemini e Qwen não calculam métricas, não alteram dados ou permissões e recebem somente o DTO de sessões após solicitação explícita.
+- O Groq não calcula métricas, não altera dados ou permissões e recebe somente o DTO de sessões após solicitação explícita.
 
 ## Verificação de autorização local
 

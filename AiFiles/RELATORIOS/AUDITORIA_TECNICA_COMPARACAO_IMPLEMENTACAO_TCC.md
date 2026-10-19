@@ -1,5 +1,7 @@
 # Auditoria técnica — comparação entre implementação e TCC
 
+> Registro histórico da implementação auditada. As referências a múltiplos provedores foram substituídas pela D-054 em 2026-10-17; o fluxo ativo atual é Groq → contingência local.
+
 **Data:** 10 de outubro de 2026
 **Escopo:** comparação investigativa entre o documento acadêmico, o código atual e os testes relacionados a Learning Analytics, conceitos, evidências, recomendações e Inteligência Artificial.
 **Natureza:** auditoria somente leitura; nenhum código, banco, migração ou dado foi alterado.

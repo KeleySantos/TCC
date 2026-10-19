@@ -3,19 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { exigirUsuario } from "@/servidor/autenticacao";
+import { exigirAdministradorIa } from "@/servidor/autenticacao";
 import { obterDefinicaoProvedor } from "@/servidor/ia/catalogo-provedores";
 import { definirConfiguracaoIaAtiva, desativarTodasConfiguracoesIa, obterCredencialConfigurada, removerConfiguracaoIa, salvarConfiguracaoIa } from "@/servidor/ia/configuracoes";
 import { testarProvedorConfigurado } from "@/servidor/ia/interpretacoes";
 
-const esquemaProvedor = z.enum(["GROQ", "GEMINI", "QWEN"]);
+const esquemaProvedor = z.literal("GROQ");
 
 function lerProvedor(formulario: FormData) {
   return esquemaProvedor.safeParse(formulario.get("provedor"));
 }
 
 export async function salvarChaveIa(formulario: FormData) {
-  const usuario = await exigirUsuario();
+  const usuario = await exigirAdministradorIa();
   const provedor = lerProvedor(formulario);
   const chave = formulario.get("chave");
   if (!provedor.success || typeof chave !== "string") redirect("/configuracoes/ia?erro=dados");
@@ -29,7 +29,7 @@ export async function salvarChaveIa(formulario: FormData) {
 }
 
 export async function alternarProvedorIa(formulario: FormData) {
-  const usuario = await exigirUsuario();
+  const usuario = await exigirAdministradorIa();
   const provedor = lerProvedor(formulario);
   const ativa = formulario.get("ativa") === "sim";
   if (!provedor.success || !(await definirConfiguracaoIaAtiva(usuario.id, provedor.data, ativa))) redirect("/configuracoes/ia?erro=ausente");
@@ -38,7 +38,7 @@ export async function alternarProvedorIa(formulario: FormData) {
 }
 
 export async function removerChaveIa(formulario: FormData) {
-  const usuario = await exigirUsuario();
+  const usuario = await exigirAdministradorIa();
   const provedor = lerProvedor(formulario);
   if (!provedor.success) redirect("/configuracoes/ia?erro=dados");
   await removerConfiguracaoIa(usuario.id, provedor.data);
@@ -47,7 +47,7 @@ export async function removerChaveIa(formulario: FormData) {
 }
 
 export async function testarChaveIa(formulario: FormData) {
-  const usuario = await exigirUsuario();
+  const usuario = await exigirAdministradorIa();
   const provedor = lerProvedor(formulario);
   if (!provedor.success) redirect("/configuracoes/ia?erro=dados");
   const chave = await obterCredencialConfigurada(usuario.id, provedor.data);
@@ -59,7 +59,7 @@ export async function testarChaveIa(formulario: FormData) {
 }
 
 export async function usarSomenteInterpretacaoLocal() {
-  const usuario = await exigirUsuario();
+  const usuario = await exigirAdministradorIa();
   await desativarTodasConfiguracoesIa(usuario.id);
   revalidatePath("/configuracoes/ia");
   redirect("/configuracoes/ia?sucesso=local");

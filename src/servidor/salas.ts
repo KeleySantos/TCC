@@ -1,7 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { z } from "zod";
 import {
-  EscopoComentarioSala,
   PapelMembroSala,
   SituacaoMembroSala,
   SituacaoModuloSala,
@@ -45,18 +44,6 @@ const esquemaVinculo = z.object({
   moduloPessoalId: z.string().min(1).optional(),
   criarInstancia: z.boolean().default(false),
 }).refine((dados) => dados.criarInstancia !== Boolean(dados.moduloPessoalId), "Escolha uma forma de vínculo.");
-const esquemaConsentimentos = z.object({
-  vinculoId: z.string().min(1),
-  permitirComparacao: z.boolean(),
-  permitirIa: z.boolean(),
-});
-const esquemaComentario = z.object({
-  salaId: z.string().min(1),
-  escopo: z.nativeEnum(EscopoComentarioSala),
-  moduloSalaId: z.string().min(1).optional(),
-  destinatarioId: z.string().min(1).optional(),
-  conteudo: z.string().trim().min(1).max(2_000),
-});
 
 function validar<T>(resultado: z.ZodSafeParseResult<T>) {
   if (!resultado.success) throw new ErroSala("DADOS_INVALIDOS");
@@ -125,6 +112,19 @@ function identificadorModulo(titulo: string) {
   return `${base || "modulo"}-sala-${randomUUID().slice(0, 8)}`;
 }
 
+export async function prepararExclusaoContaNasSalas(transacao: Prisma.TransactionClient, usuarioId: string) {
+  const vinculos = await transacao.vinculoModuloSala.findMany({
+    where: { usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO, moduloSala: { sala: { proprietarioId: { not: usuarioId } } } },
+    select: { moduloSalaId: true, moduloPessoalId: true, usuarioId: true, dadosDesde: true, moduloSala: { select: { salaId: true } } },
+  });
+  for (const vinculo of vinculos) await preservarEvidenciasHistoricas(transacao, vinculo, vinculo.moduloSala.salaId);
+  await transacao.vinculoModuloSala.deleteMany({ where: { usuarioId } });
+  await transacao.solicitacaoEntradaSala.deleteMany({ where: { OR: [{ solicitanteId: usuarioId }, { convite: { criadoPorId: usuarioId } }] } });
+  await transacao.conviteSala.deleteMany({ where: { criadoPorId: usuarioId } });
+  await transacao.sala.deleteMany({ where: { proprietarioId: usuarioId } });
+  await transacao.membroSala.deleteMany({ where: { usuarioId } });
+}
+
 async function exigirSalaDoProprietario(usuarioId: string, salaId: string, permitirArquivada = false) {
   const sala = await prisma.sala.findFirst({
     where: {
@@ -188,7 +188,7 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
   });
   if (!associacao) return null;
   const proprietario = associacao.papel === PapelMembroSala.PROPRIETARIO;
-  const [modulos, comentarios, membros, convites] = await Promise.all([
+  const [modulos, membros, convites] = await Promise.all([
     prisma.moduloSala.findMany({
       where: { salaId: associacao.sala.id, situacao: SituacaoModuloSala.ATIVO },
       select: {
@@ -198,28 +198,13 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
             ? { situacao: SituacaoVinculoModuloSala.ATIVO, compartilharDashboard: true }
             : { usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO },
           select: {
-            id: true, usuarioId: true, permitirComparacao: true, permitirIa: true,
+            id: true, usuarioId: true,
             moduloPessoal: { select: { id: true, identificador: true, titulo: true } },
             usuario: { select: { nome: true } },
           },
         },
       },
       orderBy: { posicao: "asc" },
-    }),
-    prisma.comentarioSala.findMany({
-      where: {
-        salaId: associacao.sala.id,
-        ...(proprietario ? {} : {
-          OR: [
-            { escopo: EscopoComentarioSala.SALA },
-            { escopo: EscopoComentarioSala.MEMBRO, destinatarioId: usuarioId },
-            { escopo: EscopoComentarioSala.MODULO, moduloSala: { vinculos: { some: { usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO } } } },
-          ],
-        }),
-      },
-      select: { id: true, escopo: true, moduloSalaId: true, destinatarioId: true, conteudo: true, criadoEm: true },
-      orderBy: { criadoEm: "desc" },
-      take: 50,
     }),
     proprietario ? prisma.membroSala.findMany({
       where: { salaId: associacao.sala.id, situacao: SituacaoMembroSala.ATIVO },
@@ -232,7 +217,7 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
       orderBy: { criadoEm: "desc" },
     }) : Promise.resolve([]),
   ]);
-  return { ...associacao.sala, papel: associacao.papel, modulos, comentarios, membros, convites };
+  return { ...associacao.sala, papel: associacao.papel, modulos, membros, convites };
 }
 
 export async function gerarConviteSala(usuarioId: string, entrada: unknown) {
@@ -337,7 +322,7 @@ export async function vincularInstanciaModuloSala(usuarioId: string, entrada: un
     const vinculo = existente
       ? await transacao.vinculoModuloSala.update({
         where: { id: existente.id },
-        data: { membroSalaId: membro.id, moduloPessoalId, situacao: SituacaoVinculoModuloSala.ATIVO, compartilharDashboard: true, permitirComparacao: false, permitirIa: false, vinculadoEm: new Date(), dadosDesde: existente.moduloPessoalId === moduloPessoalId ? new Date() : null, desvinculadoEm: null },
+        data: { membroSalaId: membro.id, moduloPessoalId, situacao: SituacaoVinculoModuloSala.ATIVO, compartilharDashboard: true, vinculadoEm: new Date(), dadosDesde: existente.moduloPessoalId === moduloPessoalId ? new Date() : null, desvinculadoEm: null },
       })
       : await transacao.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membro.id, usuarioId, moduloPessoalId } });
     await transacao.eventoAuditoria.create({ data: { atorId: usuarioId, acao: dados.criarInstancia ? "INSTANCIA_SALA_CRIADA" : "INSTANCIA_SALA_VINCULADA", alvo: vinculo.id, metadados: JSON.stringify({ moduloSalaId: moduloSala.id }) } });
@@ -345,21 +330,12 @@ export async function vincularInstanciaModuloSala(usuarioId: string, entrada: un
   });
 }
 
-export async function alterarConsentimentosVinculo(usuarioId: string, entrada: unknown) {
-  const dados = validar(esquemaConsentimentos.safeParse(entrada));
-  const vinculo = await prisma.vinculoModuloSala.findFirst({ where: { id: dados.vinculoId, usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO, membroSala: { situacao: SituacaoMembroSala.ATIVO }, moduloSala: { sala: { situacao: SituacaoSala.ATIVA } } } });
-  if (!vinculo) throw new ErroSala("NAO_ENCONTRADO");
-  const atualizado = await prisma.vinculoModuloSala.update({ where: { id: vinculo.id }, data: { permitirComparacao: dados.permitirComparacao, permitirIa: dados.permitirIa } });
-  await prisma.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "CONSENTIMENTOS_SALA_ALTERADOS", alvo: vinculo.id, metadados: JSON.stringify({ permitirComparacao: dados.permitirComparacao, permitirIa: dados.permitirIa }) } });
-  return atualizado;
-}
-
 export async function desvincularInstanciaModuloSala(usuarioId: string, vinculoId: string) {
   const vinculo = await prisma.vinculoModuloSala.findFirst({ where: { id: vinculoId, usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO }, select: { id: true, moduloSalaId: true, moduloPessoalId: true, usuarioId: true, dadosDesde: true, moduloSala: { select: { salaId: true } } } });
   if (!vinculo) throw new ErroSala("NAO_ENCONTRADO");
   await prisma.$transaction(async (transacao) => {
     await preservarEvidenciasHistoricas(transacao, vinculo, vinculo.moduloSala.salaId);
-    await transacao.vinculoModuloSala.update({ where: { id: vinculo.id }, data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, permitirComparacao: false, permitirIa: false, desvinculadoEm: new Date() } });
+    await transacao.vinculoModuloSala.update({ where: { id: vinculo.id }, data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, desvinculadoEm: new Date() } });
     await transacao.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "INSTANCIA_SALA_DESVINCULADA", alvo: vinculo.id } });
   });
 }
@@ -370,7 +346,7 @@ async function encerrarParticipacao(usuarioId: string, membroId: string, situaca
     for (const vinculo of vinculos) await preservarEvidenciasHistoricas(transacao, vinculo, vinculo.moduloSala.salaId);
     await transacao.vinculoModuloSala.updateMany({
       where: { membroSalaId: membroId, situacao: SituacaoVinculoModuloSala.ATIVO },
-      data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, permitirComparacao: false, permitirIa: false, desvinculadoEm: new Date() },
+      data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, desvinculadoEm: new Date() },
     });
     await transacao.membroSala.update({ where: { id: membroId }, data: { situacao, encerrouEm: new Date() } });
     await transacao.eventoAuditoria.create({ data: { atorId, acao: situacao === SituacaoMembroSala.SAIU ? "MEMBRO_SAIU_SALA" : "MEMBRO_REMOVIDO_SALA", alvo: membroId, metadados: JSON.stringify({ usuarioId }) } });
@@ -403,28 +379,9 @@ export async function excluirSala(usuarioId: string, entrada: unknown) {
   const { salaId } = validar(esquemaReferenciaSala.safeParse(entrada));
   await exigirSalaDoProprietario(usuarioId, salaId, true);
   await prisma.$transaction(async (transacao) => {
-    await transacao.vinculoModuloSala.updateMany({ where: { moduloSala: { salaId }, situacao: SituacaoVinculoModuloSala.ATIVO }, data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, permitirComparacao: false, permitirIa: false, desvinculadoEm: new Date() } });
+    await transacao.vinculoModuloSala.updateMany({ where: { moduloSala: { salaId }, situacao: SituacaoVinculoModuloSala.ATIVO }, data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, desvinculadoEm: new Date() } });
     await transacao.conviteSala.updateMany({ where: { salaId, revogadoEm: null }, data: { revogadoEm: new Date() } });
     await transacao.sala.update({ where: { id: salaId }, data: { situacao: SituacaoSala.EXCLUIDA } });
     await transacao.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "SALA_EXCLUIDA", alvo: salaId } });
   });
-}
-
-export async function publicarComentarioSala(usuarioId: string, entrada: unknown) {
-  const dados = validar(esquemaComentario.safeParse(entrada));
-  await exigirSalaDoProprietario(usuarioId, dados.salaId);
-  if (dados.escopo === EscopoComentarioSala.SALA && (dados.moduloSalaId || dados.destinatarioId)) throw new ErroSala("DADOS_INVALIDOS");
-  if (dados.escopo === EscopoComentarioSala.MODULO) {
-    if (!dados.moduloSalaId || dados.destinatarioId) throw new ErroSala("DADOS_INVALIDOS");
-    const modulo = await prisma.moduloSala.findFirst({ where: { id: dados.moduloSalaId, salaId: dados.salaId, situacao: SituacaoModuloSala.ATIVO } });
-    if (!modulo) throw new ErroSala("NAO_ENCONTRADO");
-  }
-  if (dados.escopo === EscopoComentarioSala.MEMBRO) {
-    if (!dados.destinatarioId || dados.moduloSalaId) throw new ErroSala("DADOS_INVALIDOS");
-    const membro = await prisma.membroSala.findFirst({ where: { salaId: dados.salaId, usuarioId: dados.destinatarioId, situacao: SituacaoMembroSala.ATIVO } });
-    if (!membro) throw new ErroSala("NAO_ENCONTRADO");
-  }
-  const comentario = await prisma.comentarioSala.create({ data: { salaId: dados.salaId, autorId: usuarioId, escopo: dados.escopo, moduloSalaId: dados.moduloSalaId, destinatarioId: dados.destinatarioId, conteudo: dados.conteudo } });
-  await prisma.eventoAuditoria.create({ data: { atorId: usuarioId, acao: "COMENTARIO_SALA_PUBLICADO", alvo: comentario.id, metadados: JSON.stringify({ salaId: dados.salaId, escopo: dados.escopo }) } });
-  return comentario;
 }

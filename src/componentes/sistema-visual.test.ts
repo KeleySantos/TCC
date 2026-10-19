@@ -8,6 +8,7 @@ import { EstruturaAutenticada } from "./estrutura-autenticada";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard",
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
 }));
 
 vi.mock("@/app/acoes-sessao", () => ({
@@ -19,15 +20,13 @@ const destinos = [
   ["Módulos", "/modulos"],
   ["Salas", "/salas"],
   ["Desafios", "/desafios"],
-  ["Configurações IA", "/configuracoes/ia"],
-  ["Perfil", "/perfil"],
 ] as const;
 
-function montarEstrutura() {
-  const EstruturaTestavel = EstruturaAutenticada as ComponentType<PropsWithChildren<{ usuarioNome: string }>>;
+function montarEstrutura(administradorIa = false) {
+  const EstruturaTestavel = EstruturaAutenticada as ComponentType<PropsWithChildren<{ usuarioNome: string; administradorIa?: boolean }>>;
   return createElement(
     EstruturaTestavel,
-    { usuarioNome: "Diego" },
+    { usuarioNome: administradorIa ? "ADMIN" : "Diego", administradorIa },
     createElement("main", null, "Conteúdo"),
   );
 }
@@ -57,5 +56,21 @@ describe("sistema visual autenticado", () => {
 
     expect(screen.getByRole("button", { name: "Recolher barra lateral" }).getAttribute("aria-expanded")).toBe("true");
     expect(window.localStorage.getItem("learning-lab:barra-lateral-recolhida")).toBe("nao");
+  });
+
+  it("oculta as configurações de IA para contas comuns", () => {
+    render(montarEstrutura());
+    expect(screen.queryByRole("link", { name: "Configurações IA" })).toBeNull();
+  });
+
+  it("substitui o destino Perfil pelo acesso às configurações no rodapé", () => {
+    render(montarEstrutura());
+    expect(screen.queryByRole("link", { name: "Perfil" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Abrir configurações do perfil de Diego" })).toBeTruthy();
+  });
+
+  it("disponibiliza as configurações de IA para ADMIN", () => {
+    render(montarEstrutura(true));
+    expect(screen.getByRole("link", { name: "Configurações IA" }).getAttribute("href")).toBe("/configuracoes/ia");
   });
 });

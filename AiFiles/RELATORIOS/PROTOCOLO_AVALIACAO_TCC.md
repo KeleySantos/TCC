@@ -1,6 +1,6 @@
 # Reprodução da avaliação sintética do TCC
 
-Data: 2026-10-10. Somente dados sintéticos. Não altera o PDF, seed de desenvolvimento ou banco configurado em `.env`.
+Data: 2026-10-12. Somente dados sintéticos. A execução isolada não altera o PDF nem o banco configurado em `.env`; a mesma carga passou a integrar o seed e pode ser aplicada explicitamente ao banco local.
 
 ## Execução determinística
 
@@ -13,9 +13,11 @@ npm run testar:tcc
 
 O script cria um diretório novo `tcc-avaliacao-*` no temporário do sistema, define DATABASE_URL exclusivamente para esse processo, aplica as migrações versionadas e cria 5 usuários × 3 módulos × 10 sessões = 150 sessões. Arquivamento preserva 15 sessões nas métricas. Cada módulo também tem dez atividades de desempenho separadas das sessões: 150 evidências válidas, sem inferir que qualquer sessão real equivale a avaliação. Na fixture os vínculos são definidos explicitamente. Questões convencionais e pontuações agregadas não são inventadas.
 
+Atribuição nominal: Ana Souza (`ana.souza`) executa S1; Bruno Lima (`bruno.lima`), S2; Carla Rocha (`carla.rocha`), S3; Diego Alves (`diego.alves`), S4; e Elisa Martins (`elisa.martins`), S5. Cada conta possui três módulos exclusivos `avaliacao-tcc-s<n>-modulo-0..2`.
+
 Após verificar o volume-base, adiciona dois controles de sessão (curta e não concluída) e uma evidência de extração que passa de válida a incompleta. Totais físicos finais: 5 usuários, 15 módulos, 152 sessões (150 válidas) e 151 evidências (150 válidas). O banco temporário permanece disponível para inspeção; uma nova execução cria outro banco. Não execute seed pessoal para reproduzir esta avaliação.
 
-O arquivo `RESULTADOS_AVALIACAO_TCC.json` é substituído pelo relatório da nova execução. Contém contagens, gabaritos esperados, resultados observados, tendências, n e aprovação, além dos prompts, DTOs e 15 respostas. IDs físicos podem variar; entradas temporais, métricas e decisões por regra permanecem iguais (desempates por ID são estáveis dentro de cada catálogo).
+No modo simulado, `RESULTADOS_AVALIACAO_TCC.json` é substituído pela nova execução. O corpus registra contagens, gabaritos, horários, versão e hash do prompt, DTOs efetivamente enviados, respostas, origem, modelo, tentativas, validação automática e campos de avaliação humana. No modo real, um arquivo datado é criado em `AiFiles/RELATORIOS/avaliacao-ia-tcc/`, evitando sobrescrever experimentos anteriores.
 
 ## Cenários e gabaritos independentes
 
@@ -35,20 +37,20 @@ O comando padrão usa `fixture-sem-rede` e um provedor simulado: verifica contra
 
 | Critério | Aprovar quando |
 |---|---|
-| C1 — Fidelidade (obrigatório) | Números, amostra, contexto e seleção concordam com o DTO; não inventa fatos |
-| C2 — Padrões e limites | Reconhece os sinais disponíveis e insuficiência; não extrapola n pequeno |
-| C3 — Coerência | Reflexão e sugestão respeitam os indicadores e a recomendação oficial |
-| C4 — Linguagem (obrigatório) | Não afirma causalidade, diagnóstico, estilo fixo ou domínio comprovado |
-| C5 — Clareza | Texto compreensível, contextualizado e com orientação prática |
+| C1 — Utilização correta das métricas | As métricas citadas concordam com o DTO fornecido pela plataforma |
+| C2 — Coerência contextual | A interpretação respeita o cenário e os registros do usuário sintético |
+| C3 — Ausência de invenção (obrigatório) | Não apresenta informação factual ausente dos dados fornecidos |
+| C4 — Ausência de classificação fixa (obrigatório) | Não classifica perfil ou capacidade de aprendizagem como característica fixa |
+| C5 — Compatibilidade das reflexões | Reflexões e recomendações são compatíveis com os dados e suas limitações |
 
-Resposta satisfatória: pelo menos 4/5 critérios, incluindo C1 e C4. Critério global proposto: pelo menos 14/15 satisfatórias. A proposta deve ser formalizada no TCC; ainda não há resultado real para esse limiar.
+Resposta satisfatória: pelo menos 4/5 critérios, incluindo obrigatoriamente C3 e C4. Resultado geral satisfatório: pelo menos 14/15 respostas. O resultado permanece pendente até existirem 15 respostas externas válidas e 15 avaliações humanas completas.
 
 ## Experimento real opcional
 
-Requer autorização explícita para consumo, configuração e acesso ao provedor. Não foi executado nesta entrega. Defina `TCC_IA_PROVEDOR` (`GROQ`, `GEMINI` ou `QWEN`), `TCC_IA_MODELO` e `TCC_IA_CHAVE` no ambiente sem registrar segredos no repositório. Execute somente quando autorizado:
+Requer autorização explícita para consumo, configuração e acesso ao provedor. Não foi executado nesta entrega. Defina `TCC_IA_PROVEDOR=GROQ`, `TCC_IA_MODELO` e `TCC_IA_CHAVE` no ambiente sem registrar segredos no repositório. Execute somente quando autorizado:
 
 ```powershell
 npm run testar:tcc -- --ia-real --autorizar-consumo
 ```
 
-Este comando pode consumir a API 15 vezes e substituir o relatório. Registre C1–C5 e `satisfatoria` manualmente em uma cópia dos resultados; respostas com origem LOCAL representam contingência, não sucesso do provedor escolhido. Prompt, provedor/modelo efetivamente usados, entrada e resposta constam no relatório; credenciais não são serializadas. A opção real é preparada, mas não foi validada com API paga.
+Este comando pode consumir a API 15 vezes e cria um corpus datado, sem substituir experimentos reais anteriores. Respostas `LOCAL`, de outro provedor ou de outro modelo não contam para o experimento. Use `avaliar:ia-tcc:repetir` para posições inválidas, `avaliar:ia-tcc:registrar` para C1–C5 e `avaliar:ia-tcc:relatorio` para gerar Markdown e CSV. As instruções completas estão em [`IMPLEMENTACAO_AVALIACAO_IA_TCC.md`](IMPLEMENTACAO_AVALIACAO_IA_TCC.md). A opção real não foi executada nesta entrega.

@@ -8,7 +8,7 @@ export function DashboardGeralSala({ dados, nomeSala }: { dados: DashboardObserv
     <header className={estilos.tituloDashboardGeral}>
       <p>VISÃO CONSOLIDADA</p>
       <h3 id="titulo-dashboard-geral-sala">Visão geral de {nomeSala}</h3>
-      <span>Cards e gráficos calculados com os dados dos membros ativos que autorizaram o compartilhamento.</span>
+      <span>Cards e gráficos calculados com os dashboards compartilhados pelos membros ativos.</span>
     </header>
     <CartoesInsightsDashboard dados={dados} />
     <GraficosDashboard dados={dados} />

@@ -1,17 +1,18 @@
 import { ChartNoAxesCombined, Compass, Shapes, Timer } from "lucide-react";
+import type { ReactNode } from "react";
 import { formatarFormato } from "@/biblioteca/formatacao";
 import { formatarMetodoEstudo } from "@/dominio/sessoes/metodos";
 import type { DashboardObservacional } from "@/dominio/analises/dashboard-observacional";
 import type { FormatoConteudo } from "@/gerado/prisma/enums";
 import estilos from "./cartoes-insights-dashboard.module.css";
 
-export function CartoesInsightsDashboard({ dados }: { dados: DashboardObservacional }) {
+export function CartoesInsightsDashboard({ acoes, dados }: { acoes?: ReactNode; dados: DashboardObservacional }) {
   const metodo = dados.metodoMaiorCompreensao;
   const formato = dados.formatoMaiorCompreensao;
   const duracao = dados.duracaoSessoesMelhoresResultados;
   const atencao = dados.pontoAtencao;
   return <section aria-labelledby="titulo-insights-dashboard" className={estilos.secao}>
-    <div className={estilos.cabecalho}><h2 id="titulo-insights-dashboard">O que seus registros mostram</h2></div>
+    <div className={estilos.cabecalho}><h2 id="titulo-insights-dashboard">O que seus registros mostram</h2>{acoes}</div>
     <div className={estilos.grade}>
       <article className={estilos.cartao}>
         <span className={estilos.icone}><ChartNoAxesCombined aria-hidden="true" /></span>

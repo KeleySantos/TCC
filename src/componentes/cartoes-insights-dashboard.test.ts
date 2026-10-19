@@ -53,4 +53,11 @@ describe("cards do Dashboard pessoal", () => {
     expect(html).not.toContain("NaN");
     expect(html).not.toContain("undefined");
   });
+
+  it("mantém as ações no mesmo cabeçalho do título dos registros", () => {
+    const acao = createElement("button", { type: "button" }, "Ação de teste");
+    const html = renderToStaticMarkup(createElement(CartoesInsightsDashboard, { acoes: acao, dados: dadosComTresSessoes() }));
+
+    expect(html).toMatch(/<div[^>]*>\s*<h2[^>]*>O que seus registros mostram<\/h2>\s*<button[^>]*>Ação de teste<\/button>\s*<\/div>/);
+  });
 });

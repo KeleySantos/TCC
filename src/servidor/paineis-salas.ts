@@ -47,7 +47,7 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
       vinculos: {
         where: { situacao: SituacaoVinculoModuloSala.ATIVO, compartilharDashboard: true, membroSala: { situacao: "ATIVO" } },
         select: {
-          id: true, usuarioId: true, moduloPessoalId: true, dadosDesde: true, permitirComparacao: true, permitirIa: true,
+          id: true, usuarioId: true, moduloPessoalId: true, dadosDesde: true,
           usuario: { select: { nome: true } },
           moduloPessoal: { select: { titulo: true, identificador: true } },
         },
@@ -96,8 +96,6 @@ export async function obterDashboardsSalaDoProprietario(usuarioId: string, ident
         nome: vinculo.usuario.nome,
         tituloModuloPessoal: vinculo.moduloPessoal.titulo,
         identificadorModuloPessoal: vinculo.moduloPessoal.identificador,
-        permitirComparacao: vinculo.permitirComparacao,
-        permitirIa: vinculo.permitirIa,
         metricas: calcularMetricasSessoes(sessoesMapeadas, modulo.id),
         aprendizagem,
       });

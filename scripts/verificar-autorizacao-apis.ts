@@ -2,13 +2,16 @@ import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
 import { removerArquivoMaterial } from "../src/servidor/arquivos-materiais";
+import { obterChaveMestraCredenciais } from "../src/servidor/ia/cofre-credenciais";
+import { criarTokenSessao } from "../src/servidor/sessao-assinada";
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL não está definida.");
 const endereco = process.env.URL_APLICACAO_DEMONSTRACAO ?? "http://localhost:3000";
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 function afirmar(valor: unknown, mensagem: string): asserts valor { if (!valor) throw new Error(`Autorização inválida: ${mensagem}`); }
-const cabecalhos = (usuarioId?: string) => usuarioId ? { Cookie: `usuario_demonstracao=${usuarioId}` } : {};
+const chaveSessao = await obterChaveMestraCredenciais();
+const cabecalhos = (usuarioId?: string) => usuarioId ? { Cookie: `usuario_demonstracao=${criarTokenSessao(usuarioId, chaveSessao)}` } : {};
 function formulario(moduloId: string) { const dados = new FormData(); dados.set("moduloId", moduloId); dados.set("titulo", `Arquivo autenticado ${Date.now()}`); dados.set("descricao", "Arquivo sintético para autorização."); dados.set("minutosEstimados", "10"); dados.set("arquivo", new Blob([new Uint8Array([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a])], { type: "image/png" }), "teste.png"); return dados; }
 
 async function principal() {

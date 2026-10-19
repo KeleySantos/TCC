@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { FormatoConteudo, MetodoEstudo, SituacaoSessao } from "@/gerado/prisma/enums";
 import { calcularDashboardObservacional } from "@/dominio/analises/dashboard-observacional";
 import { GraficosDashboard } from "./graficos-dashboard";
+import { readFileSync } from "node:fs";
+
+const fonteGraficos = readFileSync(new URL("./graficos-dashboard.tsx", import.meta.url), "utf8");
 
 const modulos = [{ id: "m1", identificador: "logica", titulo: "Lógica" }];
 const referencia = new Date("2026-09-21T12:00:00.000Z");
@@ -62,5 +65,17 @@ describe("gráficos observacionais do Dashboard", () => {
     const dados = calcularDashboardObservacional(modulos, [sessao("s1", "2026-09-18T12:00:00.000Z")], [], referencia);
     const html = renderToStaticMarkup(createElement(GraficosDashboard, { dados }));
     expect(html).toContain("Ainda não há métodos com percepção e evidências posteriores suficientes");
+  });
+
+  it("usa barras nos comparativos e linhas retas sem degradê na evolução", () => {
+    expect(fonteGraficos).toContain("<BarChart");
+    expect(fonteGraficos).toContain('layout="vertical"');
+    expect(fonteGraficos).toMatch(/<XAxis[^>]*type="number"/);
+    expect(fonteGraficos).toMatch(/<YAxis[^>]*dataKey="contexto"[^>]*type="category"/);
+    expect(fonteGraficos.match(/maxBarSize=\{14\}/g)).toHaveLength(2);
+    expect(fonteGraficos).toContain("<Bar ");
+    expect(fonteGraficos).not.toContain("<AreaChart");
+    expect(fonteGraficos).not.toContain("linearGradient");
+    expect(fonteGraficos).toContain('type="linear"');
   });
 });

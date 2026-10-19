@@ -1,0 +1,28 @@
+{
+  "avaliador": "Nome ou identificador do avaliador",
+  "avaliadaEm": null,
+  "criterios": {
+    "C1": {
+      "resultado": null,
+      "justificativa": "Compare as métricas citadas na resposta com o campo entrada da execução. Substitua este texto."
+    },
+    "C2": {
+      "resultado": null,
+      "justificativa": "Verifique a coerência com o cenário, o período e os registros. Substitua este texto."
+    },
+    "C3": {
+      "resultado": null,
+      "justificativa": "Registre se toda afirmação factual está apoiada nos dados fornecidos. Substitua este texto."
+    },
+    "C4": {
+      "resultado": null,
+      "justificativa": "Registre se a resposta evitou classificações fixas sobre perfil ou capacidade. Substitua este texto."
+    },
+    "C5": {
+      "resultado": null,
+      "justificativa": "Confira se as reflexões e recomendações são compatíveis com as evidências e limitações. Substitua este texto."
+    }
+  },
+  "situacao": "PENDENTE",
+  "satisfatoria": null
+}

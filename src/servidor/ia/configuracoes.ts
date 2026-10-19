@@ -1,13 +1,24 @@
 import { z } from "zod";
 import { prisma } from "@/biblioteca/prisma";
-import type { EstadoConfiguracaoIa, ProvedorIa } from "@/gerado/prisma/enums";
-import { PROVEDORES_IA, contextoCredencial, obterDefinicaoProvedor } from "./catalogo-provedores";
+import type { EstadoConfiguracaoIa } from "@/gerado/prisma/enums";
+import { PROVEDORES_IA, contextoCredencial, obterDefinicaoProvedor, type ProvedorIaAtivo } from "./catalogo-provedores";
 import { cifrarCredencial, decifrarCredencial, obterChaveMestraCredenciais } from "./cofre-credenciais";
+import { NOME_USUARIO_ADMIN, podeAdministrarIa } from "@/dominio/administracao-ia";
 
 const esquemaChave = z.string().trim().min(10).max(500);
 
+export async function exigirPermissaoConfiguracaoIa(usuarioId: string) {
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { nomeUsuario: true, administradorIa: true },
+  });
+  if (!podeAdministrarIa(usuario)) throw new Error("CONFIGURACAO_IA_RESTRITA_ADMIN");
+}
+
+const filtroConfiguracaoGlobal = { provedor: "GROQ" as const, usuario: { nomeUsuario: NOME_USUARIO_ADMIN, administradorIa: true } };
+
 export type ConfiguracaoIaSegura = {
-  provedor: ProvedorIa;
+  provedor: ProvedorIaAtivo;
   nome: string;
   modelo: string;
   prioridade: number;
@@ -20,6 +31,7 @@ export type ConfiguracaoIaSegura = {
 };
 
 export async function listarConfiguracoesIaSeguras(usuarioId: string): Promise<ConfiguracaoIaSegura[]> {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   const registros = await prisma.configuracaoIa.findMany({
     where: { usuarioId },
     select: { provedor: true, ativa: true, estadoUltimoTeste: true, ultimoTesteEm: true, bloqueadaAte: true },
@@ -38,7 +50,8 @@ export async function listarConfiguracoesIaSeguras(usuarioId: string): Promise<C
   });
 }
 
-export async function salvarConfiguracaoIa(usuarioId: string, provedor: ProvedorIa, chaveRecebida: string) {
+export async function salvarConfiguracaoIa(usuarioId: string, provedor: ProvedorIaAtivo, chaveRecebida: string) {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   const chave = esquemaChave.parse(chaveRecebida);
   obterDefinicaoProvedor(provedor);
   const chaveMestra = await obterChaveMestraCredenciais();
@@ -50,36 +63,38 @@ export async function salvarConfiguracaoIa(usuarioId: string, provedor: Provedor
   });
 }
 
-export async function removerConfiguracaoIa(usuarioId: string, provedor: ProvedorIa) {
+export async function removerConfiguracaoIa(usuarioId: string, provedor: ProvedorIaAtivo) {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   await prisma.configuracaoIa.deleteMany({ where: { usuarioId, provedor } });
 }
 
-export async function definirConfiguracaoIaAtiva(usuarioId: string, provedor: ProvedorIa, ativa: boolean) {
+export async function definirConfiguracaoIaAtiva(usuarioId: string, provedor: ProvedorIaAtivo, ativa: boolean) {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   const resultado = await prisma.configuracaoIa.updateMany({ where: { usuarioId, provedor }, data: { ativa } });
   return resultado.count === 1;
 }
 
 export async function desativarTodasConfiguracoesIa(usuarioId: string) {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   await prisma.configuracaoIa.updateMany({ where: { usuarioId }, data: { ativa: false } });
 }
 
-export async function listarCredenciaisAtivas(usuarioId: string, agora = new Date()) {
+export async function listarCredenciaisAtivas(agora = new Date()) {
   const registros = await prisma.configuracaoIa.findMany({
-    where: { usuarioId, ativa: true, OR: [{ bloqueadaAte: null }, { bloqueadaAte: { lte: agora } }] },
-    select: { provedor: true, chaveCifrada: true, vetorInicializacao: true, etiquetaAutenticacao: true },
+    where: { ...filtroConfiguracaoGlobal, ativa: true, OR: [{ bloqueadaAte: null }, { bloqueadaAte: { lte: agora } }] },
+    select: { usuarioId: true, provedor: true, chaveCifrada: true, vetorInicializacao: true, etiquetaAutenticacao: true },
   });
   const porProvedor = new Map(registros.map((registro) => [registro.provedor, registro]));
   const chaveMestra = registros.length ? await obterChaveMestraCredenciais() : null;
   return PROVEDORES_IA.flatMap((definicao) => {
     const registro = porProvedor.get(definicao.provedor);
-    if (registro && chaveMestra) return [{ ...definicao, chave: decifrarCredencial(registro, contextoCredencial(usuarioId, registro.provedor), chaveMestra) }];
-    const variavel = definicao.provedor === "GROQ" ? "GROQ_API_KEY" : definicao.provedor === "GEMINI" ? "GEMINI_API_KEY" : "DASHSCOPE_API_KEY";
-    const chaveAmbiente = process.env[variavel]?.trim();
-    return chaveAmbiente ? [{ ...definicao, chave: chaveAmbiente }] : [];
+    if (registro && chaveMestra) return [{ ...definicao, chave: decifrarCredencial(registro, contextoCredencial(registro.usuarioId, definicao.provedor), chaveMestra) }];
+    return [];
   });
 }
 
-export async function obterCredencialConfigurada(usuarioId: string, provedor: ProvedorIa) {
+export async function obterCredencialConfigurada(usuarioId: string, provedor: ProvedorIaAtivo) {
+  await exigirPermissaoConfiguracaoIa(usuarioId);
   const registro = await prisma.configuracaoIa.findUnique({
     where: { usuarioId_provedor: { usuarioId, provedor } },
     select: { chaveCifrada: true, vetorInicializacao: true, etiquetaAutenticacao: true },
@@ -89,9 +104,11 @@ export async function obterCredencialConfigurada(usuarioId: string, provedor: Pr
   return decifrarCredencial(registro, contextoCredencial(usuarioId, provedor), chaveMestra);
 }
 
-export async function registrarEstadoConfiguracaoIa(usuarioId: string, provedor: ProvedorIa, estado: EstadoConfiguracaoIa, bloqueadaAte: Date | null = null) {
+export async function registrarEstadoConfiguracaoIa(usuarioId: string, provedor: ProvedorIaAtivo, estado: EstadoConfiguracaoIa, bloqueadaAte: Date | null = null) {
+  // O solicitante identifica a execução; a disponibilidade pertence à chave global.
+  if (!usuarioId) return;
   await prisma.configuracaoIa.updateMany({
-    where: { usuarioId, provedor },
+    where: { ...filtroConfiguracaoGlobal, provedor },
     data: { estadoUltimoTeste: estado, ultimoTesteEm: new Date(), bloqueadaAte },
   });
 }

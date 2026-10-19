@@ -91,7 +91,7 @@ No MVP, o quiz de Loops é um instrumento demonstrativo. Ele permite validar cá
 - Não usar tentativa incompleta no cálculo.
 - Numerar tentativas sequencialmente por conta e avaliação; a sequência não cria vínculo com uma sessão.
 - Não considerar feedback de recomendação como medida de aprendizagem.
-- Não tratar interpretação, conselho ou padrão apontado por Gemini como nova evidência, métrica oficial ou alteração de dado bruto.
+- Não tratar interpretação, conselho ou padrão apontado por Groq como nova evidência, métrica oficial ou alteração de dado bruto.
 - Recorrência entre módulos exige o mesmo contexto observado em pelo menos dois módulos; não é um rótulo persistido nem uma recomendação causal.
 - A seleção do método com maior média observada descreve apenas a recorrência elegível com maior média. Ela não estabelece que o método seja melhor, cause o resultado ou deva ser generalizado.
 - A média semanal das taxas por tópico não substitui a taxa geral ponderada do Dashboard: a primeira dá peso igual a cada tópico com evidência; a segunda dá peso a cada questão.

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { InterpretacaoAutomatica } from "@/componentes/interpretacao-automatica";
+import { CompartilhamentoModulo } from "@/componentes/compartilhamento-modulo";
 import { resolverPeriodoModulo } from "@/dominio/periodo-modulo";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import { obterMetricasSessoesModuloPessoal } from "@/servidor/metricas";
@@ -46,7 +47,7 @@ export default async function PaginaModulo({
   const erro = mensagemDeErro(parametros.erro);
 
   if (modulo.rascunho) {
-    return <EstruturaAutenticada usuarioNome={usuario.nome}>
+    return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
       <main className={estilos.paginaRascunho} id="conteudo-principal" tabIndex={-1}>
         <header className={estilos.topoRascunho}>
           <Link className={estilos.voltar} href="/modulos"><ArrowLeft aria-hidden="true" />Voltar aos módulos</Link>
@@ -120,12 +121,14 @@ export default async function PaginaModulo({
     materiais: sessao.materiais.map((vinculo) => ({ recurso: { id: vinculo.recurso.id, titulo: vinculo.recurso.titulo } })),
   }));
 
-  return <EstruturaAutenticada usuarioNome={usuario.nome}>
+  return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
     <main className={estilos.paginaModulo} id="conteudo-principal" tabIndex={-1}>
       <ProcessadorAnalisesPendentes ids={pendentes} />
-      <ConteudoModuloOrganizado abaInicial={abaInicial} cabecalho={<><header className={estilos.cabecalhoModulo}>
+      <ConteudoModuloOrganizado abaInicial={abaInicial} acoesDashboard={<InterpretacaoAutomatica compacto fim={periodo.ativo ? periodo.fimTexto : undefined} identificadorModulo={modulo.identificador} inicio={periodo.ativo ? periodo.inicioTexto : undefined} modalLateral />} cabecalho={<><header className={estilos.cabecalhoModulo}>
         <div className={estilos.barraSuperiorModulo}>
           <Link className={estilos.voltarModulo} href="/modulos"><ArrowLeft aria-hidden="true" />Todos os módulos</Link>
+          <div className={estilos.acoesCabecalhoModulo}>
+          <CompartilhamentoModulo identificadorModulo={modulo.identificador} titulo={modulo.titulo} />
           <details className={estilos.menuModulo}>
             <summary aria-label="Abrir ações do módulo" title="Ações do módulo"><MoreHorizontal aria-hidden="true" /></summary>
             <div className={estilos.conteudoMenuModulo}>
@@ -135,6 +138,7 @@ export default async function PaginaModulo({
               <form action={arquivarModulo}><input name="id" type="hidden" value={modulo.id} /><input name="identificadorAtual" type="hidden" value={modulo.identificador} /><button type="submit"><Archive aria-hidden="true" />Arquivar módulo</button></form>
             </div>
           </details>
+          </div>
         </div>
         <EditorModulo descricao={modulo.descricao} id={modulo.id} identificador={modulo.identificador} inicialmenteEditando={parametros.editar === "modulo"} key={parametros.editar === "modulo" ? "editor-aberto" : "editor-fechado"} titulo={modulo.titulo} />
       </header>
@@ -147,8 +151,7 @@ export default async function PaginaModulo({
             formatosResultados: aprendizagem.analises.formatosResultados,
             conceitosMaiorDificuldade: aprendizagem.analises.conceitosMaiorDificuldade,
             conceitosMaiorCompreensao: aprendizagem.analises.conceitosMaiorCompreensao,
-          }} metricas={metricasExibicao} tituloModulo={modulo.titulo} /> : null}
-          insights={<InterpretacaoAutomatica className={estilos.painelInsights} fim={periodo.ativo ? periodo.fimTexto : undefined} identificadorModulo={modulo.identificador} inicio={periodo.ativo ? periodo.inicioTexto : undefined} />}
+          }} metricas={metricasExibicao} tituloModulo={modulo.titulo} visualEnxuto /> : null}
         />}
         linhaDoTempo={aprendizagem ? <PainelLinhaTempoModulo eventos={aprendizagem.linhaDoTempo} /> : <p>A trajetória ainda não está disponível.</p>}
         periodo={{ inicio: periodo.inicioTexto, fim: periodo.fimTexto, hoje: periodo.hoje, ativo: periodo.ativo, erro: periodo.erro }}

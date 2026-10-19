@@ -142,7 +142,7 @@ O ciclo obrigatório é:
 
 1. A pessoa abre o painel geral.
 2. O sistema agrega os módulos sem apagar o contexto de cada um e diferencia um resultado local de uma recorrência.
-3. Gemini, quando configurada, interpreta exclusivamente o resumo sintético agregado; sem chave, rede ou saída válida, a interface mostra a interpretação local de contingência.
+3. O Groq, quando configurado, interpreta exclusivamente o resumo sintético agregado; sem chave, rede ou saída válida, a interface mostra a interpretação local de contingência.
 
 ## 10. Requisitos funcionais aprovados
 
@@ -158,7 +158,7 @@ O ciclo obrigatório é:
 | RLP-008 | Métricas oficiais | Must | Funções puras e versionadas calculam contagem, médias, evolução, tempo, tentativas, método, formato e percepção versus resultado. |
 | RLP-009 | Dashboard do módulo | Must | Cards, gráficos e tabela respondem aos dados e mostram amostra, período, vazio, insuficiência e limitação. |
 | RLP-010 | Dashboard geral | Must | Agrega sem apagar a origem e somente aponta recorrência quando houver evidência em dois ou mais módulos. |
-| RLP-011 | Interpretação por Gemini | Must | Gemini recebe somente DTO sintético agregado e devolve resposta validada com contexto, amostra e limitação; falha, ausência de chave ou rede produz resposta local. |
+| RLP-011 | Interpretação por Groq | Must | Groq recebe somente DTO sintético agregado e devolve resposta validada com contexto, amostra e limitação; falha, ausência de chave ou rede produz resposta local. |
 
 ## 11. Requisitos não funcionais aprovados
 
@@ -167,7 +167,7 @@ O ciclo obrigatório é:
 | RLP-NF-001 | Reprodutibilidade | Banco limpo é migrado, populado e conferido por script determinístico. |
 | RLP-NF-002 | Qualidade | `npm run validar` termina com código zero. |
 | RLP-NF-003 | Acessibilidade | Fluxos críticos funcionam por teclado, em 360 px e com alternativa a gráficos. |
-| RLP-NF-004 | Privacidade | Seed, logs e DTOs enviados à Gemini não contêm dados reais, chaves, respostas completas ou observações livres. |
+| RLP-NF-004 | Privacidade | Seed, logs e DTOs enviados ao Groq não contêm dados reais, chaves, respostas completas ou observações livres. |
 | RLP-NF-005 | Explicabilidade | Métricas e interpretações apresentam contexto, período, quantidade, nível e limitação; não afirmam causalidade ou classificam estilos fixos. |
 
 Ficam fora do corte da banca: compartilhamento, comentários, salas, uploads, funções por papel, turmas, curadoria e administração.

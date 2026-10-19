@@ -1,5 +1,7 @@
 # Relatório de validação técnica local — Entrega A
 
+> Registro histórico da validação de 2026-09-12. A integração externa foi simplificada pela D-054 em 2026-10-17; o fluxo ativo atual é Groq → contingência local.
+
 ## Escopo
 
 Validação realizada em 2026-09-12 sobre banco SQLite exclusivamente sintético. Ela comprova comportamento técnico local; não é uma avaliação com participantes nem sustenta conclusão pedagógica ou causal.

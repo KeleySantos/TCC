@@ -3,6 +3,8 @@ export type UsuarioAtual = {
   nome: string;
   nomeUsuario: string;
   email: string | null;
+  administradorIa?: boolean;
+  fotoPerfilAtualizadaEm?: Date | null;
 };
 
 export type ResultadoAutorizacaoApi =

@@ -4,13 +4,12 @@ import { describe, expect, it } from "vitest";
 import { LayoutDashboardModulo } from "./layout-dashboard-modulo";
 
 describe("layout do Dashboard do módulo", () => {
-  it("mantém análises na coluna principal e insights da IA em uma lateral identificada", () => {
+  it("apresenta as análises em largura completa, sem coluna lateral de IA", () => {
     const html = renderToStaticMarkup(createElement(LayoutDashboardModulo, {
       conteudo: createElement("section", null, "Análises do módulo"),
-      insights: createElement("section", null, "Insights da IA"),
     }));
 
-    expect(html.indexOf("Análises do módulo")).toBeLessThan(html.indexOf("Insights da IA"));
-    expect(html).toContain('aria-label="Interpretação opcional do módulo"');
+    expect(html).toContain("Análises do módulo");
+    expect(html).not.toContain("<aside");
   });
 });

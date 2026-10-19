@@ -1,0 +1,8 @@
+/* Mesma apresentação das sub-abas vigentes de Módulo, sem acoplar seu filtro de período. */
+.area { display: grid; gap: 1.25rem; min-width: 0; }
+.lista { display: flex; gap: 20px; max-width: 100%; overflow-x: auto; border-bottom: 1px solid var(--cor-borda); scrollbar-width: thin; }
+.botao { flex: 0 0 auto; padding: 14px 2px 12px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--cor-texto-secundario); font: inherit; font-weight: 700; cursor: pointer; }
+.botao[aria-selected="true"] { border-bottom-color: var(--cor-acao); color: var(--cor-texto); }
+.botao:focus-visible { border-radius: .35rem; outline: 3px solid #bdb1ff; outline-offset: -3px; }
+.painel { min-width: 0; }
+.painel[hidden] { display: none; }

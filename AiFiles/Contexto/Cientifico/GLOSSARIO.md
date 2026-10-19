@@ -14,4 +14,4 @@
 | Efetividade observada | Descrição de resultados posteriores associados a um formato no histórico disponível; não é prova causal. |
 | Recomendação exploratória | Sugestão de formato ou recurso quando ainda não há evidência suficiente para priorizar uma alternativa. |
 | Recomendação contextual | Sugestão oficial baseada em evidências da mesma conta, módulo, tópico e período, acompanhada de justificativa e limitação. |
-| Interpretação assistida | Texto opcional produzido pela Gemini a partir de DTO sintético agregado de métricas oficiais. Pode apontar padrões observados, feedbacks, conselhos e perguntas de reflexão, mas não cria métricas, não prova causalidade e possui resposta local de contingência. |
+| Interpretação assistida | Texto opcional produzido pelo Groq a partir de DTO sintético agregado de métricas oficiais. Pode apontar padrões observados, feedbacks, conselhos e perguntas de reflexão, mas não cria métricas, não prova causalidade e possui resposta local de contingência. |

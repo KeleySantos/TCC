@@ -49,6 +49,88 @@
 .iconeMetodo svg { width: 18px; height: 18px; }
 .metodo h3 { margin: 0; font-size: 0.76rem; line-height: 1.25; }
 .metodo p { margin: 5px 0 0; color: #75809f; font-size: 0.62rem; line-height: 1.45; }
+.metodoInterativo { display: block; padding: 0; }
+.areaInformativaMetodo {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+  align-items: start;
+  padding: 15px;
+  border: 0;
+  border-radius: inherit;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.metodoInterativo:hover { border-color: #bfdbfe; background: #f8fbff; }
+.tipoMetodo, .indicacaoMetodo { display: block; color: var(--cor-acao); font-size: 0.58rem; font-weight: 780; }
+.tipoMetodo { margin-bottom: 3px; letter-spacing: 0.04em; text-transform: uppercase; }
+.indicacaoMetodo { margin-top: 9px; }
+.dialogoMetodo {
+  width: min(680px, calc(100vw - 28px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  color: var(--cor-texto);
+  background: transparent;
+  box-shadow: 0 28px 90px rgb(15 23 42 / 24%);
+}
+.dialogoMetodo::backdrop { background: rgb(15 23 42 / 42%); backdrop-filter: blur(2px); }
+.conteudoDialogoMetodo { max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: inherit; background: var(--cor-superficie); }
+.cabecalhoDialogoMetodo { position: sticky; z-index: 2; top: 0; display: grid; grid-template-columns: 42px minmax(0, 1fr) 34px; gap: 12px; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--cor-borda); background: rgb(255 255 255 / 96%); }
+.iconeDialogoMetodo { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: var(--cor-acao); background: var(--cor-acao-suave); }
+.iconeDialogoMetodo svg { width: 21px; height: 21px; }
+.cabecalhoDialogoMetodo h2 { margin: 0; font-size: 1.25rem; letter-spacing: -0.035em; }
+.cabecalhoDialogoMetodo p { margin: 3px 0 0; color: var(--cor-texto-secundario); font-size: 0.72rem; }
+.fecharDialogoMetodo { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid var(--cor-borda); border-radius: 50%; color: var(--cor-texto); background: var(--cor-superficie); cursor: pointer; }
+.fecharDialogoMetodo:hover { background: var(--cor-acao-suave); }
+.fecharDialogoMetodo svg { width: 16px; height: 16px; }
+.corpoDialogoMetodo { display: grid; gap: 24px; padding: 24px 26px 28px; }
+.corpoDialogoMetodo section > h3 { margin: 0; font-size: 0.92rem; letter-spacing: -0.015em; }
+.corpoDialogoMetodo section > p { margin: 7px 0 0; color: var(--cor-texto-secundario); font-size: 0.78rem; line-height: 1.65; }
+.passosMetodo { display: grid; gap: 9px; margin: 12px 0 0; padding: 0; list-style: none; }
+.passosMetodo li { display: grid; grid-template-columns: 27px minmax(0, 1fr); gap: 10px; align-items: start; }
+.passosMetodo li > span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; color: var(--cor-acao); background: var(--cor-acao-suave); font-size: 0.65rem; font-weight: 850; }
+.passosMetodo p { margin: 4px 0 0; color: var(--cor-texto-secundario); font-size: 0.75rem; line-height: 1.5; }
+.exemploMetodo { padding: 18px; border: 1px solid var(--cor-borda); border-radius: var(--raio-medio); background: var(--cor-fundo); }
+.cabecalhoExemploMetodo { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.cabecalhoExemploMetodo h3 { margin-top: 3px; }
+.cabecalhoExemploMetodo div > p:last-child:not(.sobretituloExemplo) { margin: 3px 0 0; color: var(--cor-texto-secundario); font-size: 0.68rem; line-height: 1.45; }
+.cabecalhoExemploMetodo > svg { width: 21px; height: 21px; color: var(--cor-acao); }
+.sobretituloExemplo { margin: 0 !important; color: var(--cor-acao) !important; font-size: 0.58rem !important; font-weight: 820; letter-spacing: 0.09em; }
+.perguntaDestaque, .explicacaoDestaque, .respostaRecuperacao { margin-top: 14px; padding: 14px; border-radius: 12px; }
+.perguntaDestaque { border: 1px solid #bfdbfe; background: var(--cor-acao-suave); }
+.explicacaoDestaque, .respostaRecuperacao { border: 1px solid var(--cor-borda); background: var(--cor-superficie); }
+.perguntaDestaque strong, .explicacaoDestaque strong, .respostaRecuperacao strong { font-size: 0.66rem; }
+.perguntaDestaque p, .explicacaoDestaque p, .respostaRecuperacao p { margin: 6px 0 0; color: var(--cor-texto); font-size: 0.75rem; line-height: 1.55; }
+.orientacaoExemplo { margin: 13px 0 0 !important; padding-left: 11px; border-left: 3px solid #bfdbfe; color: var(--cor-texto-secundario) !important; font-size: 0.69rem !important; line-height: 1.55 !important; }
+.sequenciaCiclos, .linhaTempoExemplo, .sessoesDistribuidas { display: grid; gap: 8px; margin-top: 14px; }
+.itemSequencia { display: grid; grid-template-columns: minmax(78px, auto) minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--cor-borda); border-radius: 11px; background: var(--cor-superficie); }
+.itemSequencia > span { color: var(--cor-acao); font-size: 0.62rem; font-weight: 820; }
+.itemSequencia p { margin: 0; color: var(--cor-texto-secundario); font-size: 0.7rem; line-height: 1.4; }
+.itemSequencia > strong { font-size: 0.68rem; white-space: nowrap; }
+.botaoRevelar { margin-top: 12px; padding: 9px 12px; border: 1px solid var(--cor-acao); border-radius: 9px; color: #fff; background: var(--cor-acao); font: inherit; font-size: 0.68rem; font-weight: 780; cursor: pointer; }
+.linhaTempoExemplo { padding: 0; list-style: none; }
+.linhaTempoExemplo li { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px 10px 16px; border-left: 2px solid #bfdbfe; background: var(--cor-superficie); }
+.linhaTempoExemplo strong { color: var(--cor-acao); font-size: 0.66rem; }
+.linhaTempoExemplo span { color: var(--cor-texto-secundario); font-size: 0.7rem; line-height: 1.45; }
+.introducaoExemplo, .conclusaoExemplo { margin: 13px 0 0; color: var(--cor-texto-secundario); font-size: 0.72rem; line-height: 1.55; }
+.sequenciaIntercalada { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; padding: 0; counter-reset: exercicio; list-style: none; }
+.sequenciaIntercalada li { padding: 11px 12px; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto); background: var(--cor-superficie); font-size: 0.7rem; font-weight: 730; line-height: 1.4; }
+.comparacaoPratica { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 14px; }
+.comparacaoPratica p { margin: 0; padding: 12px; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto-secundario); background: var(--cor-superficie); font-size: 0.7rem; line-height: 1.5; }
+.sessoesDistribuidas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sessoesDistribuidas > div { display: grid; align-content: start; gap: 6px; padding: 12px; border: 1px solid var(--cor-borda); border-radius: 11px; background: var(--cor-superficie); }
+.sessoesDistribuidas strong { color: var(--cor-acao); font-size: 0.66rem; }
+.sessoesDistribuidas p { margin: 0; color: var(--cor-texto-secundario); font-size: 0.68rem; line-height: 1.45; }
+.sessoesDistribuidas span { font-size: 0.66rem; font-weight: 780; }
 
 .gradePrincipal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(310px, 360px); gap: 20px; align-items: start; margin-top: 32px; }
 .areaDesafios, .colunaCriacao, .cartaoDesafio { min-width: 0; }
@@ -227,6 +309,15 @@
   .cartaoCriacao { grid-row: auto; }
   .cabecalhoDesafio { display: grid; }
   .botaoCancelar { width: 100%; }
+  .dialogoMetodo { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); border-radius: 18px; }
+  .conteudoDialogoMetodo { max-height: calc(100dvh - 20px); }
+  .cabecalhoDialogoMetodo { grid-template-columns: 38px minmax(0, 1fr) 32px; padding: 16px; }
+  .iconeDialogoMetodo { width: 38px; height: 38px; }
+  .corpoDialogoMetodo { gap: 21px; padding: 20px 16px 22px; }
+  .exemploMetodo { padding: 14px; }
+  .itemSequencia { grid-template-columns: 70px minmax(0, 1fr); }
+  .itemSequencia > strong { grid-column: 2; }
+  .comparacaoPratica, .sequenciaIntercalada, .sessoesDistribuidas { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 420px) {

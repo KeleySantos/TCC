@@ -1,8 +1,10 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
-import { EscopoComentarioSala, FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
+import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
 import { criarHashSenha } from "../src/servidor/senhas";
+import { provisionarAdministradorIa } from "../src/servidor/ia/conta-admin";
+import { aplicarCenariosAvaliacaoTcc } from "./cenarios-avaliacao-tcc";
 import { aplicarCenarioSinteticoDiego } from "./cenario-diego";
 
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! }) });
@@ -62,6 +64,8 @@ async function limpar() {
 
 async function principal() {
   await limpar();
+  const administrador = await provisionarAdministradorIa(process.env.SENHA_ADMIN_INICIAL?.trim() || undefined, prisma);
+  console.log("Conta ADMIN criada:", JSON.stringify(administrador));
   const [ana, bruno, carla, diego, elisa] = await Promise.all([
     criarConta("Ana Souza", "ana.souza", "A"), criarConta("Bruno Lima", "bruno.lima", "B"),
     criarConta("Carla Rocha", "carla.rocha", "C"), criarConta("Diego Alves", "diego.alves", "D"), criarConta("Elisa Martins", "elisa.martins", "E"),
@@ -79,15 +83,13 @@ async function principal() {
   for (const item of dados) await criarSessao(...item);
   await aplicarCenarioSinteticoDiego(prisma, diego, referencia);
   await criarSegundoModulo(ana);
+  await aplicarCenariosAvaliacaoTcc(prisma, [ana.usuario, bruno.usuario, carla.usuario, diego.usuario, elisa.usuario]);
   const sala = await prisma.sala.create({ data: { proprietarioId: ana.usuario.id, identificador: "sala-sintetica-grupo-programacao", nome: "Grupo de Programação", descricao: "Sala sintética para acompanhar módulos pessoais sem expor materiais ou sessões." } });
   const membroAna = await prisma.membroSala.create({
     data: { salaId: sala.id, usuarioId: ana.usuario.id, papel: PapelMembroSala.PROPRIETARIO },
   });
   const moduloSala = await prisma.moduloSala.create({ data: { salaId: sala.id, titulo: "JavaScript", descricao: "Módulo-pai sintético para consolidar dashboards autorizados.", posicao: 1 } });
-  await Promise.all([
-    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroAna.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id, permitirComparacao: true } }),
-    prisma.comentarioSala.create({ data: { salaId: sala.id, autorId: ana.usuario.id, escopo: EscopoComentarioSala.SALA, conteudo: "Comentário sintético: registrem suas sessões normalmente; somente os dashboards autorizados serão consolidados." } }),
-  ]);
+  await prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroAna.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id } });
   const inicio = diasAntes(2);
   await prisma.sessaoEstudo.create({ data: {
     usuarioId: carla.usuario.id, moduloId: carla.modulo.id,

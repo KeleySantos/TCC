@@ -9,8 +9,8 @@
 - `ConviteSala` guarda apenas o hash do código, expiração e revogação. `SolicitacaoEntradaSala` permanece como histórico de compatibilidade e é registrada ou encerrada como aprovada no ingresso imediato por código.
 - `ModuloSala` é um contexto-pai de agregação, limitado pela regra de serviço a cinco itens ativos por sala.
 - `VinculoModuloSala` conecta um membro e seu `ModuloAprendizagem` pessoal ao módulo-pai. O módulo pessoal usa `onDelete: Restrict` e não é propriedade da sala.
-- `permitirComparacao` e `permitirIa` são consentimentos independentes, falsos por padrão. `compartilharDashboard` é desligado ao encerrar o vínculo.
-- `ComentarioSala` possui escopo `SALA`, `MODULO` ou `MEMBRO`; somente o serviço valida a combinação exata de alvos.
+- Comparação e interpretação por IA são consequências obrigatórias de um vínculo ativo com `compartilharDashboard = true`; não existem colunas ou controles separados para essas funções. `compartilharDashboard` é desligado ao encerrar o vínculo.
+- Comentários de sala, módulo e membro foram removidos em 2026-10-18; a migração `20261018180000_remover_comentarios_salas` elimina a tabela `ComentarioSala` e o schema ativo não contém suas relações.
 - `EvidenciaHistoricaModuloSala` preserva somente data, duração, percepções, métodos e formatos de uma sessão válida após o desligamento. A referência da sessão e do contribuinte é pseudonimizada por SHA-256 e não existe relação com usuário ou módulo pessoal.
 - `VinculoModuloSala.dadosDesde` define o início da nova janela ao reativar um vínculo já preservado no histórico, evitando contagem duplicada.
 
@@ -38,7 +38,7 @@ erDiagram
 
 | Tabela | Finalidade | Restrições relevantes |
 |---|---|---|
-| `Usuario` | Conta pessoal sintética. | `nomeUsuario` único e senha armazenada como hash. |
+| `Usuario` | Conta pessoal sintética. | `nomeUsuario` único e editável no modal; senha armazenada como hash. `fotoPerfil` guarda somente WebP recodificado e `fotoPerfilAtualizadaEm` invalida a imagem da navegação. Bytes não integram o DTO autenticado. ADMIN mantém login reservado e permissão técnica específica. |
 | `ModuloAprendizagem` | Espaço principal de organização. | Pertence à conta; identificador único por conta; aceita rascunho e arquivamento. |
 | `RecursoConteudo` | Material próprio do módulo. | Pertence diretamente ao módulo; origem `TEXTO`, `LINK` ou `ARQUIVO`; arquivamento lógico. |
 | `ArquivoMaterial` | Metadados do binário validado. | Relação 1:1 com material; conteúdo físico fica fora de `public/`. |
@@ -48,7 +48,7 @@ erDiagram
 | `FormatoSessaoEstudo` | Formatos da sessão. | Chave composta impede duplicidade e permite seleção múltipla. |
 | `MaterialSessaoEstudo` | Materiais opcionais usados na sessão. | Relação muitos-para-muitos entre sessão e material do mesmo módulo. |
 | `DesafioExperimentacao` | Contexto pessoal para observar um método. | Pertence à conta e ao módulo; cancelamento preserva sessões anteriores. |
-| `ConfiguracaoIa` | Credencial privada por provedor. | Única por conta/provedor; segredo cifrado por AES-256-GCM e nunca devolvido à interface. |
+| `ConfiguracaoIa` | Credencial global do Groq administrada exclusivamente por ADMIN. | A configuração ativa pertence ao identificador reservado `admin` com `Usuario.administradorIa = true`. A restrição única por conta/provedor permanece para preservar o histórico; entradas pessoais antigas são ignoradas. Segredo cifrado por AES-256-GCM e nunca devolvido à interface. |
 
 As tabelas de perfis, turmas e aprovações são estruturas históricas fora da jornada pessoal e não autorizam acesso baseado em papel.
 

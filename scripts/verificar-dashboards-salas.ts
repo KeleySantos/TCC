@@ -4,7 +4,7 @@ import { prisma } from "../src/biblioteca/prisma";
 import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, SituacaoSessao } from "../src/gerado/prisma/enums";
 import { gerarInterpretacaoMembroSala, ErroInterpretacaoSala } from "../src/servidor/ia/interpretacoes";
 import { obterDashboardIndividualAutorizado, obterDashboardsSalaDoProprietario } from "../src/servidor/paineis-salas";
-import { alterarConsentimentosVinculo, criarSala, desvincularInstanciaModuloSala, vincularInstanciaModuloSala } from "../src/servidor/salas";
+import { criarSala, desvincularInstanciaModuloSala, vincularInstanciaModuloSala } from "../src/servidor/salas";
 
 const sufixo = Date.now().toString(36);
 const usuarios: string[] = [];
@@ -63,23 +63,23 @@ try {
   assert(!JSON.stringify(painel).includes("ARQUIVO_PRIVADO_DASHBOARD"));
   assert(!JSON.stringify(painel).includes("CONTEUDO_PRIVADO_DASHBOARD"));
 
-  await alterarConsentimentosVinculo(membroDois.usuario.id, { vinculoId: vinculoDois.id, permitirComparacao: true, permitirIa: true });
-  await alterarConsentimentosVinculo(membroTres.usuario.id, { vinculoId: vinculoTres.id, permitirComparacao: true, permitirIa: false });
   const individualDois = await obterDashboardIndividualAutorizado(proprietario.usuario.id, sala.identificador, vinculoDois.id);
-  assert(individualDois?.individual.permitirIa);
+  assert(individualDois);
   const interpretacaoAutorizada = await gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoDois.id);
   assert.equal(interpretacaoAutorizada.origem, "LOCAL");
   assert.equal(interpretacaoAutorizada.contexto.quantidadeSessoesValidas, 1);
-  await assert.rejects(() => gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoTres.id), (erro: unknown) => erro instanceof ErroInterpretacaoSala);
+  const interpretacaoTres = await gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoTres.id);
+  assert.equal(interpretacaoTres.origem, "LOCAL", "todo vínculo ativo deve permitir interpretação por IA");
 
   await desvincularInstanciaModuloSala(membroTres.usuario.id, vinculoTres.id);
+  await assert.rejects(() => gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoTres.id), (erro: unknown) => erro instanceof ErroInterpretacaoSala);
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: membroTres.modulo.id } }));
   const historicas = await prisma.evidenciaHistoricaModuloSala.findMany({ where: { moduloSalaId: moduloSala.id } });
   assert.equal(historicas.length, 1);
   assert(!JSON.stringify(historicas).includes(membroTres.usuario.id));
   assert(!JSON.stringify(historicas).includes("DESCRICAO_PRIVADA_DASHBOARD"));
   painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert.equal(painel?.geral.disponivel, false, "o painel geral espelhado usa somente membros ativos autorizados");
+  assert.equal(painel?.geral.disponivel, false, "o painel geral espelhado usa somente membros ativos com dashboard compartilhado");
   assert.equal(painel?.geral.dados, null);
   assert.equal(painel?.modulos[0].agregado.metricas?.tempoEstudo.minutosTotais, 60, "o agregado legado do módulo preserva o histórico anonimizado");
   assert.equal(painel.modulos[0].individuais.length, 2);
@@ -91,7 +91,7 @@ try {
   assert.equal(painel?.modulos[0].individuais.find((item) => item.nome === membroTres.usuario.nome)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0);
 
   assert(vinculoUm);
-  console.log("Dashboards de salas verificados: mínimo de grupo, isolamento, consentimentos, histórico pseudonimizado e reativação sem duplicidade.");
+  console.log("Dashboards de salas verificados: mínimo de grupo, isolamento, comparação e IA obrigatórias, histórico pseudonimizado e reativação sem duplicidade.");
 } finally {
   if (salaId) await prisma.sala.deleteMany({ where: { id: salaId } });
   if (usuarios.length) {

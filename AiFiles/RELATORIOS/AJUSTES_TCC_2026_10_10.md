@@ -1,5 +1,7 @@
 # Ajustes implementados no núcleo do TCC
 
+> Registro histórico. A configuração de múltiplos provedores descrita neste relatório foi substituída pela D-054 em 2026-10-17; o fluxo ativo atual é Groq → contingência local.
+
 Data: 2026-10-10. Agente: Guanabara. Escopo: [plano revisado](../Planos/PLANO_AJUSTES_TCC_2026_10_10.md).
 
 ## 1. Execução por lote
@@ -114,7 +116,7 @@ S1 compara dois contextos explícitos80/40%; S2 isola resultados80/40/60 entre m
 - Seção3.2: descrever Next.js/SQLite e interpretação opcional por provedores configuráveis. Ordem padrão do código: Groq (`openai/gpt-oss-20b`) → Gemini (`gemini-3.8-flash`, contingência `gemini-3.7-flash`) → Qwen legado → local. AI_PRIMARY_PROVIDER pode escolher Gemini primeiro; modelos podem ser sobrescritos pelo ambiente. Isso relata configuração do código, não verificação externa da disponibilidade comercial desses modelos.
 - Seção3.3: trocar ciclo tópico/avaliação convencional/tentativa pelo módulo/sessão/conceito/percepção/evidência registrada. Explicar registro automático sem aprovação humana e a independência entre sessão e atividade de desempenho.
 - Seção3.4: usar fórmulas da tabela, distinguir percepção normalizada, média de percentuais e índice exploratório; declarar n≥3 para tendências, janelas30/90 dias, deduplicação, limites observacionais e regras RM-01..03. Remover taxa de acerto/tentativas/Bloom como funcionalidades operacionais atuais.
-- Capítulo4: relatar dataset base e controles separadamente; descrever gabaritos independentes e resultados determinísticos. Registrar15 respostas reais somente após experimento autorizado e rubrica C1..C5; ≥4/5 com C1+C4 obrigatórios e≥14/15 globais são critérios propostos, não resultados já atingidos.
+- Capítulo4: relatar dataset base e controles separadamente; descrever gabaritos independentes e resultados determinísticos. Registrar15 respostas reais somente após experimento autorizado e rubrica C1..C5; conforme a especificação final de 2026-10-12, a regra é ≥4/5 com C3+C4 obrigatórios e≥14/15 globais. Esses limiares ainda não são resultados atingidos.
 
 Nenhum PDF foi modificado. Não se afirmou qual versão acadêmica menciona sete ou nove métricas: o PDF não estava disponível no repositório, e o plano foi usado como referência operacional.
 

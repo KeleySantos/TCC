@@ -1,0 +1,28 @@
+{
+  "avaliador": "Keley",
+  "avaliadaEm": null,
+  "criterios": {
+    "C1": {
+      "resultado": "ATENDIDO",
+      "justificativa": "A avaliadora confirmou que as métricas e os valores citados correspondem aos dados de entrada da execução."
+    },
+    "C2": {
+      "resultado": "ATENDIDO",
+      "justificativa": "A avaliadora considerou a interpretação coerente com o cenário, o período e os registros apresentados."
+    },
+    "C3": {
+      "resultado": "ATENDIDO",
+      "justificativa": "A avaliadora não identificou informações inventadas ou afirmações factuais sem apoio nos dados fornecidos."
+    },
+    "C4": {
+      "resultado": "ATENDIDO",
+      "justificativa": "A avaliadora confirmou que a resposta evitou classificações fixas sobre o perfil ou a capacidade de aprendizagem."
+    },
+    "C5": {
+      "resultado": "ATENDIDO",
+      "justificativa": "A avaliadora considerou as reflexões e recomendações compatíveis com as evidências e limitações disponíveis."
+    }
+  },
+  "situacao": "PENDENTE",
+  "satisfatoria": null
+}

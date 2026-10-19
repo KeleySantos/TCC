@@ -1,5 +1,7 @@
 # Índice de contexto para agentes
 
+Compartilhamento direto de dashboards (2026-10-18): [desenho aprovado](Planos/DESENHO_COMPARTILHAMENTO_DASHBOARDS_MODULOS.md), [plano executado](Planos/PLANO_COMPARTILHAMENTO_DASHBOARDS_MODULOS.md) e [implementação/validações](RELATORIOS/IMPLEMENTACAO_COMPARTILHAMENTO_MODULOS.md). Não confundir com os vínculos de módulos em Salas.
+
 Este é o mapa canônico dos recursos de IA. Comece aqui depois de selecionar um agente e carregue somente o conjunto mínimo indicado pela tarefa.
 
 ## Estrutura
@@ -60,9 +62,14 @@ AiFiles/
 │   ├── DESENHO_REORGANIZACAO_MODULO_SUBABAS.md
 │   ├── PLANO_REORGANIZACAO_MODULO_SUBABAS.md
 │   ├── AUTENTICACAO_EMAIL_GOOGLE_DESIGN.md
+│   ├── PLANO_PROVEDOR_IA_EXCLUSIVO_GROQ.md
 │   └── PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md
 └── RELATORIOS/
+    ├── AUDITORIA_AVALIACAO_IA_TCC.md
+    ├── AUDITORIA_METRICAS_TCC.md
     ├── AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md
+    ├── CENARIOS_AVALIACAO_TCC.md
+    ├── IMPLEMENTACAO_AVALIACAO_IA_TCC.md
     ├── PESQUISA_ARQUITETURA_CONTEXTO_IA.md
     ├── RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md
     └── VALIDACAO_TECNICA_LOCAL.md
@@ -97,6 +104,10 @@ AiFiles/
 | Alterar analytics ou recomendações | [`Contexto/Cientifico/PROTOCOLO_DE_MEDICAO.md`](Contexto/Cientifico/PROTOCOLO_DE_MEDICAO.md) | [`Contexto/Cientifico/ESPECIFICACAO_CIENTIFICA.md`](Contexto/Cientifico/ESPECIFICACAO_CIENTIFICA.md), [`Contexto/Cientifico/POLITICA_DE_LINGUAGEM.md`](Contexto/Cientifico/POLITICA_DE_LINGUAGEM.md), [`Contexto/Cientifico/GLOSSARIO.md`](Contexto/Cientifico/GLOSSARIO.md) e testes |
 | Avaliar ética, privacidade ou dados reais | [`Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md`](Contexto/Cientifico/CHECKLIST_ETICA_PRIVACIDADE.md) | especificação científica, riscos e decisões |
 | Preparar avaliação do TCC | [`Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md`](Contexto/Cientifico/PLANO_DE_AVALIACAO_DO_ARTEFATO.md) | acompanhamento e relatório técnico |
+| Auditar geração e validação das respostas da IA | [`RELATORIOS/AUDITORIA_AVALIACAO_IA_TCC.md`](RELATORIOS/AUDITORIA_AVALIACAO_IA_TCC.md) | código vigente de DTO, prompt, provedores, validação, contingência, interface, testes e protocolo C1–C5 |
+| Executar e documentar a avaliação qualitativa da IA | [`RELATORIOS/IMPLEMENTACAO_AVALIACAO_IA_TCC.md`](RELATORIOS/IMPLEMENTACAO_AVALIACAO_IA_TCC.md) | corpus JSON, repetição controlada, avaliação humana C1–C5 e exportação Markdown/CSV |
+| Documentar os cinco cenários sintéticos da avaliação | [`RELATORIOS/CENARIOS_AVALIACAO_TCC.md`](RELATORIOS/CENARIOS_AVALIACAO_TCC.md) | fixture, script isolado, algoritmos, DTO da IA, controles posteriores e verificações de sala |
+| Auditar métricas e indicadores implementados | [`RELATORIOS/AUDITORIA_METRICAS_TCC.md`](RELATORIOS/AUDITORIA_METRICAS_TCC.md) | código vigente de domínio, servidor, dashboards, salas, recomendação e IA |
 | Comparar a implementação atual com o TCC | [`RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md`](RELATORIOS/AUDITORIA_TECNICA_COMPARACAO_IMPLEMENTACAO_TCC.md) | código vigente, protocolo, matriz e cenário sintético |
 | Consultar fórmulas, ajustes e fluxos atuais das métricas | [`RELATORIOS/RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md`](RELATORIOS/RELATORIO_AJUSTES_METRICAS_E_FLUXOS_TCC.md) | implementação dos ajustes, protocolo de medição e avaliação sintética |
 | Consultar evidência de validação anterior | [`RELATORIOS/VALIDACAO_TECNICA_LOCAL.md`](RELATORIOS/VALIDACAO_TECNICA_LOCAL.md) | acompanhamento e matriz |
@@ -106,6 +117,7 @@ AiFiles/
 - Escopo aprovado: [`Planos/PLANO_AJUSTES_TCC_2026_10_10.md`](Planos/PLANO_AJUSTES_TCC_2026_10_10.md).
 - Implementação e validação: [`RELATORIOS/AJUSTES_TCC_2026_10_10.md`](RELATORIOS/AJUSTES_TCC_2026_10_10.md).
 - Reprodução/rubrica: [`RELATORIOS/PROTOCOLO_AVALIACAO_TCC.md`](RELATORIOS/PROTOCOLO_AVALIACAO_TCC.md).
+- Implementação do experimento qualitativo: [`RELATORIOS/IMPLEMENTACAO_AVALIACAO_IA_TCC.md`](RELATORIOS/IMPLEMENTACAO_AVALIACAO_IA_TCC.md).
 - Resultados gerados: [`RELATORIOS/RESULTADOS_AVALIACAO_TCC.json`](RELATORIOS/RESULTADOS_AVALIACAO_TCC.json).
 
 ## Fontes canônicas

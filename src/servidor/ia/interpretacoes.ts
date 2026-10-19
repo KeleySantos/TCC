@@ -4,13 +4,12 @@ import type { MetricasSessoes } from "@/dominio/analises/metricas-sessoes";
 import { gerarRespostaLocal } from "@/dominio/interpretacoes/resposta-local";
 import { montarInterpretacao, validarConteudoInterpretacao, type DtoInterpretacao, type TentativaProvedor } from "@/dominio/interpretacoes/esquema";
 import { formatarMetodoEstudo } from "@/dominio/sessoes/metodos";
-import type { EstadoConfiguracaoIa, FormatoConteudo, MetodoEstudo, ProvedorIa } from "@/gerado/prisma/enums";
+import type { EstadoConfiguracaoIa, FormatoConteudo, MetodoEstudo } from "@/gerado/prisma/enums";
 import type { obterMetricasSessoesPessoais } from "@/servidor/metricas";
 import type { obterAprendizagemModuloPessoal } from "@/servidor/aprendizagem-modulo";
-import { criarProvedorGemini } from "./gemini";
+import type { ProvedorIaAtivo } from "./catalogo-provedores";
 import { criarProvedorGroq } from "./groq";
 import { ErroProvedorInterpretacao, type CodigoErroProvedor, type ProvedorInterpretacoes } from "./provedor-interpretacoes";
-import { criarProvedorQwen } from "./qwen";
 
 const LIMITE_POR_HORA = 5;
 const JANELA_COTA_MS = 60 * 60 * 1_000;
@@ -32,8 +31,8 @@ type SessaoParaDto = {
   formatos: Array<{ formato: FormatoConteudo }>;
 };
 
-type CredencialFila = { provedor: ProvedorIa; modelo: string; chave: string };
-type RegistrarEstado = (usuarioId: string, provedor: ProvedorIa, estado: EstadoConfiguracaoIa, bloqueadaAte?: Date | null) => Promise<void>;
+type CredencialFila = { provedor: ProvedorIaAtivo; modelo: string; chave: string };
+type RegistrarEstado = (usuarioId: string, provedor: ProvedorIaAtivo, estado: EstadoConfiguracaoIa, bloqueadaAte?: Date | null) => Promise<void>;
 
 export class ControleCotaInterpretacoes {
   private readonly usos = new Map<string, number[]>();
@@ -48,6 +47,18 @@ export class ControleCotaInterpretacoes {
 }
 
 const controleCotaPadrao = new ControleCotaInterpretacoes();
+
+/** Executa um DTO já autorizado, sem assumir a identidade do proprietário dos dados. */
+export async function interpretarDtoAutorizado(solicitanteId: string, dto: DtoInterpretacao) {
+  if (dto.quantidadeSessoesValidas === 0) return gerarRespostaLocal(dto, "DADOS_INSUFICIENTES");
+  if (!controleCotaPadrao.consumir(solicitanteId)) return gerarRespostaLocal(dto, "COTA_LOCAL");
+  try {
+    const { listarCredenciaisAtivas } = await import("./configuracoes");
+    return await interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId: solicitanteId });
+  } catch {
+    return gerarRespostaLocal(dto, "TODOS_INDISPONIVEIS");
+  }
+}
 
 export class ErroInterpretacaoModulo extends Error {
   constructor() {
@@ -189,9 +200,7 @@ function logDiagnostico(evento: string, dados: Record<string, unknown>) {
 }
 
 function criarProvedor(credencial: CredencialFila): ProvedorInterpretacoes {
-  if (credencial.provedor === "GROQ") return criarProvedorGroq(credencial.chave, credencial.modelo);
-  if (credencial.provedor === "GEMINI") return criarProvedorGemini(credencial.chave, credencial.modelo);
-  return criarProvedorQwen(credencial.chave, credencial.modelo);
+  return criarProvedorGroq(credencial.chave, credencial.modelo);
 }
 
 function estadoPersistido(codigo: CodigoErroProvedor) {
@@ -270,7 +279,7 @@ export async function gerarInterpretacaoPessoal(usuarioId: string, periodo: { in
   if (dto.quantidadeSessoesValidas === 0) return gerarRespostaLocal(dto, "DADOS_INSUFICIENTES");
   if (!controleCotaPadrao.consumir(usuarioId)) return gerarRespostaLocal(dto, "COTA_LOCAL");
   try {
-    return interpretarComFila(dto, await listarCredenciaisAtivas(usuarioId), { usuarioId });
+    return interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId });
   } catch (erro) {
     logDiagnostico("falha ao preparar credenciais", { escopo: dto.escopo, tipo: erro instanceof Error ? erro.name : "DESCONHECIDO" });
     return gerarRespostaLocal(dto, "TODOS_INDISPONIVEIS");
@@ -290,7 +299,7 @@ export async function gerarInterpretacaoModuloPessoal(usuarioId: string, identif
   if (dto.quantidadeSessoesValidas === 0) return gerarRespostaLocal(dto, "DADOS_INSUFICIENTES");
   if (!controleCotaPadrao.consumir(usuarioId)) return gerarRespostaLocal(dto, "COTA_LOCAL");
   try {
-    return interpretarComFila(dto, await listarCredenciaisAtivas(usuarioId), { usuarioId });
+    return interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId });
   } catch (erro) {
     logDiagnostico("falha ao preparar credenciais", { escopo: dto.escopo, tipo: erro instanceof Error ? erro.name : "DESCONHECIDO" });
     return gerarRespostaLocal(dto, "TODOS_INDISPONIVEIS");
@@ -300,7 +309,7 @@ export async function gerarInterpretacaoModuloPessoal(usuarioId: string, identif
 export async function gerarInterpretacaoMembroSala(usuarioId: string, identificadorSala: string, vinculoId: string) {
   const [{ obterDashboardIndividualAutorizado }, { listarCredenciaisAtivas }] = await Promise.all([import("@/servidor/paineis-salas"), import("./configuracoes")]);
   const resultado = await obterDashboardIndividualAutorizado(usuarioId, identificadorSala, vinculoId);
-  if (!resultado?.individual.permitirIa) throw new ErroInterpretacaoSala();
+  if (!resultado) throw new ErroInterpretacaoSala();
   const metricas = resultado.individual.metricas;
   const dto: DtoInterpretacao = {
     escopo: "MEMBRO_SALA",
@@ -312,12 +321,12 @@ export async function gerarInterpretacaoMembroSala(usuarioId: string, identifica
     modulos: [mapearResumoModulo(metricas, `${resultado.individual.nome} · ${resultado.modulo.titulo}`)],
     evolucaoSemanal: metricas.evolucaoSemanal.pontos.map((ponto) => ({ periodoInicio: ponto.periodoInicio.toISOString(), periodoFim: ponto.periodoFim.toISOString(), quantidadeSessoes: ponto.quantidadeSessoes, minutosTotais: ponto.minutosTotais, diasComEstudo: ponto.diasComEstudo })),
     descricoesSessoes: [],
-    limitacoes: [...metricas.limitacoes, "A interpretação usa somente métricas autorizadas do dashboard; materiais e descrições das sessões não foram enviados."],
+    limitacoes: [...metricas.limitacoes, "A interpretação usa somente métricas do dashboard compartilhado; materiais e descrições das sessões não foram enviados."],
   };
   if (dto.quantidadeSessoesValidas === 0) return gerarRespostaLocal(dto, "DADOS_INSUFICIENTES");
   if (!controleCotaPadrao.consumir(usuarioId)) return gerarRespostaLocal(dto, "COTA_LOCAL");
   try {
-    return interpretarComFila(dto, await listarCredenciaisAtivas(usuarioId), { usuarioId });
+    return interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId });
   } catch (erro) {
     logDiagnostico("falha ao preparar credenciais", { escopo: dto.escopo, tipo: erro instanceof Error ? erro.name : "DESCONHECIDO" });
     return gerarRespostaLocal(dto, "TODOS_INDISPONIVEIS");

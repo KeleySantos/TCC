@@ -13,6 +13,7 @@ export type ModuloListadoPessoal = {
   titulo: string;
   descricao: string;
   rascunho: boolean;
+  quantidadeCompartilhamentosAtivos: number;
   _count: { materiais: number; sessoesEstudo: number };
 };
 
@@ -107,7 +108,7 @@ async function reconciliarMudancaFuncaoMaterial(material: { id: string; origem: 
 }
 
 export async function listarModulosPessoais(usuarioId: string, opcoes: { incluirRascunhos?: boolean } = {}): Promise<ModuloListadoPessoal[]> {
-  return prisma.moduloAprendizagem.findMany({
+  const modulos = await prisma.moduloAprendizagem.findMany({
     where: { usuarioId, arquivado: false, ...(opcoes.incluirRascunhos ? {} : { rascunho: false }) },
     select: {
       id: true,
@@ -115,10 +116,11 @@ export async function listarModulosPessoais(usuarioId: string, opcoes: { incluir
       titulo: true,
       descricao: true,
       rascunho: true,
-      _count: { select: { materiais: { where: { ativo: true } }, sessoesEstudo: true } },
+      _count: { select: { materiais: { where: { ativo: true } }, sessoesEstudo: true, acessosCompartilhados: { where: { vaga: { not: null } } } } },
     },
     orderBy: [{ rascunho: "desc" }, { atualizadoEm: "desc" }],
   });
+  return modulos.map((modulo) => ({ ...modulo, quantidadeCompartilhamentosAtivos: modulo._count.acessosCompartilhados }));
 }
 
 export async function obterModuloPessoal(usuarioId: string, identificador: string) {

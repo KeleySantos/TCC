@@ -251,3 +251,4 @@
     transition: none;
   }
 }
+.indicadorCompartilhamento { display: inline-flex; align-items: center; gap: 6px; color: var(--cor-acao); font-size: .72rem; font-weight: 650; }

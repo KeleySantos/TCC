@@ -13,9 +13,9 @@ import {
   Settings2,
   Sparkles,
   UsersRound,
-  UserRound,
 } from "lucide-react";
 import { sairDaConta } from "@/app/acoes-sessao";
+import { PerfilUsuario } from "./perfil-usuario";
 import estilos from "./estrutura-autenticada.module.css";
 
 const CHAVE_PREFERENCIA = "learning-lab:barra-lateral-recolhida";
@@ -27,7 +27,6 @@ const ITENS_NAVEGACAO = [
   { href: "/salas", rotulo: "Salas", Icone: UsersRound },
   { href: "/desafios", rotulo: "Desafios", Icone: FlaskConical },
   { href: "/configuracoes/ia", rotulo: "Configurações IA", Icone: Settings2 },
-  { href: "/perfil", rotulo: "Perfil", Icone: UserRound },
 ] as const;
 
 function assinarPreferencia(notificar: () => void) {
@@ -54,9 +53,13 @@ function itemEstaAtivo(caminhoAtual: string, href: string) {
 export function EstruturaAutenticada({
   children,
   usuarioNome,
+  administradorIa = false,
+  usuarioFotoVersao,
 }: {
   children: ReactNode;
   usuarioNome: string;
+  administradorIa?: boolean;
+  usuarioFotoVersao?: string | null;
 }) {
   const caminhoAtual = usePathname();
   const barraRecolhida = useSyncExternalStore(assinarPreferencia, obterPreferencia, obterPreferenciaNoServidor);
@@ -88,7 +91,7 @@ export function EstruturaAutenticada({
         </div>
 
         <nav className={estilos.menuPrincipal} id="menu-principal-autenticado">
-          {ITENS_NAVEGACAO.map(({ href, rotulo, Icone }) => {
+          {ITENS_NAVEGACAO.filter((item) => item.href !== "/configuracoes/ia" || administradorIa).map(({ href, rotulo, Icone }) => {
             const ativo = itemEstaAtivo(caminhoAtual, href);
             return (
               <Link aria-current={ativo ? "page" : undefined} className={ativo ? estilos.itemAtivo : undefined} href={href} key={href} title={barraRecolhida ? rotulo : undefined}>
@@ -105,8 +108,7 @@ export function EstruturaAutenticada({
         </div>
 
         <div className={estilos.rodapeBarra}>
-          <span className={estilos.avatar} aria-hidden="true">{usuarioNome.trim().slice(0, 1).toUpperCase()}</span>
-          <span className={estilos.nomeConta}>{usuarioNome}</span>
+          <PerfilUsuario classeAvatar={estilos.avatar} classeNome={estilos.nomeConta} className={estilos.botaoPerfil} fotoVersao={usuarioFotoVersao} nome={usuarioNome} />
           <form action={sairDaConta} className={estilos.formularioSair}>
             <button type="submit" title={barraRecolhida ? "Sair da conta" : undefined}>
               <LogOut aria-hidden="true" />

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { InterpretacaoAutomatica } from "./interpretacao-automatica";
 
 describe("interpretação automática no Dashboard", () => {
-  const ComponenteTestavel = InterpretacaoAutomatica as ComponentType<{ compacto?: boolean }>;
+  const ComponenteTestavel = InterpretacaoAutomatica as ComponentType<{ compacto?: boolean; modalLateral?: boolean }>;
 
   it("mantém somente o título e a ação antes de gerar uma interpretação", () => {
     const html = renderToStaticMarkup(createElement(ComponenteTestavel, { compacto: true }));
@@ -12,8 +12,8 @@ describe("interpretação automática no Dashboard", () => {
     expect(html).toContain("Insights da IA");
     expect(html).toContain("Gerar interpretação");
     expect(html).not.toContain("INTERPRETAÇÃO OPCIONAL");
-    expect(html).not.toContain("Os provedores configurados interpretam métricas");
-    expect(html).not.toContain("Configurar provedores e chaves");
+    expect(html).not.toContain("O Groq interpreta métricas");
+    expect(html).not.toContain("Configurar Groq");
     expect(html).not.toContain("/configuracoes/ia");
   });
 
@@ -21,8 +21,17 @@ describe("interpretação automática no Dashboard", () => {
     const html = renderToStaticMarkup(createElement(ComponenteTestavel));
 
     expect(html).toContain("INTERPRETAÇÃO OPCIONAL");
-    expect(html).toContain("Os provedores configurados interpretam métricas");
-    expect(html).toContain("Configurar provedores e chaves");
-    expect(html).toContain("/configuracoes/ia");
+    expect(html).toContain("O Groq interpreta métricas");
+    expect(html).not.toContain("Configurar Groq");
+    expect(html).not.toContain("/configuracoes/ia");
+  });
+
+  it("oferece a interpretação em painel lateral sem uma segunda ação geradora", () => {
+    const html = renderToStaticMarkup(createElement(ComponenteTestavel, { compacto: true, modalLateral: true }));
+
+    expect(html).toContain("Gerar interpretação da IA");
+    expect(html).toContain("<dialog");
+    expect(html).toContain("Insights da IA");
+    expect(html.match(/>Gerar interpretação(?: da IA)?</g)).toHaveLength(1);
   });
 });

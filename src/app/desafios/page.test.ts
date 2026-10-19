@@ -19,6 +19,8 @@ describe("página de Experimentos", () => {
 
     expect(html).toContain("Métodos disponíveis");
     expect(html).toContain("Técnica de Feynman");
+    expect(html).not.toContain("Flashcards");
+    expect(html).toContain("Recuperação ativa");
     expect(html).not.toContain("Desafios criados");
     expect(html).not.toContain("Seu primeiro experimento começa ao lado");
     expect(html).not.toContain("Criar desafio");

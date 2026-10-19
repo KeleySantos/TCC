@@ -22,7 +22,7 @@ Projetar e avaliar tecnicamente um laboratório pessoal de Learning Analytics qu
 2. Definir regras reproduzíveis para relacionar sessões válidas e avaliações posteriores.
 3. Calcular indicadores por conta, módulo, tópico, método e formato de conteúdo, sempre acompanhados de quantidade de evidências e limitações.
 4. Oferecer recomendações determinísticas e explicáveis para exploração de materiais.
-5. Interpretar os indicadores oficiais com Gemini somente a partir de resumo sintético agregado, com validação e resposta local de contingência.
+5. Interpretar os indicadores oficiais com Groq somente a partir de resumo sintético agregado, com validação e resposta local de contingência.
 6. Disponibilizar dashboards pessoal e por módulo, preservando a propriedade direta dos dados e evitando rankings.
 7. Permitir desafios pessoais de experimentação e análise por níveis de Bloom, preservando amostra, contexto e a ausência de causalidade.
 8. Avaliar a corretude técnica e a compreensão da interface no cenário sintético; qualquer avaliação com participantes permanece bloqueada até protocolo aprovado.
@@ -52,7 +52,7 @@ Essas hipóteses não afirmam eficácia pedagógica geral. Qualquer inferência 
 - Domínio demonstrativo: fundamentos de programação, com ênfase em loops.
 - Uma única conta pessoal, sem papéis.
 - Aplicação web local com SQLite.
-- Métricas e recomendador oficial determinísticos e versionados; Gemini interpreta somente o resumo agregado e validado dessas saídas.
+- Métricas e recomendador oficial determinísticos e versionados; Groq interpreta somente o resumo agregado e validado dessas saídas.
 - Catálogo controlado de métodos, desafios pessoais de experimentação e análise de respostas classificadas por nível de Bloom.
 
 ## Limitações declaradas
@@ -62,4 +62,4 @@ Essas hipóteses não afirmam eficácia pedagógica geral. Qualquer inferência 
 - O cenário sintético demonstra funcionamento técnico; não é evidência empírica sobre aprendizagem.
 - Quizzes precisam ser comparáveis antes de sustentar comparação entre formatos.
 - O MVP não substitui LMS, sistemas institucionais ou acompanhamento pedagógico humano.
-- A interpretação gerada por Gemini pode falhar, estar indisponível ou ser descartada na validação; ela não é métrica oficial nem prova de aprendizagem.
+- A interpretação gerada por Groq pode falhar, estar indisponível ou ser descartada na validação; ela não é métrica oficial nem prova de aprendizagem.

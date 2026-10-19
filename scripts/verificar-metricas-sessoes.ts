@@ -32,15 +32,15 @@ async function principal() {
   afirmar(await obterMetricasSessoesModuloPessoal(bruno.id, "logica") === null, "outra conta não pode consultar métricas do módulo alheio.");
 
   const gerais = await obterMetricasSessoesPessoais(ana.id);
-  afirmar(gerais.metricasPorModulo.length === 2 && gerais.consolidado.tempoEstudo.quantidadeSessoesValidas === 5 && gerais.consolidado.tempoEstudo.minutosTotais === 97, "consolidação deve somar somente sessões válidas dos módulos ativos.");
+  afirmar(gerais.metricasPorModulo.length === 5 && gerais.consolidado.tempoEstudo.quantidadeSessoesValidas === 35 && gerais.consolidado.tempoEstudo.minutosTotais === 997, "consolidação deve somar os módulos demonstrativos e os três módulos do cenário S1.");
   const referenciaDashboard = new Date("2026-09-01T12:00:00.000Z");
   const [dashboardAna, dashboardBruno, dashboardSemConta] = await Promise.all([
     obterDashboardObservacionalPessoal(ana.id, referenciaDashboard),
     obterDashboardObservacionalPessoal(bruno.id, referenciaDashboard),
     obterDashboardObservacionalPessoal("conta-inexistente", referenciaDashboard),
   ]);
-  afirmar(dashboardAna.baseHistorica.quantidadeSessoes === 5 && dashboardAna.periodoRecente.quantidadeSessoes === 1, "o Dashboard da conta A deve respeitar o histórico e a janela recente.");
-  afirmar(dashboardBruno.baseHistorica.quantidadeSessoes === 4 && dashboardBruno.periodoRecente.quantidadeSessoes === 0, "o Dashboard da conta B não pode receber sessões da conta A.");
+  afirmar(dashboardAna.baseHistorica.quantidadeSessoes === 8 && dashboardAna.periodoRecente.quantidadeSessoes === 4, "o Dashboard da conta A deve respeitar o histórico, a janela recente e as três sessões de S1 já concluídas na referência.");
+  afirmar(dashboardBruno.baseHistorica.quantidadeSessoes === 7 && dashboardBruno.periodoRecente.quantidadeSessoes === 3, "o Dashboard da conta B deve incluir apenas suas sessões demonstrativas e as três sessões de S2 já concluídas na referência.");
   afirmar(dashboardSemConta.baseHistorica.quantidadeSessoes === 0 && dashboardSemConta.conceitos.length === 0, "uma conta inexistente não pode receber sessões ou conceitos.");
 
   let sessaoId: string | null = null;

@@ -1,9 +1,8 @@
 import "dotenv/config";
 import { strict as assert } from "node:assert";
 import { prisma } from "../src/biblioteca/prisma";
-import { EscopoComentarioSala, FormatoConteudo, MetodoEstudo, ModoRegistroSessao, SituacaoSessao } from "../src/gerado/prisma/enums";
+import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, SituacaoSessao } from "../src/gerado/prisma/enums";
 import {
-  alterarConsentimentosVinculo,
   criarModuloSala,
   criarSala,
   desvincularInstanciaModuloSala,
@@ -12,7 +11,6 @@ import {
   gerarConviteSala,
   listarSalasDaConta,
   obterSalaDaConta,
-  publicarComentarioSala,
   removerMembroSala,
   revogarConviteSala,
   entrarSalaComCodigo,
@@ -48,6 +46,7 @@ try {
   salaId = sala.id;
   let detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
   assert(detalheProprietario);
+  assert.equal(Object.hasOwn(detalheProprietario, "comentarios"), false, "O detalhe da sala não deve oferecer comentários.");
   assert.equal(detalheProprietario.modulos.length, 1);
   assert.equal(await obterSalaDaConta(membro.id, sala.identificador), null);
   assert.equal((await listarSalasDaConta(membro.id)).some((item) => item.id === sala.id), false);
@@ -78,12 +77,7 @@ try {
   assert(!serializado.includes("SESSAO_PRIVADA_SALA"));
   assert(!serializado.includes("Material privado inconfundível"));
 
-  await alterarConsentimentosVinculo(membro.id, { vinculoId: vinculo.id, permitirComparacao: true, permitirIa: true });
-  await deveFalhar("NAO_ENCONTRADO", () => alterarConsentimentosVinculo(proprietario.id, { vinculoId: vinculo.id, permitirComparacao: false, permitirIa: false }));
-  await publicarComentarioSala(proprietario.id, { salaId: sala.id, escopo: EscopoComentarioSala.SALA, conteudo: "Comentário geral" });
-  await publicarComentarioSala(proprietario.id, { salaId: sala.id, escopo: EscopoComentarioSala.MODULO, moduloSalaId, conteudo: "Comentário do módulo" });
-  await publicarComentarioSala(proprietario.id, { salaId: sala.id, escopo: EscopoComentarioSala.MEMBRO, destinatarioId: membro.id, conteudo: "Comentário individual" });
-  assert.equal((await obterSalaDaConta(membro.id, sala.identificador))?.comentarios.length, 3);
+  assert.equal(Object.hasOwn((await obterSalaDaConta(membro.id, sala.identificador))!, "comentarios"), false);
 
   for (let numero = 2; numero <= 5; numero += 1) await criarModuloSala(proprietario.id, { salaId: sala.id, titulo: `Módulo ${numero}`, descricao: `Descrição sintética ${numero}.` });
   await deveFalhar("LIMITE_MODULOS", () => criarModuloSala(proprietario.id, { salaId: sala.id, titulo: "Módulo 6", descricao: "Não deve ser criado." }));
@@ -105,7 +99,7 @@ try {
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: moduloExistente.id } }));
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: instanciaNovaId } }));
 
-  console.log("Serviços de salas verificados: entrada imediata por código, compatibilidade, isolamento, consentimentos, comentários, limite e preservação das instâncias.");
+  console.log("Serviços de salas verificados: entrada imediata por código, compatibilidade, isolamento, compartilhamento obrigatório, ausência de comentários, limite e preservação das instâncias.");
 } finally {
   if (salaId) await prisma.sala.deleteMany({ where: { id: salaId } });
   if (idsUsuarios.length) {

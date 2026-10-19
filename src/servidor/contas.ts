@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { criarHashSenha, normalizarIdentificadorConta } from "./senhas";
+import { NOME_USUARIO_ADMIN } from "@/dominio/administracao-ia";
 
 export type CodigoErroCadastroConta = "DADOS_INVALIDOS" | "SENHAS_DIFERENTES" | "NOME_EXISTENTE";
 
@@ -38,6 +39,7 @@ export async function cadastrarContaPessoal(entrada: EntradaCadastroConta, clien
   if (!resultado.success) throw new ErroCadastroConta("DADOS_INVALIDOS");
   if (resultado.data.senha !== resultado.data.confirmarSenha) throw new ErroCadastroConta("SENHAS_DIFERENTES");
   const nomeUsuario = normalizarIdentificadorConta(resultado.data.nome);
+  if (nomeUsuario === NOME_USUARIO_ADMIN) throw new ErroCadastroConta("NOME_EXISTENTE");
   if (nomeUsuario.length < 2) throw new ErroCadastroConta("DADOS_INVALIDOS");
 
   try {

@@ -86,18 +86,15 @@ enum SituacaoVinculoModuloSala {
   DESVINCULADO
 }
 
-enum EscopoComentarioSala {
-  SALA
-  MODULO
-  MEMBRO
-}
-
 model Usuario {
   id                       String                   @id @default(cuid())
   nome                     String
   nomeUsuario              String                   @unique
   email                    String?                  @unique
   senhaHash                String
+  administradorIa          Boolean                  @default(false)
+  fotoPerfil               Bytes?
+  fotoPerfilAtualizadaEm   DateTime?
   // Campo técnico legado. Não representa papel no produto e não deve ser usado em rotas, serviços ou interface.
   papel                    PapelUsuario             @default(ALUNO)
   criadoEm                 DateTime                 @default(now())
@@ -115,8 +112,7 @@ model Usuario {
   solicitacoesSala         SolicitacaoEntradaSala[] @relation("SolicitanteSala")
   decisoesSala             SolicitacaoEntradaSala[] @relation("DecisorSolicitacaoSala")
   vinculosSala             VinculoModuloSala[]
-  comentariosSala          ComentarioSala[]         @relation("AutorComentarioSala")
-  comentariosRecebidosSala ComentarioSala[]         @relation("DestinatarioComentarioSala")
+  acessosModulosCompartilhados AcessoModuloCompartilhado[]
 }
 
 enum MetodoEstudo {
@@ -240,10 +236,38 @@ model ModuloAprendizagem {
   vinculosSala  VinculoModuloSala[]
   conceitos     ConceitoAprendizagem[]
   evidencias    EvidenciaAprendizagem[]
+  compartilhamento CompartilhamentoModulo?
+  acessosCompartilhados AcessoModuloCompartilhado[]
 
   @@unique([usuarioId, identificador])
   @@index([usuarioId, arquivado])
   @@index([usuarioId, arquivado, rascunho])
+}
+
+model CompartilhamentoModulo {
+  id                   String @id @default(cuid())
+  moduloId             String @unique
+  codigoHash           String? @unique
+  chaveCifrada         String?
+  vetorInicializacao   String?
+  etiquetaAutenticacao String?
+  atualizadoEm         DateTime @updatedAt
+  modulo               ModuloAprendizagem @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+}
+
+model AcessoModuloCompartilhado {
+  id           String @id @default(cuid())
+  moduloId     String
+  convidadoId  String
+  vaga         Int?
+  concedidoEm  DateTime @default(now())
+  revogadoEm   DateTime?
+  modulo       ModuloAprendizagem @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  convidado    Usuario @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
+
+  @@unique([moduloId, convidadoId])
+  @@unique([moduloId, vaga])
+  @@index([convidadoId, vaga])
 }
 
 model Sala {
@@ -260,7 +284,6 @@ model Sala {
   convites       ConviteSala[]
   solicitacoes   SolicitacaoEntradaSala[]
   modulos        ModuloSala[]
-  comentarios    ComentarioSala[]
 
   @@index([proprietarioId, situacao])
 }
@@ -326,7 +349,6 @@ model ModuloSala {
   atualizadoEm         DateTime                       @updatedAt
   sala                 Sala                           @relation(fields: [salaId], references: [id], onDelete: Cascade)
   vinculos             VinculoModuloSala[]
-  comentarios          ComentarioSala[]
   evidenciasHistoricas EvidenciaHistoricaModuloSala[]
 
   @@unique([salaId, posicao])
@@ -341,8 +363,6 @@ model VinculoModuloSala {
   moduloPessoalId       String
   situacao              SituacaoVinculoModuloSala @default(ATIVO)
   compartilharDashboard Boolean                   @default(true)
-  permitirComparacao    Boolean                   @default(false)
-  permitirIa            Boolean                   @default(false)
   vinculadoEm           DateTime                  @default(now())
   dadosDesde            DateTime?
   desvinculadoEm        DateTime?
@@ -374,25 +394,6 @@ model EvidenciaHistoricaModuloSala {
 
   @@index([moduloSalaId, encerradaEm])
   @@index([moduloSalaId, contribuinteAnonimoHash])
-}
-
-model ComentarioSala {
-  id             String               @id @default(cuid())
-  salaId         String
-  autorId        String
-  escopo         EscopoComentarioSala
-  moduloSalaId   String?
-  destinatarioId String?
-  conteudo       String
-  criadoEm       DateTime             @default(now())
-  sala           Sala                 @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  autor          Usuario              @relation("AutorComentarioSala", fields: [autorId], references: [id], onDelete: Restrict)
-  moduloSala     ModuloSala?          @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
-  destinatario   Usuario?             @relation("DestinatarioComentarioSala", fields: [destinatarioId], references: [id], onDelete: Restrict)
-
-  @@index([salaId, criadoEm])
-  @@index([moduloSalaId, criadoEm])
-  @@index([destinatarioId, criadoEm])
 }
 
 model PerfilAluno {

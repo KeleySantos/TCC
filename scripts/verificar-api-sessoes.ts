@@ -1,18 +1,21 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
+import { obterChaveMestraCredenciais } from "../src/servidor/ia/cofre-credenciais";
+import { criarTokenSessao } from "../src/servidor/sessao-assinada";
 
 const urlBanco = process.env.DATABASE_URL;
 if (!urlBanco) throw new Error("DATABASE_URL não está definida.");
 const endereco = process.env.URL_APLICACAO_DEMONSTRACAO ?? "http://localhost:3000";
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: urlBanco }) });
+const chaveSessao = await obterChaveMestraCredenciais();
 
 function afirmar(condicao: unknown, mensagem: string): asserts condicao {
   if (!condicao) throw new Error(`Verificação da API de sessões falhou: ${mensagem}`);
 }
 
 function cabecalhos(usuarioId: string) {
-  return { Cookie: `usuario_demonstracao=${usuarioId}`, "Content-Type": "application/json" };
+  return { Cookie: `usuario_demonstracao=${criarTokenSessao(usuarioId, chaveSessao)}`, "Content-Type": "application/json" };
 }
 
 function objeto(valor: unknown): Record<string, unknown> {

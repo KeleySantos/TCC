@@ -51,4 +51,10 @@ describe("cadastro de conta pessoal", () => {
       confirmarSenha: "Estudo@2026",
     }, falso.cliente)).rejects.toEqual(expect.objectContaining<Partial<ErroCadastroConta>>({ codigo: "NOME_EXISTENTE" }));
   });
+
+  it("reserva o identificador ADMIN e não permite criá-lo pelo cadastro público", async () => {
+    const falso = clienteFalso();
+    await expect(cadastrarContaPessoal({ nome: "ADMIN", senha: "Estudo@2026", confirmarSenha: "Estudo@2026" }, falso.cliente)).rejects.toMatchObject({ codigo: "NOME_EXISTENTE" });
+    expect(falso.obterDadosCriados()).toBeNull();
+  });
 });

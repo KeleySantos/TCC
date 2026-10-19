@@ -27,6 +27,8 @@ export const schemaRespostaInterpretacao = {
   additionalProperties: false,
 } as const;
 
+export const VERSAO_PROMPT_INTERPRETACAO = "interpretacao-aprendizagem-v1";
+
 const PROMPT_BASE = `Você é um parceiro de reflexão sobre aprendizagem. Ajude a pessoa a investigar como está aprendendo usando somente as evidências estruturadas fornecidas pelo sistema.
 
 Converse como alguém que está olhando os dados junto com a pessoa. Escreva de modo natural, próximo, curioso, tranquilo, respeitoso e intelectualmente honesto. Não fale como relatório, professor autoritário, avaliador, coach ou psicólogo.

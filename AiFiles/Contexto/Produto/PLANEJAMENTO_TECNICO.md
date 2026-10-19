@@ -2,7 +2,7 @@
 
 > Documento de planejamento para execução assistida por IA. Este arquivo não contém implementação do projeto.
 
-> **Atualização de escopo — 2026-09-12:** a execução vigente é regida pelo `../Planos/PLANO_TRANSICAO_LABORATORIO_PESSOAL_APRENDIZAGEM.md`, aprovado para a Entrega A. Em qualquer conflito com este planejamento histórico, prevalecem D-014 a D-017 em `../Memoria/DECISOES_DO_PROJETO.md` e os requisitos da Entrega A: uma única conta pessoal, propriedade direta dos dados, sem papéis/turmas/curadoria/administração e Gemini apenas como interpretação opcional de métricas locais determinísticas.
+> **Atualização de escopo — 2026-10-17:** a execução vigente mantém uma única conta pessoal, propriedade direta dos dados, sem papéis/turmas/curadoria/administração e Groq como único provedor externo opcional de interpretação das métricas locais determinísticas, sempre seguido pela contingência local. O histórico anterior de provedores permanece registrado nas decisões substituídas.
 
 ## 1. Controle do documento
 

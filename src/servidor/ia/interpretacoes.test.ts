@@ -1,11 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { calcularMetricasSessoes, type SessaoParaMetricasSessoes } from "@/dominio/analises/metricas-sessoes";
 import type { DtoInterpretacao } from "@/dominio/interpretacoes/esquema";
-import { criarProvedorGemini } from "./gemini";
 import { criarProvedorGroq } from "./groq";
 import { ControleCotaInterpretacoes, criarDtoInterpretacaoModulo, interpretarComFila } from "./interpretacoes";
 import { ErroProvedorInterpretacao } from "./provedor-interpretacoes";
-import { criarProvedorQwen } from "./qwen";
 
 const dto: DtoInterpretacao = {
   escopo: "MODULO",
@@ -34,8 +32,6 @@ const conteudoValido = {
 
 const credenciais = [
   { provedor: "GROQ" as const, modelo: "modelo-groq", chave: "chave-groq-ficticia" },
-  { provedor: "GEMINI" as const, modelo: "modelo-gemini", chave: "chave-gemini-ficticia" },
-  { provedor: "QWEN" as const, modelo: "modelo-qwen", chave: "chave-qwen-ficticia" },
 ];
 
 afterEach(() => vi.unstubAllGlobals());
@@ -46,18 +42,11 @@ describe("interpretações por sessões", () => {
     expect(resultado).toMatchObject({ origem: "GROQ", modelo: "modelo-groq", contexto: { quantidadeSessoesValidas: 2 }, tentativas: [{ provedor: "GROQ", resultado: "SUCESSO" }] });
   });
 
-  it("avança de Groq para Gemini quando o primeiro atinge limite", async () => {
-    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => { throw new ErroProvedorInterpretacao("COTA", 30); } }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
+  it("usa a contingência local imediatamente quando o Groq falha", async () => {
+    const criar = vi.fn().mockReturnValue({ interpretar: async () => { throw new ErroProvedorInterpretacao("COTA", 30); } });
     const resultado = await interpretarComFila(dto, credenciais, { criar });
-    expect(resultado).toMatchObject({ origem: "GEMINI", tentativas: [{ provedor: "GROQ", resultado: "COTA" }, { provedor: "GEMINI", resultado: "SUCESSO" }] });
-    expect(criar).toHaveBeenCalledTimes(2);
-  });
-
-  it("avança de Gemini para Groq quando Gemini falha", async () => {
-    const filaInvertida = [credenciais[1], credenciais[0]];
-    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => { throw new ErroProvedorInterpretacao("MODELO_INVALIDO"); } }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
-    const resultado = await interpretarComFila(dto, filaInvertida, { criar });
-    expect(resultado).toMatchObject({ origem: "GROQ", tentativas: [{ provedor: "GEMINI", resultado: "MODELO_INVALIDO" }, { provedor: "GROQ", resultado: "SUCESSO" }] });
+    expect(resultado).toMatchObject({ origem: "LOCAL", motivoContingencia: "TODOS_INDISPONIVEIS", tentativas: [{ provedor: "GROQ", resultado: "COTA" }] });
+    expect(criar).toHaveBeenCalledTimes(1);
   });
 
   it("usa contingência local sem chaves e quando todas falham", async () => {
@@ -65,13 +54,13 @@ describe("interpretações por sessões", () => {
     const falha = await interpretarComFila(dto, credenciais, { criar: () => ({ interpretar: async () => { throw new ErroProvedorInterpretacao("INDISPONIVEL"); } }) });
     expect(semChave).toMatchObject({ origem: "LOCAL", motivoContingencia: "SEM_CHAVE", tentativas: [] });
     expect(falha).toMatchObject({ origem: "LOCAL", motivoContingencia: "TODOS_INDISPONIVEIS" });
-    expect(falha.tentativas).toHaveLength(3);
+    expect(falha.tentativas).toHaveLength(1);
   });
 
-  it("rejeita conteúdo causal ou relacionado a avaliações e segue a fila", async () => {
-    const criar = vi.fn().mockReturnValueOnce({ interpretar: async () => ({ insights: [{ ...conteudoValido.insights[0], observacao: "Este método causou melhora e comprovou o resultado." }] }) }).mockReturnValueOnce({ interpretar: async () => conteudoValido });
+  it("rejeita conteúdo causal e usa a contingência local", async () => {
+    const criar = vi.fn().mockReturnValue({ interpretar: async () => ({ insights: [{ ...conteudoValido.insights[0], observacao: "Este método causou melhora e comprovou o resultado." }] }) });
     const resultado = await interpretarComFila(dto, credenciais, { criar });
-    expect(resultado).toMatchObject({ origem: "GEMINI", tentativas: [{ resultado: "RESPOSTA_INVALIDA" }, { resultado: "SUCESSO" }] });
+    expect(resultado).toMatchObject({ origem: "LOCAL", motivoContingencia: "RESPOSTA_INVALIDA", tentativas: [{ provedor: "GROQ", resultado: "RESPOSTA_INVALIDA" }] });
   });
 
   it("limita solicitações da mesma conta na janela local", () => {
@@ -81,78 +70,11 @@ describe("interpretações por sessões", () => {
   });
 
   it("mapeia autenticação, cota e indisponibilidade sem ler ou expor corpos de erro", async () => {
-    const provedores = [criarProvedorGroq, criarProvedorGemini, criarProvedorQwen];
-    for (const criar of provedores) {
-      for (const [status, codigo] of [[401, "AUTENTICACAO"], [429, "COTA"], [500, "INDISPONIVEL"]] as const) {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("segredo-que-nao-deve-ser-lido", { status })));
-        await expect(criar("chave-ficticia").interpretar(dto)).rejects.toMatchObject({ codigo });
-        vi.unstubAllGlobals();
-      }
+    for (const [status, codigo] of [[401, "AUTENTICACAO"], [429, "COTA"], [500, "INDISPONIVEL"]] as const) {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("segredo-que-nao-deve-ser-lido", { status })));
+      await expect(criarProvedorGroq("chave-ficticia").interpretar(dto)).rejects.toMatchObject({ codigo });
+      vi.unstubAllGlobals();
     }
-  });
-
-  it("envia ao Gemini o enum REST aceito para saída JSON estruturada", async () => {
-    const buscar = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      candidates: [{ content: { parts: [{ text: JSON.stringify(conteudoValido) }] } }],
-    }), { status: 200, headers: { "Content-Type": "application/json" } }));
-    vi.stubGlobal("fetch", buscar);
-
-    await expect(criarProvedorGemini("chave-ficticia").interpretar(dto)).resolves.toEqual(conteudoValido);
-
-    const corpo = JSON.parse(String(buscar.mock.calls[0]?.[1]?.body));
-    expect(corpo.generationConfig.responseFormat.text.mimeType).toBe("APPLICATION_JSON");
-    expect(corpo.generationConfig.thinkingConfig.thinkingLevel).toBe("low");
-  });
-
-  it("repete falha transitória do Gemini e usa o modelo principal quando ele recupera", async () => {
-    const esperar = vi.fn().mockResolvedValue(undefined);
-    const buscar = vi.fn()
-      .mockResolvedValueOnce(new Response(null, { status: 503 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        candidates: [{ content: { parts: [{ text: JSON.stringify(conteudoValido) }] } }],
-      }), { status: 200, headers: { "Content-Type": "application/json" } }));
-    vi.stubGlobal("fetch", buscar);
-
-    const provedor = criarProvedorGemini("chave-ficticia", "gemini-3.8-flash", 20_000, { esperar, aleatorio: () => 0 });
-    await expect(provedor.interpretar(dto)).resolves.toEqual(conteudoValido);
-
-    expect(buscar).toHaveBeenCalledTimes(2);
-    expect(String(buscar.mock.calls[0]?.[0])).toContain("gemini-3.8-flash");
-    expect(String(buscar.mock.calls[1]?.[0])).toContain("gemini-3.8-flash");
-    expect(esperar).toHaveBeenCalledWith(750);
-    expect(provedor.obterModeloUtilizado?.()).toBe("gemini-3.8-flash");
-  });
-
-  it("usa Gemini 3.7 Flash quando o 3.8 Flash permanece indisponível", async () => {
-    const buscar = vi.fn()
-      .mockResolvedValueOnce(new Response(null, { status: 503 }))
-      .mockResolvedValueOnce(new Response(null, { status: 503 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        candidates: [{ content: { parts: [{ text: JSON.stringify(conteudoValido) }] } }],
-      }), { status: 200, headers: { "Content-Type": "application/json" } }));
-    vi.stubGlobal("fetch", buscar);
-
-    const provedor = criarProvedorGemini("chave-ficticia", "gemini-3.8-flash", 20_000, { esperar: async () => undefined, aleatorio: () => 0 });
-    await expect(provedor.interpretar(dto)).resolves.toEqual(conteudoValido);
-
-    expect(buscar).toHaveBeenCalledTimes(3);
-    expect(String(buscar.mock.calls[2]?.[0])).toContain("gemini-3.7-flash");
-    expect(provedor.obterModeloUtilizado?.()).toBe("gemini-3.7-flash");
-  });
-
-  it("testa a chave do Gemini com uma geração mínima", async () => {
-    const buscar = vi.fn().mockResolvedValue(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "OK" }] } }] }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    }));
-    vi.stubGlobal("fetch", buscar);
-
-    const provedor = criarProvedorGemini("chave-ficticia");
-    await expect(provedor.testarConexao?.()).resolves.toBeUndefined();
-
-    expect(buscar).toHaveBeenCalledTimes(1);
-    expect(buscar.mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
-    expect(String(buscar.mock.calls[0]?.[1]?.body)).toContain("Responda apenas: OK");
   });
 
   it("monta DTO exclusivamente com sessões, descrição e referências opacas", () => {

@@ -9,6 +9,7 @@ import { obterDashboardObservacionalPessoal } from "../src/servidor/dashboard-ob
 import { obterMetricasSessoesModuloPessoal } from "../src/servidor/metricas";
 import { verificarSenha } from "../src/servidor/senhas";
 import { MARCADOR_CENARIO_DIEGO } from "../prisma/cenario-diego";
+import { identificadorModuloCenarioTcc, usuariosCenariosTcc } from "../testes/fixtures/cenarios-tcc";
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL não está definida.");
@@ -16,10 +17,10 @@ const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 function afirmar(valor: unknown, mensagem: string): asserts valor { if (!valor) throw new Error(`Cenário sintético inválido: ${mensagem}`); }
 
 async function principal() {
-  const [usuarios, modulos, materiais, concluidas, invalidas, desafios, vinculadas, ana, bruno, carla, tabelasRemovidas, salas, membrosSala, vinculosSala, salaSintetica] = await Promise.all([
+  const [usuarios, modulos, materiais, concluidas, invalidas, evidencias, desafios, vinculadas, ana, bruno, carla, tabelasRemovidas, salas, membrosSala, vinculosSala, salaSintetica] = await Promise.all([
     prisma.usuario.count(), prisma.moduloAprendizagem.count({ where: { arquivado: false, rascunho: false } }),
     prisma.recursoConteudo.count({ where: { ativo: true } }),
-    prisma.sessaoEstudo.count({ where: { situacao: SituacaoSessao.CONCLUIDA } }), prisma.sessaoEstudo.count({ where: { situacao: SituacaoSessao.INVALIDADA } }),
+    prisma.sessaoEstudo.count({ where: { situacao: SituacaoSessao.CONCLUIDA } }), prisma.sessaoEstudo.count({ where: { situacao: SituacaoSessao.INVALIDADA } }), prisma.evidenciaAprendizagem.count(),
     prisma.desafioExperimentacao.findMany(), prisma.sessaoEstudo.count({ where: { desafioId: { not: null } } }),
     prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "ana.souza" } }),
     prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "bruno.lima" } }),
@@ -28,15 +29,27 @@ async function principal() {
     prisma.sala.count(), prisma.membroSala.count(), prisma.vinculoModuloSala.count(),
     prisma.sala.findUniqueOrThrow({ where: { identificador: "sala-sintetica-grupo-programacao" }, select: { id: true, proprietarioId: true } }),
   ]);
-  afirmar(usuarios === 5, "devem existir cinco contas."); afirmar(modulos === 6, "devem existir seis módulos ativos.");
-  afirmar(materiais === 21, "os 21 materiais devem pertencer diretamente aos módulos.");
+  afirmar(usuarios === 6, "devem existir cinco contas de avaliação e a conta ADMIN."); afirmar(modulos === 21, "devem existir seis módulos demonstrativos e quinze módulos da avaliação.");
+  const admin = await prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: "admin" } });
+  afirmar(admin.administradorIa && admin.nome === "ADMIN", "ADMIN deve possuir a permissão específica de configuração global da IA.");
+  afirmar(materiais === 33, "os 21 materiais demonstrativos e as 12 referências da avaliação devem pertencer diretamente aos módulos.");
   afirmar(tabelasRemovidas.length === 0, "tabelas de tópicos, avaliações e recomendações antigas não devem existir.");
-  afirmar(concluidas === 39 && invalidas === 1, "devem existir 39 sessões concluídas e uma invalidada.");
+  afirmar(concluidas === 189 && invalidas === 1, "devem existir 39 sessões demonstrativas, 150 sessões da avaliação e uma invalidada.");
+  afirmar(evidencias === 157, "devem existir sete evidências do cenário rico e 150 evidências da avaliação.");
   afirmar(desafios.length === 2 && vinculadas === 2, "devem existir dois desafios e duas sessões vinculadas.");
   afirmar(salas === 1 && membrosSala === 1 && vinculosSala === 1, "a sala sintética deve nascer vinculada somente à proprietária.");
   afirmar(salaSintetica.proprietarioId === ana.id, "Ana deve ser a única proprietária da sala sintética.");
   afirmar(await prisma.membroSala.count({ where: { salaId: salaSintetica.id, usuarioId: { in: [bruno.id, carla.id] } } }) === 0, "outras contas não devem receber a sala antes de usar um convite.");
   afirmar(verificarSenha("Laboratorio@2026", ana.senhaHash), "a senha da conta de demonstração deve ser válida.");
+  for (const atribuicao of usuariosCenariosTcc) {
+    const usuario = await prisma.usuario.findUniqueOrThrow({ where: { nomeUsuario: atribuicao.nomeUsuario } });
+    const identificadores = [0, 1, 2].map((numero) => identificadorModuloCenarioTcc(atribuicao.cenario, numero));
+    const modulosAvaliacao = await prisma.moduloAprendizagem.findMany({ where: { usuarioId: usuario.id, identificador: { in: identificadores } }, select: { id: true } });
+    afirmar(modulosAvaliacao.length === 3, `${atribuicao.nome} deve possuir os três módulos do cenário ${atribuicao.cenario}.`);
+    const ids = modulosAvaliacao.map((modulo) => modulo.id);
+    afirmar(await prisma.sessaoEstudo.count({ where: { moduloId: { in: ids } } }) === 30, `${atribuicao.cenario} deve possuir 30 sessões.`);
+    afirmar(await prisma.evidenciaAprendizagem.count({ where: { moduloId: { in: ids } } }) === 30, `${atribuicao.cenario} deve possuir 30 evidências.`);
+  }
 
   const sessoes = await prisma.sessaoEstudo.findMany({ where: { usuarioId: ana.id }, include: { metodos: true, formatos: true, materiais: true } });
   afirmar(sessoes.every((sessao) => sessao.metodos.length >= 1 && sessao.formatos.length >= 1 && sessao.materiais.length >= 1), "toda sessão deve registrar método, formato e material.");
@@ -64,7 +77,7 @@ async function principal() {
     obterMetricasSessoesModuloPessoal(diego.id, "javascript"),
   ]);
   afirmar(painelConceitos.comparacao.length >= 20 && painelConceitos.comparacao.every((item) => item.quantidadeSessoes >= 2), "o módulo de Diego deve mostrar pelo menos 20 conceitos com menções recorrentes.");
-  afirmar(dashboardDiego.periodoRecente.quantidadeSessoes === 24 && dashboardDiego.conceitos.length >= 20, "o Dashboard de Diego deve receber as 24 sessões recentes e o mapa de conceitos preenchido.");
+  afirmar(dashboardDiego.periodoRecente.quantidadeSessoes === 54 && dashboardDiego.conceitos.length >= 20, "o Dashboard de Diego deve reunir as 24 sessões ricas e as 30 sessões de S4 no período recente.");
   afirmar(dashboardDiego.pontoAtencao?.moduloId === moduloDiego.id, "o card de maior dificuldade percebida deve possuir amostra para o módulo de Diego.");
   afirmar(metricasDiego, "as métricas do módulo de Diego devem estar disponíveis.");
   const dtoIa = criarDtoInterpretacaoModulo(metricasDiego.metricas, sessoesDiego);
@@ -78,7 +91,7 @@ async function principal() {
     compreensaoPercebida: sessao.compreensaoPercebida, metodos: sessao.metodos.map((item) => item.metodo),
   })));
   afirmar(comparacao.comparavel && comparacao.desafio.quantidadeSessoes === 2 && comparacao.contextoExterno.quantidadeSessoes === 2, "a comparação deve usar duas sessões em cada grupo.");
-  console.log("Cenário sintético verificado: módulos, sessões, desafios e vínculos de sala estão consistentes sem tópicos ou avaliações.");
+  console.log("Cenário sintético verificado: cinco contas relacionadas a S1–S5, módulos, sessões, evidências, desafios e vínculos de sala consistentes.");
 }
 
 principal().catch((erro) => { console.error(erro); process.exit(1); }).finally(async () => prisma.$disconnect());
