@@ -86,6 +86,17 @@ enum SituacaoVinculoModuloSala {
   DESVINCULADO
 }
 
+enum PapelParticipacaoModuloSala {
+  ADMINISTRADOR
+  PARTICIPANTE
+}
+
+enum SituacaoParticipacaoModuloSala {
+  ATIVA
+  SAIU
+  REMOVIDA
+}
+
 model Usuario {
   id                       String                   @id @default(cuid())
   nome                     String
@@ -109,6 +120,8 @@ model Usuario {
   salasProprias            Sala[]                   @relation("ProprietarioSala")
   membrosSalas             MembroSala[]
   convitesSalas            ConviteSala[]            @relation("CriadorConviteSala")
+  participacoesModulosSala ParticipacaoModuloSala[]
+  convitesModulosSala      ConviteModuloSala[]      @relation("CriadorConviteModuloSala")
   solicitacoesSala         SolicitacaoEntradaSala[] @relation("SolicitanteSala")
   decisoesSala             SolicitacaoEntradaSala[] @relation("DecisorSolicitacaoSala")
   vinculosSala             VinculoModuloSala[]
@@ -298,7 +311,6 @@ model MembroSala {
   encerrouEm DateTime?
   sala       Sala                @relation(fields: [salaId], references: [id], onDelete: Cascade)
   usuario    Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  vinculos   VinculoModuloSala[]
 
   @@unique([salaId, usuarioId])
   @@index([usuarioId, situacao])
@@ -349,16 +361,49 @@ model ModuloSala {
   atualizadoEm         DateTime                       @updatedAt
   sala                 Sala                           @relation(fields: [salaId], references: [id], onDelete: Cascade)
   vinculos             VinculoModuloSala[]
+  participacoes        ParticipacaoModuloSala[]
+  convites             ConviteModuloSala[]
   evidenciasHistoricas EvidenciaHistoricaModuloSala[]
 
   @@unique([salaId, posicao])
   @@index([salaId, situacao])
 }
 
+model ParticipacaoModuloSala {
+  id           String                           @id @default(cuid())
+  moduloSalaId String
+  usuarioId    String
+  papel        PapelParticipacaoModuloSala      @default(PARTICIPANTE)
+  situacao     SituacaoParticipacaoModuloSala   @default(ATIVA)
+  entrouEm     DateTime                         @default(now())
+  encerrouEm   DateTime?
+  moduloSala   ModuloSala                       @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
+  usuario      Usuario                          @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  vinculo      VinculoModuloSala?
+
+  @@unique([moduloSalaId, usuarioId])
+  @@index([usuarioId, situacao])
+  @@index([moduloSalaId, situacao])
+}
+
+model ConviteModuloSala {
+  id           String       @id @default(cuid())
+  moduloSalaId String
+  criadoPorId  String
+  codigoHash   String       @unique
+  expiraEm     DateTime
+  revogadoEm   DateTime?
+  criadoEm     DateTime     @default(now())
+  moduloSala   ModuloSala   @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
+  criadoPor    Usuario      @relation("CriadorConviteModuloSala", fields: [criadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([moduloSalaId, revogadoEm, expiraEm])
+}
+
 model VinculoModuloSala {
   id                    String                    @id @default(cuid())
   moduloSalaId          String
-  membroSalaId          String
+  participacaoModuloSalaId String                 @unique
   usuarioId             String
   moduloPessoalId       String
   situacao              SituacaoVinculoModuloSala @default(ATIVO)
@@ -367,13 +412,13 @@ model VinculoModuloSala {
   dadosDesde            DateTime?
   desvinculadoEm        DateTime?
   moduloSala            ModuloSala                @relation(fields: [moduloSalaId], references: [id], onDelete: Cascade)
-  membroSala            MembroSala                @relation(fields: [membroSalaId], references: [id], onDelete: Cascade)
+  participacaoModuloSala ParticipacaoModuloSala   @relation(fields: [participacaoModuloSalaId], references: [id], onDelete: Cascade)
   usuario               Usuario                   @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
   moduloPessoal         ModuloAprendizagem        @relation(fields: [moduloPessoalId], references: [id], onDelete: Restrict)
 
   @@unique([moduloSalaId, usuarioId])
   @@unique([moduloSalaId, moduloPessoalId])
-  @@index([membroSalaId, situacao])
+  @@index([participacaoModuloSalaId, situacao])
   @@index([usuarioId, situacao])
   @@index([moduloPessoalId, situacao])
 }

@@ -13,7 +13,7 @@ import estilos from "./page.module.css";
 const mensagensErro: Record<string, string> = {
   dados: "Revise os campos informados.",
   convite: "O código é inválido, expirou ou foi revogado.",
-  duplicada: "Você já participa desta sala.",
+  duplicada: "Você já participa deste módulo.",
   falha: "Não foi possível concluir a operação.",
 };
 
@@ -26,15 +26,13 @@ const mensagensSucesso: Record<string, string> = {
 export default async function PaginaSalas({ searchParams }: { searchParams: Promise<{ aba?: string; erro?: string; sucesso?: string }> }) {
   const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
   const [salas, compartilhados] = await Promise.all([listarSalasDaConta(usuario.id), listarModulosCompartilhados(usuario.id)]);
-  const quantidadeModulos = salas.reduce((total, sala) => total + sala._count.modulos, 0);
 
   return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}>
     <main className={estilos.paginaSalas} id="conteudo-principal" tabIndex={-1}>
 
       <div className={estilos.areaConteudoSalas}>
         <header className={estilos.apresentacaoPagina}>
-          <div><p className={estilos.sobretitulo}>APRENDIZAGEM EM GRUPO</p><h1>Salas</h1><p>Participe de espaços compartilhados e conecte seus módulos quando quiser colaborar.</p></div>
-          <dl className={estilos.resumoPagina}><div><dt>Salas</dt><dd>{salas.length}</dd></div><div><dt>Módulos disponíveis</dt><dd>{quantidadeModulos}</dd></div></dl>
+          <div><h1>SALAS</h1><p>Participe de espaços compartilhados e conecte seus módulos quando quiser colaborar.</p></div>
         </header>
 
         {parametros.erro && <p className="mensagem-erro" role="alert">{mensagensErro[parametros.erro] ?? "A operação não pôde ser concluída."}</p>}
@@ -42,13 +40,13 @@ export default async function PaginaSalas({ searchParams }: { searchParams: Prom
 
         <AbasSalas abaInicial={parametros.aba} compartilhados={<ModulosCompartilhados iniciais={compartilhados} />} salas={<section aria-labelledby="titulo-salas">
           <div className={estilos.cabecalhoBibliotecaSalas}>
-            <div><p className={estilos.sobretitulo}>SUAS SALAS</p><h2 id="titulo-salas">Espaços que você participa</h2></div>
+            <div><h2 id="titulo-salas">Espaços que você participa</h2></div>
             <div className={estilos.acoesBibliotecaSalas}>
               <details className={estilos.acaoExpansivel}>
-                <summary><DoorOpen aria-hidden="true" />Entrar com código</summary>
+                <summary><DoorOpen aria-hidden="true" />Acessar módulo com código</summary>
                 <div className={estilos.painelAcaoSala}>
-                  <h3>Entrar em uma sala</h3><p>Informe o código compartilhado pelo administrador.</p>
-                  <form action={entrarEmSala} className={estilos.formulario}><label>Código da sala<input autoCapitalize="characters" maxLength={80} minLength={8} name="codigo" required /></label><BotaoEnvio>Entrar na sala</BotaoEnvio></form>
+                  <h3>Acessar um módulo</h3><p>Informe o código compartilhado pelo administrador do módulo.</p>
+                  <form action={entrarEmSala} className={estilos.formulario}><label>Código do módulo<input autoCapitalize="characters" maxLength={80} minLength={8} name="codigo" required /></label><BotaoEnvio>Acessar módulo</BotaoEnvio></form>
                 </div>
               </details>
               <details className={estilos.acaoExpansivel}>

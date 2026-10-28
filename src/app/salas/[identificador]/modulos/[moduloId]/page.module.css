@@ -1,0 +1,36 @@
+.pagina { min-height: 100vh; padding: 32px clamp(20px, 3vw, 48px) 72px; color: var(--cor-texto); background: var(--cor-fundo); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.conteudo { width: min(100%, var(--largura-conteudo)); margin: 0 auto; }
+.voltar { display: inline-flex; margin-bottom: 24px; color: var(--cor-acao); font-size: .78rem; font-weight: 760; }
+.cabecalho { display: grid; gap: 8px; margin-bottom: 30px; }
+.cabecalho h1 { margin: 0; font-size: clamp(2.2rem, 4.6vw, 3.8rem); line-height: 1; letter-spacing: -.045em; }
+.cabecalho p { max-width: 760px; margin: 0; color: var(--cor-texto-secundario); line-height: 1.55; }
+.areaAbas { display: grid; gap: 22px; min-width: 0; }
+.listaAbas { display: flex; gap: 20px; border-bottom: 1px solid var(--cor-borda); }
+.botaoAba { padding: 14px 2px 12px; border: 0; border-bottom: 3px solid transparent; color: var(--cor-texto-secundario); background: transparent; font: inherit; font-weight: 700; cursor: pointer; }
+.botaoAba[aria-selected="true"] { border-bottom-color: var(--cor-acao); color: var(--cor-texto); }
+.botaoAba:focus-visible { border-radius: 5px; outline: 3px solid #bdb1ff; outline-offset: -3px; }
+.cabecalhoMembros { display: flex; justify-content: flex-end; margin-bottom: 18px; }
+.gestaoConvites { display: flex; flex: 1; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; gap: 10px; }
+.gestaoConvites > form { display: flex; align-items: center; gap: 8px; color: var(--cor-texto-secundario); font-size: .72rem; }
+.removerParticipante { display: flex; justify-content: flex-end; margin-top: 18px; }
+.gradeMembros { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.listaMembros { display: grid; gap: 6px; }
+.listaMembros button { display: grid; gap: 5px; width: 100%; padding: 13px 14px; border: 1px solid transparent; border-radius: 10px; color: var(--cor-texto); background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.listaMembros button:hover { background: var(--cor-superficie-suave); }
+.listaMembros button[aria-pressed="true"] { border-color: var(--cor-borda); background: var(--cor-superficie); }
+.listaMembros button:focus-visible { outline: 3px solid #f0a528; outline-offset: 2px; }
+.listaMembros strong { font-size: .86rem; }
+.listaMembros span { color: var(--cor-texto-secundario); font-size: .68rem; }
+.dashboardMembro { min-width: 0; }
+.estadoAguardando { margin: 0; padding: 28px; border: 1px dashed var(--cor-borda); border-radius: var(--raio-cartao); color: var(--cor-texto-secundario); line-height: 1.55; text-align: center; }
+.estadoVazio { margin: 0; padding: 28px; border: 1px dashed var(--cor-borda); border-radius: var(--raio-cartao); color: var(--cor-texto-secundario); text-align: center; }
+
+@media (max-width: 760px) {
+  .pagina { padding: 24px 14px 48px; }
+  .gradeMembros { grid-template-columns: 1fr; }
+  .listaMembros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .listaMembros { grid-template-columns: 1fr; }
+}

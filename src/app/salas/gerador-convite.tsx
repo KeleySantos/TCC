@@ -6,12 +6,12 @@ import estilos from "./page.module.css";
 
 const estadoInicial: EstadoGeracaoConvite = {};
 
-export function GeradorConvite({ salaId, identificadorSala }: { salaId: string; identificadorSala: string }) {
+export function GeradorConvite({ moduloSalaId, identificadorSala }: { moduloSalaId: string; identificadorSala: string }) {
   const [estado, acao, pendente] = useActionState(gerarNovoConvite, estadoInicial);
   return (
     <div className={estilos.blocoConvite}>
       <form action={acao}>
-        <input name="salaId" type="hidden" value={salaId} />
+        <input name="moduloSalaId" type="hidden" value={moduloSalaId} />
         <input name="identificadorSala" type="hidden" value={identificadorSala} />
         <button disabled={pendente} type="submit">{pendente ? "Gerando…" : "Gerar código e link"}</button>
       </form>

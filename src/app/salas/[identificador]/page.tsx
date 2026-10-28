@@ -1,31 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Archive, BookOpenText, Link2, ShieldCheck, Trash2, UserMinus, UsersRound } from "lucide-react";
+import { Archive, BookOpenText, Plus, Trash2, UserMinus, UsersRound } from "lucide-react";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
-import { ConteudoDashboardModulo } from "@/app/modulos/[identificador]/conteudo-dashboard-modulo";
-import { PainelMetricasSessoes } from "@/app/modulos/[identificador]/painel-metricas-sessoes";
 import { exigirUsuario } from "@/servidor/autenticacao";
-import { listarModulosPessoais } from "@/servidor/modulos";
-import { obterDashboardsSalaDoProprietario, serializarMetricasSala } from "@/servidor/paineis-salas";
 import { obterSalaDaConta } from "@/servidor/salas";
 import { BotaoEnvio } from "../botao-envio";
-import { GeradorConvite } from "../gerador-convite";
-import { ComparacaoMembros } from "../comparacao-membros";
-import { InterpretacaoMembroSala } from "../interpretacao-membro";
 import { CartaoModuloSala } from "../cartoes-salas";
-import { DashboardGeralSala } from "./dashboard-geral-sala";
 import {
-  aderirModuloSala,
   arquivarSalaAtual,
   criarNovoModuloSala,
-  desvincularInstancia,
   excluirSalaAtual,
-  removerMembro,
-  revogarConvite,
   sairSala,
 } from "../acoes";
 import estilos from "../page.module.css";
-import estilosDashboard from "../dashboard-sala.module.css";
 
 const mensagensErro: Record<string, string> = {
   dados: "Revise os dados informados.", indisponivel: "O recurso não está disponível.", limite: "A sala já possui o máximo de cinco módulos.", vinculo: "Você já possui uma instância vinculada a este módulo.", falha: "A operação falhou.",
@@ -36,10 +23,6 @@ export default async function PaginaSala({ params, searchParams }: { params: Pro
   const sala = await obterSalaDaConta(usuario.id, identificador);
   if (!sala) notFound();
   const proprietario = sala.papel === "PROPRIETARIO";
-  const [modulosPessoais, dashboards] = await Promise.all([
-    proprietario ? Promise.resolve([]) : listarModulosPessoais(usuario.id),
-    proprietario ? obterDashboardsSalaDoProprietario(usuario.id, identificador) : Promise.resolve(null),
-  ]);
   const somenteLeitura = sala.situacao !== "ATIVA";
 
   return (
@@ -54,70 +37,34 @@ export default async function PaginaSala({ params, searchParams }: { params: Pro
         {parametros.erro && <p className="mensagem-erro" role="alert">{mensagensErro[parametros.erro] ?? "A operação não pôde ser concluída."}</p>}
         {parametros.sucesso && <p className="mensagem-sucesso" role="status">Operação concluída.</p>}
 
-        {proprietario && dashboards && <section aria-labelledby="titulo-dashboards-sala" className={estilosDashboard.areaDashboards}>
-          <header className={estilosDashboard.cabecalho}><div><p>PAINÉIS DA SALA</p><h2 id="titulo-dashboards-sala">Dashboards da sala</h2></div><span>Agregados exigem ao menos três contribuidores com sessão válida.</span></header>
-          {dashboards.geral.disponivel && dashboards.geral.dados
-            ? <DashboardGeralSala dados={dashboards.geral.dados} nomeSala={sala.nome} />
-            : <p className={estilosDashboard.avisoPrivacidade}>Dashboard geral protegido: existem {dashboards.geral.quantidadeContribuidores} de 3 contribuidores necessários com sessão válida.</p>}
-
-          {dashboards.modulos.map((modulo, indiceModulo) => {
-            const comparaveis = modulo.individuais.map((item) => ({ vinculoId: item.vinculoId, nome: item.nome, metricas: serializarMetricasSala(item.metricas) }));
-            return <details className={estilosDashboard.modulo} key={modulo.id} open={indiceModulo === 0}><summary><strong>{modulo.titulo}</strong><span>{modulo.individuais.length} dashboard(s) ativo(s) · {modulo.quantidadeHistoricas} evidência(s) histórica(s)</span></summary><div className={estilosDashboard.conteudoModulo}>
-              {modulo.agregado.disponivel && modulo.agregado.metricas
-                ? <div className={estilosDashboard.painelMetricas}><PainelMetricasSessoes idTitulo={`titulo-agregado-${modulo.id}`} metricas={serializarMetricasSala(modulo.agregado.metricas)} tituloModulo={modulo.titulo} tituloPainel={`Visão agregada de ${modulo.titulo}`} /></div>
-                : <p className={estilosDashboard.avisoPrivacidade}>Agregado protegido: {modulo.agregado.quantidadeContribuidores} de 3 contribuidores necessários com sessão válida.</p>}
-              <ComparacaoMembros participantes={comparaveis} />
-              <div className={estilosDashboard.individuais}>{modulo.individuais.map((individual) => <details className={estilosDashboard.individual} key={individual.vinculoId}><summary><strong>{individual.nome}</strong><span>Dashboard compartilhado · comparação e IA disponíveis</span></summary><div className={estilosDashboard.conteudoIndividual}>{individual.aprendizagem ? <ConteudoDashboardModulo aprendizagem={individual.aprendizagem} idTitulo={`titulo-individual-${individual.vinculoId}`} metricas={serializarMetricasSala(individual.metricas)} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${individual.nome}`} /> : <PainelMetricasSessoes idTitulo={`titulo-individual-${individual.vinculoId}`} metricas={serializarMetricasSala(individual.metricas)} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${individual.nome}`} />}<InterpretacaoMembroSala identificadorSala={sala.identificador} vinculoId={individual.vinculoId} /></div></details>)}</div>
-            </div></details>;
-          })}
-        </section>}
-
         <div className={estilos.gradeDetalhe}>
           <div className={estilos.colunaPrincipal}>
-            <section className={estilos.painel} aria-labelledby="titulo-modulos-sala">
-              <div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>MÓDULOS-PAI</p><h2 id="titulo-modulos-sala">Módulos da sala</h2></div><BookOpenText aria-hidden="true" /></div>
+            <section className={`${estilos.painel} ${estilos.painelModulosSala}`} aria-labelledby="titulo-modulos-sala">
+              <div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>MÓDULOS-PAI</p><h2 id="titulo-modulos-sala">Módulos da sala</h2></div>{proprietario && sala.modulos.length < 5 && !somenteLeitura ? <details className={estilos.criacaoModuloSala}><summary aria-label="Criar módulo da sala" title="Criar módulo da sala"><Plus aria-hidden="true" /></summary><form action={criarNovoModuloSala} className={estilos.formularioCriacaoModulo}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><h3>Novo módulo</h3><label>Título<input maxLength={120} minLength={3} name="titulo" required /></label><label>Descrição<textarea maxLength={500} minLength={3} name="descricao" required rows={2} /></label><BotaoEnvio>Adicionar módulo ({sala.modulos.length}/5)</BotaoEnvio></form></details> : <BookOpenText aria-hidden="true" />}</div>
               <div className={estilos.listaModulos}>
                 {sala.modulos.map((modulo) => {
-                  const meuVinculo = proprietario ? undefined : modulo.vinculos[0];
                   const resumoVinculo = proprietario
                     ? `${modulo.vinculos.length} ${modulo.vinculos.length === 1 ? "instância" : "instâncias"}`
-                    : meuVinculo ? "Instância vinculada" : "Sem vínculo";
-                  return (
-                    <CartaoModuloSala descricao={modulo.descricao} key={modulo.id} resumo={resumoVinculo} titulo={modulo.titulo}>
-                      {proprietario && modulo.vinculos.length > 0 && <ul className={estilos.listaCompacta}>{modulo.vinculos.map((vinculo) => <li key={vinculo.id}><strong>{vinculo.usuario.nome}</strong><span>Dashboard compartilhado · comparação e IA disponíveis</span></li>)}</ul>}
-                      {!proprietario && !meuVinculo && !somenteLeitura && (
-                        <div className={estilos.acoesVinculo}>
-                          <form action={aderirModuloSala} className={estilos.formularioLinha}>
-                            <input name="identificadorSala" type="hidden" value={sala.identificador} /><input name="moduloSalaId" type="hidden" value={modulo.id} /><input name="modo" type="hidden" value="criar" />
-                            <BotaoEnvio>Criar instância do zero</BotaoEnvio>
-                          </form>
-                          <form action={aderirModuloSala} className={estilos.formularioLinha}>
-                            <input name="identificadorSala" type="hidden" value={sala.identificador} /><input name="moduloSalaId" type="hidden" value={modulo.id} /><input name="modo" type="hidden" value="vincular" />
-                            <label><span className={estilos.textoAcessivel}>Módulo pessoal</span><select name="moduloPessoalId" required><option value="">Vincular módulo existente…</option>{modulosPessoais.map((pessoal) => <option key={pessoal.id} value={pessoal.id}>{pessoal.titulo}</option>)}</select></label>
-                            <BotaoEnvio>Vincular</BotaoEnvio>
-                          </form>
-                        </div>
-                      )}
-                      {!proprietario && meuVinculo && (
-                        <div className={estilos.areaVinculo}>
-                          <p><Link href={`/modulos/${meuVinculo.moduloPessoal.identificador}`}><Link2 aria-hidden="true" /> Abrir {meuVinculo.moduloPessoal.titulo}</Link></p>
-                          <p className={estilos.textoSecundario}>Enquanto esta instância estiver vinculada, o dashboard participa automaticamente das comparações e pode ser interpretado pela IA da Sala.</p>
-                          {!somenteLeitura && <form action={desvincularInstancia}><input name="identificadorSala" type="hidden" value={sala.identificador} /><input name="vinculoId" type="hidden" value={meuVinculo.id} /><BotaoEnvio className={estilos.botaoPerigoSecundario}>Parar de compartilhar</BotaoEnvio></form>}
-                        </div>
-                      )}
-                    </CartaoModuloSala>
-                  );
+                    : modulo.vinculos[0] ? "Instância vinculada" : "Sem vínculo";
+                  return <CartaoModuloSala descricao={modulo.descricao} href={`/salas/${sala.identificador}/modulos/${modulo.id}`} key={modulo.id} resumo={resumoVinculo} titulo={modulo.titulo} />;
                 })}
               </div>
-              {proprietario && sala.modulos.length < 5 && !somenteLeitura && <form action={criarNovoModuloSala} className={estilos.formulario}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><h3>Adicionar módulo</h3><label>Título<input maxLength={120} minLength={3} name="titulo" required /></label><label>Descrição<textarea maxLength={500} minLength={3} name="descricao" required rows={2} /></label><BotaoEnvio>Adicionar módulo ({sala.modulos.length}/5)</BotaoEnvio></form>}
             </section>
 
           </div>
 
           <aside className={estilos.colunaAcoes}>
-            {proprietario && !somenteLeitura && <section className={estilos.painel} aria-labelledby="titulo-convites"><div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>ACESSO</p><h2 id="titulo-convites">Convites</h2></div><ShieldCheck aria-hidden="true" /></div><GeradorConvite identificadorSala={sala.identificador} salaId={sala.id} />{sala.convites.map((convite) => <form action={revogarConvite} className={estilos.itemAcao} key={convite.id}><input name="conviteId" type="hidden" value={convite.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><span>Expira em {convite.expiraEm.toLocaleDateString("pt-BR")}</span><BotaoEnvio>Revogar</BotaoEnvio></form>)}</section>}
-
-            {proprietario && <section className={estilos.painel} aria-labelledby="titulo-membros"><div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>PARTICIPANTES</p><h2 id="titulo-membros">Membros</h2></div><UsersRound aria-hidden="true" /></div>{sala.membros.map((membro) => <div className={estilos.membro} key={membro.id}><p><strong>{membro.usuario.nome}</strong><small>{membro.papel === "PROPRIETARIO" ? "Proprietário" : `@${membro.usuario.nomeUsuario}`}</small></p>{membro.papel === "MEMBRO" && !somenteLeitura && <form action={removerMembro}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><input name="membroId" type="hidden" value={membro.id} /><BotaoEnvio className={estilos.botaoPerigoSecundario}><UserMinus aria-hidden="true" /> Remover</BotaoEnvio></form>}</div>)}</section>}
+            {proprietario && <section className={estilos.painel} aria-labelledby="titulo-participantes-sala">
+              <div className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>VISÃO CONSOLIDADA</p><h2 id="titulo-participantes-sala">Participantes da sala</h2></div><UsersRound aria-hidden="true" /></div>
+              {sala.participantes.length === 0
+                ? <p className={estilos.textoSecundario}>Ainda não há participantes vinculados aos módulos desta sala.</p>
+                : sala.participantes.map((participante) => <div className={estilos.membro} key={participante.usuarioId}>
+                  <p><strong>{participante.nome}</strong><small>@{participante.nomeUsuario}</small></p>
+                  <ul className={estilos.modulosParticipante} aria-label={`Módulos de ${participante.nome}`}>
+                    {participante.modulos.map((modulo) => <li key={modulo.id}>{modulo.titulo}</li>)}
+                  </ul>
+                </div>)}
+            </section>}
 
             <section className={estilos.painel} aria-labelledby="titulo-controles"><h2 id="titulo-controles">Controles da sala</h2>{proprietario ? <>{!somenteLeitura && <form action={arquivarSalaAtual}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><BotaoEnvio className={estilos.botaoNeutro}><Archive aria-hidden="true" /> Arquivar sala</BotaoEnvio></form>}<form action={excluirSalaAtual}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><BotaoEnvio className={estilos.botaoPerigo}><Trash2 aria-hidden="true" /> Excluir sala</BotaoEnvio></form></> : <form action={sairSala}><input name="salaId" type="hidden" value={sala.id} /><input name="identificadorSala" type="hidden" value={sala.identificador} /><BotaoEnvio className={estilos.botaoPerigoSecundario}><UserMinus aria-hidden="true" /> Sair da sala</BotaoEnvio></form>}</section>
           </aside>

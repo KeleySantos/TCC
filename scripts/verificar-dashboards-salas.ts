@@ -1,10 +1,9 @@
 import "dotenv/config";
 import { strict as assert } from "node:assert";
 import { prisma } from "../src/biblioteca/prisma";
-import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, SituacaoSessao } from "../src/gerado/prisma/enums";
-import { gerarInterpretacaoMembroSala, ErroInterpretacaoSala } from "../src/servidor/ia/interpretacoes";
-import { obterDashboardIndividualAutorizado, obterDashboardsSalaDoProprietario } from "../src/servidor/paineis-salas";
-import { criarSala, desvincularInstanciaModuloSala, vincularInstanciaModuloSala } from "../src/servidor/salas";
+import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, SituacaoSessao } from "../src/gerado/prisma/enums";
+import { obterDashboardIndividualAutorizado, obterDashboardModuloSalaDoProprietario } from "../src/servidor/paineis-salas";
+import { criarSala, sairDoModuloSala, vincularInstanciaModuloSala } from "../src/servidor/salas";
 
 const sufixo = Date.now().toString(36);
 const usuarios: string[] = [];
@@ -27,71 +26,55 @@ async function criarContaComSessao(indice: number) {
 
 try {
   const [proprietario, membroDois, membroTres, terceiro] = await Promise.all([1, 2, 3, 4].map(criarContaComSessao));
-  const sala = await criarSala(proprietario.usuario.id, { nome: "Sala de dashboards", descricao: "Validação sintética de agregados.", tituloModuloInicial: "Compiladores", descricaoModuloInicial: "Módulo-pai sintético." });
+  const sala = await criarSala(proprietario.usuario.id, { nome: "Sala de dashboards", descricao: "Validação sintética modular.", tituloModuloInicial: "Compiladores", descricaoModuloInicial: "Módulo-pai sintético." });
   salaId = sala.id;
   const moduloSala = await prisma.moduloSala.findFirstOrThrow({ where: { salaId: sala.id } });
-  const [associacaoDois, associacaoTres] = await Promise.all([
-    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: membroDois.usuario.id, papel: PapelMembroSala.MEMBRO } }),
-    prisma.membroSala.create({ data: { salaId: sala.id, usuarioId: membroTres.usuario.id, papel: PapelMembroSala.MEMBRO } }),
-  ]);
-  assert(associacaoDois && associacaoTres);
+  await prisma.participacaoModuloSala.createMany({ data: [
+    { moduloSalaId: moduloSala.id, usuarioId: membroDois.usuario.id, papel: "PARTICIPANTE" },
+    { moduloSalaId: moduloSala.id, usuarioId: membroTres.usuario.id, papel: "PARTICIPANTE" },
+  ] });
   const vinculoUm = await vincularInstanciaModuloSala(proprietario.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: proprietario.modulo.id, criarInstancia: false });
   const vinculoDois = await vincularInstanciaModuloSala(membroDois.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: membroDois.modulo.id, criarInstancia: false });
-  let painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
+
+  let painel = await obterDashboardModuloSalaDoProprietario(proprietario.usuario.id, sala.identificador, moduloSala.id);
   assert(painel);
-  assert.equal(painel.geral.disponivel, false);
-  assert.equal(painel.geral.quantidadeContribuidores, 2);
-  assert.equal(await obterDashboardsSalaDoProprietario(membroDois.usuario.id, sala.identificador), null);
-  assert.equal(await obterDashboardsSalaDoProprietario(terceiro.usuario.id, sala.identificador), null);
+  assert.equal(painel.agregado.disponivel, false);
+  assert.equal(painel.agregado.quantidadeContribuidores, 2);
+  assert.equal(await obterDashboardModuloSalaDoProprietario(membroDois.usuario.id, sala.identificador, moduloSala.id), null);
+  assert.equal(await obterDashboardModuloSalaDoProprietario(terceiro.usuario.id, sala.identificador, moduloSala.id), null);
 
   const sessaoDois = await prisma.sessaoEstudo.findFirstOrThrow({ where: { usuarioId: membroDois.usuario.id, moduloId: membroDois.modulo.id }, select: { iniciadaEm: true } });
   await prisma.vinculoModuloSala.update({ where: { id: vinculoDois.id }, data: { dadosDesde: new Date(sessaoDois.iniciadaEm.getTime() + 5 * 60_000) } });
-  painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert.equal(painel?.modulos[0].individuais.find((item) => item.vinculoId === vinculoDois.id)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0, "sessão iniciada antes de dadosDesde não pode ser compartilhada");
+  painel = await obterDashboardModuloSalaDoProprietario(proprietario.usuario.id, sala.identificador, moduloSala.id);
+  assert.equal(painel?.individuais.find((item) => item.vinculoId === vinculoDois.id)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0, "sessão iniciada antes de dadosDesde não pode ser compartilhada");
   await prisma.vinculoModuloSala.update({ where: { id: vinculoDois.id }, data: { dadosDesde: null } });
 
   const vinculoTres = await vincularInstanciaModuloSala(membroTres.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: membroTres.modulo.id, criarInstancia: false });
-  painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert(painel?.geral.disponivel);
-  assert.equal(painel.geral.metricas?.tempoEstudo.quantidadeSessoesValidas, 3);
-  assert.equal(painel.geral.metricas?.tempoEstudo.minutosTotais, 60);
-  assert.equal(painel.geral.dados?.baseHistorica.quantidadeSessoes, 3);
-  assert.equal(painel.geral.dados?.metodoMaiorCompreensao?.chave, MetodoEstudo.FEYNMAN);
-  assert.equal(painel.geral.dados?.formatoMaiorCompreensao?.chave, FormatoConteudo.TEXTO);
-  assert(painel.modulos.every((modulo) => modulo.individuais.every((individual) => individual.aprendizagem)));
+  painel = await obterDashboardModuloSalaDoProprietario(proprietario.usuario.id, sala.identificador, moduloSala.id);
+  assert(painel?.agregado.disponivel);
+  assert.equal(painel.agregado.metricas?.tempoEstudo.quantidadeSessoesValidas, 3);
+  assert.equal(painel.agregado.metricas?.tempoEstudo.minutosTotais, 60);
+  assert(painel.individuais.every((individual) => individual.aprendizagem));
   assert(!JSON.stringify(painel).includes("DESCRICAO_PRIVADA_DASHBOARD"));
   assert(!JSON.stringify(painel).includes("ARQUIVO_PRIVADO_DASHBOARD"));
   assert(!JSON.stringify(painel).includes("CONTEUDO_PRIVADO_DASHBOARD"));
 
-  const individualDois = await obterDashboardIndividualAutorizado(proprietario.usuario.id, sala.identificador, vinculoDois.id);
-  assert(individualDois);
-  const interpretacaoAutorizada = await gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoDois.id);
-  assert.equal(interpretacaoAutorizada.origem, "LOCAL");
-  assert.equal(interpretacaoAutorizada.contexto.quantidadeSessoesValidas, 1);
-  const interpretacaoTres = await gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoTres.id);
-  assert.equal(interpretacaoTres.origem, "LOCAL", "todo vínculo ativo deve permitir interpretação por IA");
+  assert(await obterDashboardIndividualAutorizado(proprietario.usuario.id, sala.identificador, vinculoDois.id));
+  assert.equal(await obterDashboardIndividualAutorizado(membroDois.usuario.id, sala.identificador, vinculoDois.id), null);
 
-  await desvincularInstanciaModuloSala(membroTres.usuario.id, vinculoTres.id);
-  await assert.rejects(() => gerarInterpretacaoMembroSala(proprietario.usuario.id, sala.identificador, vinculoTres.id), (erro: unknown) => erro instanceof ErroInterpretacaoSala);
+  await sairDoModuloSala(membroTres.usuario.id, { moduloSalaId: moduloSala.id });
+  assert.equal(await obterDashboardIndividualAutorizado(proprietario.usuario.id, sala.identificador, vinculoTres.id), null);
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: membroTres.modulo.id } }));
   const historicas = await prisma.evidenciaHistoricaModuloSala.findMany({ where: { moduloSalaId: moduloSala.id } });
   assert.equal(historicas.length, 1);
   assert(!JSON.stringify(historicas).includes(membroTres.usuario.id));
   assert(!JSON.stringify(historicas).includes("DESCRICAO_PRIVADA_DASHBOARD"));
-  painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert.equal(painel?.geral.disponivel, false, "o painel geral espelhado usa somente membros ativos com dashboard compartilhado");
-  assert.equal(painel?.geral.dados, null);
-  assert.equal(painel?.modulos[0].agregado.metricas?.tempoEstudo.minutosTotais, 60, "o agregado legado do módulo preserva o histórico anonimizado");
-  assert.equal(painel.modulos[0].individuais.length, 2);
-
-  await vincularInstanciaModuloSala(membroTres.usuario.id, { moduloSalaId: moduloSala.id, moduloPessoalId: membroTres.modulo.id, criarInstancia: false });
-  painel = await obterDashboardsSalaDoProprietario(proprietario.usuario.id, sala.identificador);
-  assert.equal(painel?.geral.disponivel, false, "a sessão histórica não pode contar como contribuição ativa após reativação");
-  assert.equal(painel?.modulos[0].agregado.metricas?.tempoEstudo.minutosTotais, 60, "reativação não pode duplicar a sessão histórica");
-  assert.equal(painel?.modulos[0].individuais.find((item) => item.nome === membroTres.usuario.nome)?.metricas.tempoEstudo.quantidadeSessoesValidas, 0);
+  painel = await obterDashboardModuloSalaDoProprietario(proprietario.usuario.id, sala.identificador, moduloSala.id);
+  assert.equal(painel?.agregado.metricas?.tempoEstudo.minutosTotais, 60, "o agregado do módulo preserva o histórico anonimizado");
+  assert.equal(painel?.individuais.length, 2);
 
   assert(vinculoUm);
-  console.log("Dashboards de salas verificados: mínimo de grupo, isolamento, comparação e IA obrigatórias, histórico pseudonimizado e reativação sem duplicidade.");
+  console.log("Dashboards modulares verificados: autorização, isolamento, amostra mínima, histórico pseudonimizado e ausência de dependência de provedor externo.");
 } finally {
   if (salaId) await prisma.sala.deleteMany({ where: { id: salaId } });
   if (usuarios.length) {

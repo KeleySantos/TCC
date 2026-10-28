@@ -326,8 +326,11 @@ export async function gerarInterpretacaoMembroSala(usuarioId: string, identifica
   if (dto.quantidadeSessoesValidas === 0) return gerarRespostaLocal(dto, "DADOS_INSUFICIENTES");
   if (!controleCotaPadrao.consumir(usuarioId)) return gerarRespostaLocal(dto, "COTA_LOCAL");
   try {
-    return interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId });
+    const interpretacao = await interpretarComFila(dto, await listarCredenciaisAtivas(), { usuarioId });
+    if (!await obterDashboardIndividualAutorizado(usuarioId, identificadorSala, vinculoId)) throw new ErroInterpretacaoSala();
+    return interpretacao;
   } catch (erro) {
+    if (erro instanceof ErroInterpretacaoSala) throw erro;
     logDiagnostico("falha ao preparar credenciais", { escopo: dto.escopo, tipo: erro instanceof Error ? erro.name : "DESCONHECIDO" });
     return gerarRespostaLocal(dto, "TODOS_INDISPONIVEIS");
   }

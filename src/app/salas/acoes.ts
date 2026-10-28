@@ -7,14 +7,16 @@ import {
   arquivarSala,
   criarModuloSala,
   criarSala,
-  entrarSalaComCodigo,
+  entrarModuloSalaComCodigo,
   desvincularInstanciaModuloSala,
   ErroSala,
   excluirSala,
-  gerarConviteSala,
+  gerarConviteModuloSala,
+  removerParticipanteModuloSala,
   removerMembroSala,
-  revogarConviteSala,
+  revogarConviteModuloSala,
   sairDaSala,
+  sairDoModuloSala,
   vincularInstanciaModuloSala,
 } from "@/servidor/salas";
 
@@ -58,25 +60,25 @@ export async function criarNovaSala(formulario: FormData) {
 
 export async function entrarEmSala(formulario: FormData) {
   const usuario = await exigirUsuario();
-  let identificadorSala: string;
+  let destino: { identificadorSala: string; moduloSalaId: string };
   try {
-    identificadorSala = await entrarSalaComCodigo(usuario.id, { codigo: texto(formulario, "codigo") });
+    destino = await entrarModuloSalaComCodigo(usuario.id, { codigo: texto(formulario, "codigo") });
   } catch (erro) {
     redirect(`/salas?erro=${codigoErro(erro)}`);
   }
   revalidatePath("/salas");
-  revalidatePath(`/salas/${identificadorSala}`);
-  redirect(`/salas/${identificadorSala}?sucesso=entrada`);
+  revalidatePath(`/salas/${destino.identificadorSala}`);
+  redirect(`/salas/${destino.identificadorSala}/modulos/${destino.moduloSalaId}?sucesso=entrada`);
 }
 
 export async function gerarNovoConvite(_: EstadoGeracaoConvite, formulario: FormData): Promise<EstadoGeracaoConvite> {
   const usuario = await exigirUsuario();
   try {
-    const convite = await gerarConviteSala(usuario.id, { salaId: texto(formulario, "salaId") });
+    const convite = await gerarConviteModuloSala(usuario.id, { moduloSalaId: texto(formulario, "moduloSalaId") });
     revalidatePath(caminhoSala(formulario));
     return { codigo: convite.codigo, link: `/salas/convite/${encodeURIComponent(convite.codigo)}`, expiraEm: convite.expiraEm.toISOString() };
   } catch (erro) {
-    return { erro: codigoErro(erro) === "indisponivel" ? "A sala não está disponível." : "Não foi possível gerar o convite." };
+    return { erro: codigoErro(erro) === "indisponivel" ? "O módulo não está disponível." : "Não foi possível gerar o convite." };
   }
 }
 
@@ -84,7 +86,7 @@ export async function revogarConvite(formulario: FormData) {
   const usuario = await exigirUsuario();
   const caminho = caminhoSala(formulario);
   try {
-    await revogarConviteSala(usuario.id, texto(formulario, "conviteId"));
+    await revogarConviteModuloSala(usuario.id, texto(formulario, "conviteId"));
   } catch (erro) {
     redirect(`${caminho}?erro=${codigoErro(erro)}`);
   }
@@ -132,6 +134,35 @@ export async function desvincularInstancia(formulario: FormData) {
   }
   revalidatePath(caminho);
   redirect(`${caminho}?sucesso=desvinculado`);
+}
+
+export async function sairModulo(formulario: FormData) {
+  const usuario = await exigirUsuario();
+  const caminho = `${caminhoSala(formulario)}/modulos/${encodeURIComponent(texto(formulario, "moduloSalaId"))}`;
+  try {
+    await sairDoModuloSala(usuario.id, { moduloSalaId: texto(formulario, "moduloSalaId") });
+  } catch (erro) {
+    redirect(`${caminho}?erro=${codigoErro(erro)}`);
+  }
+  revalidatePath("/salas");
+  revalidatePath(caminhoSala(formulario));
+  redirect(caminhoSala(formulario));
+}
+
+export async function removerParticipanteModulo(formulario: FormData) {
+  const usuario = await exigirUsuario();
+  const caminho = `${caminhoSala(formulario)}/modulos/${encodeURIComponent(texto(formulario, "moduloSalaId"))}`;
+  try {
+    await removerParticipanteModuloSala(usuario.id, {
+      moduloSalaId: texto(formulario, "moduloSalaId"),
+      participacaoId: texto(formulario, "participacaoId"),
+    });
+  } catch (erro) {
+    redirect(`${caminho}?erro=${codigoErro(erro)}`);
+  }
+  revalidatePath(caminho);
+  revalidatePath(caminhoSala(formulario));
+  redirect(`${caminho}?sucesso=participante-removido`);
 }
 
 export async function removerMembro(formulario: FormData) {
