@@ -8,6 +8,11 @@
 | `resposta_registrada` | Servidor | Correção do quiz | tentativaId, questãoId, resposta, correta, pontos | Rastrear cálculo | Banco sintético local |
 | `desafio_criado` | Conta pessoal | Criação explícita de desafio | usuarioId, moduloId, método, meta, criadoEm | Contextualizar sessões futuras | Banco sintético local |
 | `desafio_cancelado` | Conta pessoal | Cancelamento explícito | desafioId, usuarioId, canceladoEm | Bloquear novos vínculos sem apagar histórico | Banco sintético local |
+| `CONVITE_MODULO_SALA_GERADO` | Proprietário da Sala | Emissão de código para um módulo | atorId, conviteId, salaId, moduloSalaId | Auditar autorização modular sem persistir o segredo | Banco local |
+| `CONVITE_MODULO_SALA_REVOGADO` | Proprietário da Sala | Revogação de convite modular | atorId, conviteId, moduloSalaId | Impedir novos ingressos pelo código | Banco local |
+| `ENTRADA_MODULO_SALA_POR_CODIGO` | Participante | Aceite de convite modular | atorId, participacaoId, salaId, moduloSalaId, conviteId | Registrar a origem da participação | Banco local |
+| `SAIDA_MODULO_SALA` | Participante | Saída de um módulo | atorId, participacaoId, usuarioId, moduloSalaId | Encerrar autorização e vínculo do módulo | Banco local |
+| `PARTICIPANTE_MODULO_SALA_REMOVIDO` | Proprietário da Sala | Remoção administrativa de um módulo | atorId, participacaoId, usuarioId, moduloSalaId | Encerrar somente a participação indicada | Banco local |
 
 Eventos futuros, ainda não implementados:
 

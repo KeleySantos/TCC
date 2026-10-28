@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 vi.mock("@/biblioteca/prisma", async () => ({ prisma: (await import("../../testes/utilitarios/banco-compartilhamento")).bancoTeste }));
 import { bancoTeste as banco, fecharBancoTeste } from "../../testes/utilitarios/banco-compartilhamento";
 import * as servico from "./compartilhamento-modulos";
-import { criarSala, gerarConviteSala, entrarSalaComCodigo } from "./salas";
+import { criarSala, entrarModuloSalaComCodigo, gerarConviteModuloSala } from "./salas";
 
 let dono: string;
 let modulo: string;
@@ -24,15 +24,16 @@ describe.sequential("Compartilhamento de módulos", () => {
     expect((await servico.gerarCodigoCompartilhamentoModulo(dono, modulo)).codigo).toBe(codigo);
     await expect(servico.obterCompartilhamentoModulo(convidados[0], modulo)).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
   });
-  it("rejeita código inválido, de sala e do próprio dono", async () => {
+  it("rejeita código inválido, modular e do próprio dono", async () => {
     for (const entrada of ["INVALIDO", "SALA-CODIGO", ""]) await expect(servico.aceitarCodigoModulo(convidados[0], { codigo: entrada })).rejects.toMatchObject({ codigo: "CODIGO_INVALIDO" });
     await expect(servico.aceitarCodigoModulo(dono, { codigo })).rejects.toMatchObject({ codigo: "MODULO_PROPRIO" });
     const sala = await criarSala(dono, { nome: "Sala de teste", descricao: "Preservar contexto das salas", tituloModuloInicial: "Módulo coletivo", descricaoModuloInicial: "Contexto independente de teste" });
-    const conviteSala = await gerarConviteSala(dono, { salaId: sala.id });
-    await expect(servico.aceitarCodigoModulo(convidados[0], { codigo: conviteSala.codigo })).rejects.toMatchObject({ codigo: "CODIGO_INVALIDO" });
-    await expect(entrarSalaComCodigo(convidados[0], { codigo })).rejects.toMatchObject({ codigo: "CONVITE_INVALIDO" });
-    await entrarSalaComCodigo(convidados[0], { codigo: conviteSala.codigo });
-    expect(await banco.membroSala.count({ where: { salaId: sala.id, usuarioId: convidados[0], situacao: "ATIVO" } })).toBe(1);
+    const moduloSala = await banco.moduloSala.findFirstOrThrow({ where: { salaId: sala.id } });
+    const conviteModulo = await gerarConviteModuloSala(dono, { moduloSalaId: moduloSala.id });
+    await expect(servico.aceitarCodigoModulo(convidados[0], { codigo: conviteModulo.codigo })).rejects.toMatchObject({ codigo: "CODIGO_INVALIDO" });
+    await expect(entrarModuloSalaComCodigo(convidados[0], { codigo })).rejects.toMatchObject({ codigo: "CONVITE_INVALIDO" });
+    await entrarModuloSalaComCodigo(convidados[0], { codigo: conviteModulo.codigo });
+    expect(await banco.participacaoModuloSala.count({ where: { moduloSalaId: moduloSala.id, usuarioId: convidados[0], situacao: "ATIVA" } })).toBe(1);
   });
   it("adesão repetida não consome vaga e duas adesões simultâneas só ocupam a última vaga uma vez", async () => {
     expect((await servico.aceitarCodigoModulo(convidados[0], { codigo: codigo.toLowerCase() })).jaPossuiAcesso).toBe(false);

@@ -30,7 +30,6 @@ it("alterna Dashboard e Membros com o mesmo padrão acessível das abas de módu
 });
 
 it("abre à direita o dashboard do membro vinculado selecionado", async () => {
-  const usuario = userEvent.setup();
   render(createElement(AbasModuloSala, { abaInicial: "membros", dashboard: createElement("p", null, "Dashboard geral"), membros }));
 
   expect(screen.getByRole("button", { name: /Ana/ }).getAttribute("aria-pressed")).toBe("true");

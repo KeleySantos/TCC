@@ -41,9 +41,9 @@ try {
   const salaA = await criarSala(a.id);
   const salaB = await criarSala(b.id);
   for (const [sala, dono, membro, modulo] of [[salaA, a, b, moduloB], [salaB, b, a, moduloA]] as const) {
-    const convite = await salas.gerarConviteSala(dono.id, { salaId: sala.id });
-    await salas.entrarSalaComCodigo(membro.id, { codigo: convite.codigo });
     const moduloSala = await prisma.moduloSala.findFirstOrThrow({ where: { salaId: sala.id } });
+    const convite = await salas.gerarConviteModuloSala(dono.id, { moduloSalaId: moduloSala.id });
+    await salas.entrarModuloSalaComCodigo(membro.id, { codigo: convite.codigo });
     await salas.vincularInstanciaModuloSala(membro.id, { moduloSalaId: moduloSala.id, moduloPessoalId: modulo.id, criarInstancia: false });
   }
 

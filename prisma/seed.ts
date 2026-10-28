@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/gerado/prisma/client";
-import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelMembroSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
+import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, PapelParticipacaoModuloSala, PapelUsuario, SituacaoSessao } from "../src/gerado/prisma/enums";
 import { criarHashSenha } from "../src/servidor/senhas";
 import { provisionarAdministradorIa } from "../src/servidor/ia/conta-admin";
 import { aplicarCenariosAvaliacaoTcc } from "./cenarios-avaliacao-tcc";
@@ -51,6 +51,7 @@ async function criarSegundoModulo(conta: Conta) {
     duracaoMinutos: 15, situacao: SituacaoSessao.CONCLUIDA, metodos: { create: { metodo: MetodoEstudo.FEYNMAN } },
     formatos: { create: { formato: recurso.formato } }, materiais: { create: { recursoId: recurso.id } },
   } });
+  return modulo;
 }
 
 async function limpar() {
@@ -82,14 +83,21 @@ async function principal() {
   ];
   for (const item of dados) await criarSessao(...item);
   await aplicarCenarioSinteticoDiego(prisma, diego, referencia);
-  await criarSegundoModulo(ana);
+  const moduloLogicaAna = await criarSegundoModulo(ana);
   await aplicarCenariosAvaliacaoTcc(prisma, [ana.usuario, bruno.usuario, carla.usuario, diego.usuario, elisa.usuario]);
   const sala = await prisma.sala.create({ data: { proprietarioId: ana.usuario.id, identificador: "sala-sintetica-grupo-programacao", nome: "Grupo de Programação", descricao: "Sala sintética para acompanhar módulos pessoais sem expor materiais ou sessões." } });
-  const membroAna = await prisma.membroSala.create({
-    data: { salaId: sala.id, usuarioId: ana.usuario.id, papel: PapelMembroSala.PROPRIETARIO },
-  });
   const moduloSala = await prisma.moduloSala.create({ data: { salaId: sala.id, titulo: "JavaScript", descricao: "Módulo-pai sintético para consolidar dashboards autorizados.", posicao: 1 } });
-  await prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, membroSalaId: membroAna.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id } });
+  const moduloSalaLogica = await prisma.moduloSala.create({ data: { salaId: sala.id, titulo: "Lógica", descricao: "Segundo módulo da mesma Sala para demonstrar autorização independente.", posicao: 2 } });
+  const [participacaoAnaJavaScript, participacaoBrunoJavaScript, participacaoAnaLogica] = await Promise.all([
+    prisma.participacaoModuloSala.create({ data: { moduloSalaId: moduloSala.id, usuarioId: ana.usuario.id, papel: PapelParticipacaoModuloSala.ADMINISTRADOR } }),
+    prisma.participacaoModuloSala.create({ data: { moduloSalaId: moduloSala.id, usuarioId: bruno.usuario.id, papel: PapelParticipacaoModuloSala.PARTICIPANTE } }),
+    prisma.participacaoModuloSala.create({ data: { moduloSalaId: moduloSalaLogica.id, usuarioId: ana.usuario.id, papel: PapelParticipacaoModuloSala.ADMINISTRADOR } }),
+  ]);
+  await Promise.all([
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, participacaoModuloSalaId: participacaoAnaJavaScript.id, usuarioId: ana.usuario.id, moduloPessoalId: ana.modulo.id } }),
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSala.id, participacaoModuloSalaId: participacaoBrunoJavaScript.id, usuarioId: bruno.usuario.id, moduloPessoalId: bruno.modulo.id } }),
+    prisma.vinculoModuloSala.create({ data: { moduloSalaId: moduloSalaLogica.id, participacaoModuloSalaId: participacaoAnaLogica.id, usuarioId: ana.usuario.id, moduloPessoalId: moduloLogicaAna.id } }),
+  ]);
   const inicio = diasAntes(2);
   await prisma.sessaoEstudo.create({ data: {
     usuarioId: carla.usuario.id, moduloId: carla.modulo.id,

@@ -4,13 +4,13 @@
 
 ## Operações de salas — Fase 12
 
-`criarSala` exige nome, descrição e primeiro módulo-pai válidos. A conta autenticada se torna a única participante, com papel de proprietária; a sala nasce ativa e com exatamente um módulo-pai. Nenhuma outra conta recebe a sala durante a criação.
+`criarSala` exige nome, descrição e primeiro módulo-pai válidos. A sala nasce ativa, a conta autenticada permanece proprietária e recebe uma `ParticipacaoModuloSala` administrativa no primeiro módulo.
 
-`gerarConviteSala` exige propriedade da sala ativa, cria código aleatório com validade de sete dias e persiste somente SHA-256. O segredo é devolvido uma única vez para uso como código ou link. `entrarSalaComCodigo` valida o código, a expiração, a revogação e a situação da sala e cria ou reativa imediatamente a associação do participante. Solicitações pendentes antigas do mesmo participante são encerradas como aprovadas durante a entrada; o proprietário não precisa decidir o ingresso. Contas que já participam e códigos inválidos falham sem expor a sala a terceiros.
+`gerarConviteModuloSala` exige propriedade da Sala e módulo ativo, cria código aleatório com validade de sete dias e persiste somente SHA-256. `entrarModuloSalaComCodigo` cria ou reativa participação apenas no módulo alvo; código expirado, revogado, legado ou de compartilhamento direto falha sem revelar o recurso. Não existe convite genérico ativo de Sala.
 
-`vincularInstanciaModuloSala` exige membro ativo e aceita exatamente uma alternativa: criar módulo pessoal vazio a partir do título/descrição do módulo-pai ou selecionar módulo próprio ativo e configurado. O vínculo não copia conteúdo. Uma pessoa possui no máximo uma instância ativa por módulo-pai.
+`vincularInstanciaModuloSala` exige participação modular ativa e aceita exatamente uma alternativa: criar módulo pessoal vazio com título/descrição do módulo-pai ou selecionar módulo próprio ativo e configurado. O vínculo não copia conteúdo. Uma pessoa possui no máximo uma instância ativa por módulo-pai.
 
-Ao criar ou reativar um vínculo, o compartilhamento do dashboard, a comparação e a interpretação por IA ficam obrigatoriamente ativos. Não existe operação para desligá-los separadamente. `desvincularInstanciaModuloSala`, saída, remoção ou exclusão lógica encerram conjuntamente o acesso, preservando o módulo pessoal.
+Ao criar ou reativar um vínculo, dashboard, comparação e interpretação por IA ficam obrigatoriamente ativos. `sairDoModuloSala` encerra somente a participação indicada; `sairDaSala` encerra todas as participações comuns; `removerParticipanteModuloSala` é restrita ao proprietário e ao módulo indicado. Todas preservam o módulo pessoal.
 
 Comentários foram retirados do escopo em 2026-10-18. Não existe operação para publicar ou consultar comentários de sala, módulo ou membro; o detalhe da sala não inclui mensagens.
 
@@ -18,7 +18,7 @@ Nenhuma operação de sala autoriza o proprietário a consultar material, sessã
 
 ## Dashboards das salas — Fase 13
 
-`obterDashboardsSalaDoProprietario` é exclusiva do proprietário ativo. Ela calcula a visão geral, os agregados por módulo-pai e os dashboards individuais ativos a partir das métricas oficiais. Agregados com menos de três contribuidores com sessão válida devolvem apenas insuficiência de amostra.
+`obterDashboardModuloSalaDoProprietario` é exclusiva do proprietário e calcula somente o módulo solicitado e seus dashboards individuais ativos. Não existe dashboard consolidado da Sala. Agregados modulares com menos de três contribuidores com sessão válida devolvem apenas insuficiência de amostra.
 
 A comparação nominal usa todos os vínculos ativos com dashboard compartilhado. Ela pode ser ocultada visualmente na interface, mas esse controle não altera o compartilhamento. A comparação não ordena, classifica ou atribui desempenho.
 

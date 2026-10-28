@@ -5,15 +5,16 @@ import { FormatoConteudo, MetodoEstudo, ModoRegistroSessao, SituacaoSessao } fro
 import {
   criarModuloSala,
   criarSala,
-  desvincularInstanciaModuloSala,
+  entrarModuloSalaComCodigo,
   ErroSala,
   excluirSala,
-  gerarConviteSala,
+  gerarConviteModuloSala,
   listarSalasDaConta,
+  obterModuloSalaDaConta,
   obterSalaDaConta,
-  removerMembroSala,
-  revogarConviteSala,
-  entrarSalaComCodigo,
+  removerParticipanteModuloSala,
+  revogarConviteModuloSala,
+  sairDoModuloSala,
   vincularInstanciaModuloSala,
 } from "../src/servidor/salas";
 
@@ -26,80 +27,68 @@ async function deveFalhar(codigo: string, operacao: () => Promise<unknown>) {
 }
 
 try {
-  const [proprietario, membro, terceiro, legado] = await Promise.all(["proprietario", "membro", "terceiro", "legado"].map(async (papel) => {
+  const [proprietario, membro, terceiro] = await Promise.all(["proprietario", "membro", "terceiro"].map(async (papel) => {
     const usuario = await prisma.usuario.create({ data: { nome: `Conta ${papel}`, nomeUsuario: `salas-${papel}-${sufixo}`, senhaHash: "sintetica" } });
     idsUsuarios.push(usuario.id);
     return usuario;
   }));
   const moduloExistente = await prisma.moduloAprendizagem.create({ data: { usuarioId: membro.id, identificador: `java-${sufixo}`, titulo: "Estudos de Java", descricao: "Módulo pessoal com histórico anterior." } });
   await prisma.recursoConteudo.create({ data: { moduloId: moduloExistente.id, identificador: `segredo-${sufixo}`, titulo: "Material privado inconfundível", descricao: "Não pode aparecer para o proprietário.", formato: FormatoConteudo.TEXTO, minutosEstimados: 10, conteudoTexto: "CONTEUDO_PRIVADO_SALA" } });
-  await prisma.sessaoEstudo.create({
-    data: {
-      usuarioId: membro.id, moduloId: moduloExistente.id, descricao: "SESSAO_PRIVADA_SALA", modoRegistro: ModoRegistroSessao.MANUAL,
-      iniciadaEm: new Date("2030-01-01T10:00:00.000Z"), encerradaEm: new Date("2030-01-01T10:30:00.000Z"), duracaoMinutos: 30,
-      dificuldadePercebida: 3, compreensaoPercebida: 4, situacao: SituacaoSessao.CONCLUIDA,
-      metodos: { create: [{ metodo: MetodoEstudo.FEYNMAN }] }, formatos: { create: [{ formato: FormatoConteudo.TEXTO }] },
-    },
-  });
+  await prisma.sessaoEstudo.create({ data: {
+    usuarioId: membro.id, moduloId: moduloExistente.id, descricao: "SESSAO_PRIVADA_SALA", modoRegistro: ModoRegistroSessao.MANUAL,
+    iniciadaEm: new Date("2030-01-01T10:00:00.000Z"), encerradaEm: new Date("2030-01-01T10:30:00.000Z"), duracaoMinutos: 30,
+    dificuldadePercebida: 3, compreensaoPercebida: 4, situacao: SituacaoSessao.CONCLUIDA,
+    metodos: { create: [{ metodo: MetodoEstudo.FEYNMAN }] }, formatos: { create: [{ formato: FormatoConteudo.TEXTO }] },
+  } });
 
-  const sala = await criarSala(proprietario.id, { nome: "Estudos em grupo", descricao: "Sala sintética para autorização.", tituloModuloInicial: "Java", descricaoModuloInicial: "Módulo-pai de Java." });
+  const sala = await criarSala(proprietario.id, { nome: "Estudos em grupo", descricao: "Sala sintética para autorização modular.", tituloModuloInicial: "Java", descricaoModuloInicial: "Módulo-pai de Java." });
   salaId = sala.id;
-  let detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
-  assert(detalheProprietario);
-  assert.equal(Object.hasOwn(detalheProprietario, "comentarios"), false, "O detalhe da sala não deve oferecer comentários.");
-  assert.equal(detalheProprietario.modulos.length, 1);
+  const moduloA = await prisma.moduloSala.findFirstOrThrow({ where: { salaId: sala.id, posicao: 1 } });
+  const moduloB = await criarModuloSala(proprietario.id, { salaId: sala.id, titulo: "Banco de dados", descricao: "Módulo privado B." });
   assert.equal(await obterSalaDaConta(membro.id, sala.identificador), null);
-  assert.equal((await listarSalasDaConta(membro.id)).some((item) => item.id === sala.id), false);
 
-  const convite = await gerarConviteSala(proprietario.id, { salaId: sala.id });
-  const convitePersistido = await prisma.conviteSala.findUniqueOrThrow({ where: { id: convite.id } });
-  assert.notEqual(convitePersistido.codigoHash, convite.codigo);
-  await entrarSalaComCodigo(membro.id, { codigo: convite.codigo.toLowerCase() });
-  detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
-  assert.equal(await prisma.solicitacaoEntradaSala.count({ where: { salaId: sala.id, solicitanteId: membro.id, situacao: "PENDENTE" } }), 0);
-  assert.equal((await obterSalaDaConta(membro.id, sala.identificador))?.papel, "MEMBRO");
-  await deveFalhar("SOLICITACAO_DUPLICADA", () => entrarSalaComCodigo(membro.id, { codigo: convite.codigo }));
+  const conviteA = await gerarConviteModuloSala(proprietario.id, { moduloSalaId: moduloA.id });
+  const convitePersistido = await prisma.conviteModuloSala.findUniqueOrThrow({ where: { id: conviteA.id } });
+  assert.notEqual(convitePersistido.codigoHash, conviteA.codigo);
+  await entrarModuloSalaComCodigo(membro.id, { codigo: conviteA.codigo.toLowerCase() });
+  await deveFalhar("SOLICITACAO_DUPLICADA", () => entrarModuloSalaComCodigo(membro.id, { codigo: conviteA.codigo }));
+  assert.deepEqual((await obterSalaDaConta(membro.id, sala.identificador))?.modulos.map((modulo) => modulo.id), [moduloA.id]);
+  assert.equal(await obterModuloSalaDaConta(membro.id, sala.identificador, moduloB.id), null);
+  assert((await listarSalasDaConta(membro.id)).some((item) => item.id === sala.id));
 
-  const solicitacaoLegada = await prisma.solicitacaoEntradaSala.create({ data: { salaId: sala.id, conviteId: convite.id, solicitanteId: legado.id } });
-  await entrarSalaComCodigo(legado.id, { codigo: convite.codigo });
-  assert.equal((await obterSalaDaConta(legado.id, sala.identificador))?.papel, "MEMBRO");
-  assert.equal((await prisma.solicitacaoEntradaSala.findUniqueOrThrow({ where: { id: solicitacaoLegada.id } })).situacao, "APROVADA");
-  assert.equal(await obterSalaDaConta(terceiro.id, sala.identificador), null);
-
-  const moduloSalaId = detalheProprietario?.modulos[0].id ?? "";
-  const vinculo = await vincularInstanciaModuloSala(membro.id, { moduloSalaId, moduloPessoalId: moduloExistente.id, criarInstancia: false });
+  const vinculo = await vincularInstanciaModuloSala(membro.id, { moduloSalaId: moduloA.id, moduloPessoalId: moduloExistente.id, criarInstancia: false });
   const moduloDepoisDoVinculo = await prisma.moduloAprendizagem.findUniqueOrThrow({ where: { id: moduloExistente.id }, include: { sessoesEstudo: true, materiais: true } });
   assert.equal(moduloDepoisDoVinculo.sessoesEstudo.length, 1);
   assert.equal(moduloDepoisDoVinculo.materiais.length, 1);
-  detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
-  const serializado = JSON.stringify(detalheProprietario);
+  const serializado = JSON.stringify(await obterSalaDaConta(proprietario.id, sala.identificador));
   assert(!serializado.includes("CONTEUDO_PRIVADO_SALA"));
   assert(!serializado.includes("SESSAO_PRIVADA_SALA"));
   assert(!serializado.includes("Material privado inconfundível"));
 
-  assert.equal(Object.hasOwn((await obterSalaDaConta(membro.id, sala.identificador))!, "comentarios"), false);
-
-  for (let numero = 2; numero <= 5; numero += 1) await criarModuloSala(proprietario.id, { salaId: sala.id, titulo: `Módulo ${numero}`, descricao: `Descrição sintética ${numero}.` });
+  for (let numero = 3; numero <= 5; numero += 1) await criarModuloSala(proprietario.id, { salaId: sala.id, titulo: `Módulo ${numero}`, descricao: `Descrição sintética ${numero}.` });
   await deveFalhar("LIMITE_MODULOS", () => criarModuloSala(proprietario.id, { salaId: sala.id, titulo: "Módulo 6", descricao: "Não deve ser criado." }));
 
-  await desvincularInstanciaModuloSala(membro.id, vinculo.id);
+  await sairDoModuloSala(membro.id, { moduloSalaId: moduloA.id });
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: moduloExistente.id } }));
-  const novoVinculo = await vincularInstanciaModuloSala(membro.id, { moduloSalaId, criarInstancia: true });
-  const instanciaNovaId = novoVinculo.moduloPessoalId;
-  detalheProprietario = await obterSalaDaConta(proprietario.id, sala.identificador);
-  const membroSala = detalheProprietario?.membros.find((item) => item.usuarioId === membro.id);
-  assert(membroSala);
-  await removerMembroSala(proprietario.id, { salaId: sala.id, membroId: membroSala.id });
-  assert(await prisma.moduloAprendizagem.findUnique({ where: { id: instanciaNovaId } }));
   assert.equal(await obterSalaDaConta(membro.id, sala.identificador), null);
+  assert((await prisma.evidenciaHistoricaModuloSala.count({ where: { moduloSalaId: moduloA.id } })) > 0);
 
-  await revogarConviteSala(proprietario.id, convite.id);
-  await deveFalhar("CONVITE_INVALIDO", () => entrarSalaComCodigo(terceiro.id, { codigo: convite.codigo }));
+  const conviteB = await gerarConviteModuloSala(proprietario.id, { moduloSalaId: moduloB.id });
+  await entrarModuloSalaComCodigo(terceiro.id, { codigo: conviteB.codigo });
+  const vinculoTerceiro = await vincularInstanciaModuloSala(terceiro.id, { moduloSalaId: moduloB.id, criarInstancia: true });
+  const participacaoTerceiro = await prisma.participacaoModuloSala.findUniqueOrThrow({ where: { moduloSalaId_usuarioId: { moduloSalaId: moduloB.id, usuarioId: terceiro.id } } });
+  await removerParticipanteModuloSala(proprietario.id, { moduloSalaId: moduloB.id, participacaoId: participacaoTerceiro.id });
+  assert(await prisma.moduloAprendizagem.findUnique({ where: { id: vinculoTerceiro.moduloPessoalId } }));
+  assert.equal(await obterSalaDaConta(terceiro.id, sala.identificador), null);
+
+  await revogarConviteModuloSala(proprietario.id, conviteB.id);
+  await deveFalhar("CONVITE_INVALIDO", () => entrarModuloSalaComCodigo(membro.id, { codigo: conviteB.codigo }));
   await excluirSala(proprietario.id, { salaId: sala.id });
   assert(await prisma.moduloAprendizagem.findUnique({ where: { id: moduloExistente.id } }));
-  assert(await prisma.moduloAprendizagem.findUnique({ where: { id: instanciaNovaId } }));
+  assert(await prisma.moduloAprendizagem.findUnique({ where: { id: vinculoTerceiro.moduloPessoalId } }));
+  assert(vinculo);
 
-  console.log("Serviços de salas verificados: entrada imediata por código, compatibilidade, isolamento, compartilhamento obrigatório, ausência de comentários, limite e preservação das instâncias.");
+  console.log("Serviços de salas verificados: autorização, convite, vínculo, saída e remoção estritamente por módulo, com isolamento e preservação das instâncias.");
 } finally {
   if (salaId) await prisma.sala.deleteMany({ where: { id: salaId } });
   if (idsUsuarios.length) {

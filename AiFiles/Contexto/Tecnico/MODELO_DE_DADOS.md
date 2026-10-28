@@ -5,16 +5,17 @@
 ## Fundação de salas e compartilhamento
 
 - `Sala` pertence ao `Usuario` proprietário e usa exclusão lógica.
-- `MembroSala` representa proprietário ou membro e preserva o motivo de encerramento (`SAIU` ou `REMOVIDO`).
-- `ConviteSala` guarda apenas o hash do código, expiração e revogação. `SolicitacaoEntradaSala` permanece como histórico de compatibilidade e é registrada ou encerrada como aprovada no ingresso imediato por código.
+- `MembroSala`, `ConviteSala` e `SolicitacaoEntradaSala` permanecem somente como legado de migrações anteriores; não autorizam consultas nem recebem novos ingressos.
 - `ModuloSala` é um contexto-pai de agregação, limitado pela regra de serviço a cinco itens ativos por sala.
-- `VinculoModuloSala` conecta um membro e seu `ModuloAprendizagem` pessoal ao módulo-pai. O módulo pessoal usa `onDelete: Restrict` e não é propriedade da sala.
+- `ParticipacaoModuloSala` é a fonte de autorização, única por módulo e usuário, com papel `ADMINISTRADOR | PARTICIPANTE` e situação `ATIVA | SAIU | REMOVIDA`.
+- `ConviteModuloSala` guarda somente o hash do código, expiração e revogação e autoriza exclusivamente o módulo referenciado.
+- `VinculoModuloSala` conecta uma participação ativa e seu `ModuloAprendizagem` pessoal ao módulo-pai. O vínculo é opcional durante o primeiro acesso; o módulo pessoal usa `onDelete: Restrict` e não é propriedade da sala.
 - Comparação e interpretação por IA são consequências obrigatórias de um vínculo ativo com `compartilharDashboard = true`; não existem colunas ou controles separados para essas funções. `compartilharDashboard` é desligado ao encerrar o vínculo.
 - Comentários de sala, módulo e membro foram removidos em 2026-10-18; a migração `20261018180000_remover_comentarios_salas` elimina a tabela `ComentarioSala` e o schema ativo não contém suas relações.
 - `EvidenciaHistoricaModuloSala` preserva somente data, duração, percepções, métodos e formatos de uma sessão válida após o desligamento. A referência da sessão e do contribuinte é pseudonimizada por SHA-256 e não existe relação com usuário ou módulo pessoal.
 - `VinculoModuloSala.dadosDesde` define o início da nova janela ao reativar um vínculo já preservado no histórico, evitando contagem duplicada.
 
-Os dashboards são calculados sob demanda. Somente as evidências históricas mínimas são persistidas para que o desligamento não apague o agregado já formado nem reabra acesso individual.
+Os dashboards são calculados sob demanda e exclusivamente por `ModuloSala`; não existe agregado de Sala. Somente as evidências históricas mínimas são persistidas para que o desligamento não apague o agregado modular já formado nem reabra acesso individual.
 
 ## Diagrama de entidades
 

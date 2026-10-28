@@ -119,18 +119,18 @@ Conta pessoal → ação ou rota de servidor → valida entrada e propriedade
 ### Compartilhamento para salas
 
 ```text
-Proprietário cria sala e módulo-pai → código/link válido cria associação ativa imediatamente
-→ membro cria ou vincula módulo pessoal
+Proprietário cria sala e módulo-pai → convite modular cria participação somente no módulo alvo
+→ participante cria ou vincula módulo pessoal no primeiro acesso
 → vínculo expõe somente o dashboard compartilhado, nunca materiais ou sessões
 → comparação e IA ficam disponíveis enquanto o vínculo estiver ativo
-→ saída, remoção, exclusão ou desvínculo encerram acesso sem apagar o módulo pessoal
+→ saída ou remoção encerram somente a participação modular sem apagar o módulo pessoal
 ```
 
-`ModuloSala` é apenas um contexto de agregação. `VinculoModuloSala` não transfere propriedade do `ModuloAprendizagem`; consultas do proprietário selecionam somente a identidade mínima do vínculo. `paineis-salas.ts` compõe métricas vivas e evidências históricas pseudonimizadas, aplica a amostra mínima antes de devolver números e mantém dashboard individual separado do agregado. A IA recebe somente o DTO métrico do dashboard compartilhado.
+`Sala` é uma pasta organizadora. `ParticipacaoModuloSala` autoriza cada módulo independentemente e `VinculoModuloSala` apenas conecta a instância pessoal, sem transferir sua propriedade. `paineis-salas.ts` consulta um módulo por vez, compõe métricas vivas e evidências históricas pseudonimizadas e aplica a amostra mínima antes de devolver números. A IA recebe somente o DTO métrico e revalida o vínculo ativo antes e depois da chamada externa.
 
 ```text
 sessões válidas do vínculo ativo ─┐
-                                 ├─ amostra mínima ─ dashboards de módulo e sala
+                                 ├─ amostra mínima ─ dashboard do módulo
 evidências históricas anônimas ──┘
 
 vínculo ativo com dashboard compartilhado ─ comparação nominal sem ranking
