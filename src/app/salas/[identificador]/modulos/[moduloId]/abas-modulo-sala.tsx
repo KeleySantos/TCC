@@ -15,9 +15,9 @@ const ABAS = ["dashboard", "membros"] as const;
 
 export function AbasModuloSala({ abaInicial = "dashboard", cabecalhoMembros, dashboard, membros }: { abaInicial?: typeof ABAS[number]; cabecalhoMembros?: ReactNode; dashboard: ReactNode; membros: MembroModuloSala[] }) {
   const [abaAtiva, definirAbaAtiva] = useState(abaInicial);
-  const [membroAtivo, definirMembroAtivo] = useState(membros[0]?.id ?? "");
+  const [membroAtivo, definirMembroAtivo] = useState<string | null>(null);
   const botoes = useRef<Array<HTMLButtonElement | null>>([]);
-  const selecionado = membros.find((membro) => membro.id === membroAtivo) ?? membros[0];
+  const selecionado = membros.find((membro) => membro.id === membroAtivo);
 
   function navegar(evento: KeyboardEvent<HTMLButtonElement>, indice: number) {
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(evento.key)) return;
@@ -41,7 +41,7 @@ export function AbasModuloSala({ abaInicial = "dashboard", cabecalhoMembros, das
         role="tab"
         tabIndex={abaAtiva === aba ? 0 : -1}
         type="button"
-      >{aba === "dashboard" ? "Dashboard" : "Membros"}</button>)}
+      >{aba === "dashboard" ? "Dashboard" : "Participantes"}</button>)}
     </div>
 
     <div aria-labelledby="aba-modulo-sala-dashboard" hidden={abaAtiva !== "dashboard"} id="painel-modulo-sala-dashboard" role="tabpanel" tabIndex={0}>{dashboard}</div>
@@ -49,9 +49,11 @@ export function AbasModuloSala({ abaInicial = "dashboard", cabecalhoMembros, das
       {cabecalhoMembros && <div className={estilos.cabecalhoMembros}>{cabecalhoMembros}</div>}
       {membros.length ? <div className={estilos.gradeMembros}>
         <nav aria-label="Participantes do módulo" className={estilos.listaMembros}>{membros.map((membro) => <button aria-pressed={selecionado?.id === membro.id} key={membro.id} onClick={() => definirMembroAtivo(membro.id)} type="button"><strong>{membro.nome}</strong><span>{membro.resumo}</span></button>)}</nav>
-        <section aria-live="polite" className={estilos.dashboardMembro}>{selecionado?.estado === "aguardando_vinculo"
-          ? <><p className={estilos.estadoAguardando}>{selecionado.nome} ainda precisa criar ou vincular uma instância pessoal para alimentar o dashboard.</p>{selecionado.conteudo}</>
-          : selecionado?.conteudo}</section>
+        <section aria-live="polite" className={estilos.dashboardMembro}>{!selecionado
+          ? <p className={estilos.estadoSelecionarParticipante}>Selecione um participante para visualizar o Dashboard</p>
+          : selecionado.estado === "aguardando_vinculo"
+            ? <><p className={estilos.estadoAguardando}>{selecionado.nome} ainda precisa criar ou vincular uma instância pessoal para alimentar o dashboard.</p>{selecionado.conteudo}</>
+            : selecionado.conteudo}</section>
       </div> : <p className={estilos.estadoVazio}>Nenhum participante vinculado a este módulo.</p>}
     </div>
   </section>;

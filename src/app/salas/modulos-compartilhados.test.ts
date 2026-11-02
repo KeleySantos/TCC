@@ -2,21 +2,18 @@
 import { createElement } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { ModulosCompartilhados } from "./modulos-compartilhados";
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
-it("adesão mostra o módulo e proprietário sem controles de edição", async () => {
-  let aceito = false;
-  vi.stubGlobal("fetch", vi.fn(async (_url: string, opcoes?: RequestInit) => {
-    if (opcoes?.method === "POST") { aceito = true; return { ok: true, json: async () => ({ moduloId: "m", jaPossuiAcesso: false }) }; }
-    return { ok: true, json: async () => ({ modulos: aceito ? [{ moduloId: "m", identificador: "algoritmos", titulo: "Algoritmos", proprietarioNome: "Ana" }] : [] }) };
-  }));
-  const usuario = userEvent.setup();
-  render(createElement(ModulosCompartilhados, { iniciais: [] }));
-  expect(screen.getByText(/nenhum módulo compartilhado/i)).toBeTruthy();
-  await usuario.type(screen.getByLabelText("Código do módulo"), "MOD-TESTE");
-  await usuario.click(screen.getByRole("button", { name: "Acessar por código" }));
-  expect(await screen.findByText("Compartilhado por: Ana")).toBeTruthy();
-  expect(screen.getByRole("link", { name: /Algoritmos/ }).getAttribute("href")).toBe("/salas/compartilhados/m");
+it("mostra o proprietário uma única vez na copy aprovada e preserva o padrão do título", () => {
+  render(createElement(ModulosCompartilhados, { iniciais: [{ moduloId: "m", identificador: "algoritmos", titulo: "Algoritmos", proprietarioNome: "Ana" }] }));
+
+  expect(screen.getAllByText("Compartilhado por Ana")).toHaveLength(1);
+  expect(screen.queryByText("Compartilhado por: Ana")).toBeNull();
+  expect(screen.queryByText("Dashboard · Somente leitura")).toBeNull();
+  const link = screen.getByRole("link", { name: /Algoritmos/ });
+  expect(link.getAttribute("href")).toBe("/salas/compartilhados/m");
+  expect(screen.getByText("Algoritmos").getAttribute("data-padrao")).toBe("#textcardmodule");
+  expect(screen.queryByRole("textbox", { name: "Código do módulo" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Acessar por código" })).toBeNull();
   expect(screen.queryByRole("button", { name: /editar|excluir|compartilhar/i })).toBeNull();
 });

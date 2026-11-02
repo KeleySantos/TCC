@@ -1,4 +1,5 @@
 import { DoorOpen, Plus, UsersRound } from "lucide-react";
+import { CabecalhoPagina } from "@/componentes/cabecalho-pagina";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import { listarSalasDaConta } from "@/servidor/salas";
@@ -31,37 +32,34 @@ export default async function PaginaSalas({ searchParams }: { searchParams: Prom
     <main className={estilos.paginaSalas} id="conteudo-principal" tabIndex={-1}>
 
       <div className={estilos.areaConteudoSalas}>
-        <header className={estilos.apresentacaoPagina}>
-          <div><h1>SALAS</h1><p>Participe de espaços compartilhados e conecte seus módulos quando quiser colaborar.</p></div>
-        </header>
+        <CabecalhoPagina descricao="Participe de espaços compartilhados e conecte seus módulos quando quiser colaborar." titulo="SALAS" />
 
         {parametros.erro && <p className="mensagem-erro" role="alert">{mensagensErro[parametros.erro] ?? "A operação não pôde ser concluída."}</p>}
         {parametros.sucesso && <p className="mensagem-sucesso" role="status">{mensagensSucesso[parametros.sucesso] ?? "Operação concluída."}</p>}
 
-        <AbasSalas abaInicial={parametros.aba} compartilhados={<ModulosCompartilhados iniciais={compartilhados} />} salas={<section aria-labelledby="titulo-salas">
+        <AbasSalas abaInicial={parametros.aba} compartilhados={<ModulosCompartilhados iniciais={compartilhados} />} acoes={<div className={estilos.acoesBibliotecaSalas}>
+          <details className={estilos.acaoExpansivel}>
+            <summary><DoorOpen aria-hidden="true" />Acessar módulo com código</summary>
+            <div className={estilos.painelAcaoSala}>
+              <h3>Acessar um módulo</h3><p>Informe o código compartilhado pelo administrador do módulo.</p>
+              <form action={entrarEmSala} className={estilos.formulario}><label>Código do módulo<input autoCapitalize="characters" maxLength={80} minLength={8} name="codigo" required /></label><BotaoEnvio>Acessar módulo</BotaoEnvio></form>
+            </div>
+          </details>
+          <details className={`${estilos.acaoExpansivel} ${estilos.acaoExpansivelCriar}`}>
+            <summary><Plus aria-hidden="true" />Criar sala</summary>
+            <div className={estilos.painelAcaoSala}>
+              <h3>Nova sala</h3>
+              <form action={criarNovaSala} className={estilos.formulario}>
+                <label>Nome da sala<input maxLength={100} minLength={3} name="nome" required /></label>
+                <label>Descrição<textarea maxLength={500} minLength={3} name="descricao" required rows={3} /></label>
+                <fieldset><legend>Primeiro módulo da sala</legend><label>Título<input maxLength={120} minLength={3} name="tituloModuloInicial" required /></label><label>Descrição<textarea maxLength={500} minLength={3} name="descricaoModuloInicial" required rows={2} /></label></fieldset>
+                <BotaoEnvio>Criar sala</BotaoEnvio>
+              </form>
+            </div>
+          </details>
+        </div>} salas={<section aria-labelledby="titulo-salas">
           <div className={estilos.cabecalhoBibliotecaSalas}>
             <div><h2 id="titulo-salas">Espaços que você participa</h2></div>
-            <div className={estilos.acoesBibliotecaSalas}>
-              <details className={estilos.acaoExpansivel}>
-                <summary><DoorOpen aria-hidden="true" />Acessar módulo com código</summary>
-                <div className={estilos.painelAcaoSala}>
-                  <h3>Acessar um módulo</h3><p>Informe o código compartilhado pelo administrador do módulo.</p>
-                  <form action={entrarEmSala} className={estilos.formulario}><label>Código do módulo<input autoCapitalize="characters" maxLength={80} minLength={8} name="codigo" required /></label><BotaoEnvio>Acessar módulo</BotaoEnvio></form>
-                </div>
-              </details>
-              <details className={estilos.acaoExpansivel}>
-                <summary><Plus aria-hidden="true" />Criar sala</summary>
-                <div className={estilos.painelAcaoSala}>
-                  <h3>Nova sala</h3>
-                  <form action={criarNovaSala} className={estilos.formulario}>
-                    <label>Nome da sala<input maxLength={100} minLength={3} name="nome" required /></label>
-                    <label>Descrição<textarea maxLength={500} minLength={3} name="descricao" required rows={3} /></label>
-                    <fieldset><legend>Primeiro módulo da sala</legend><label>Título<input maxLength={120} minLength={3} name="tituloModuloInicial" required /></label><label>Descrição<textarea maxLength={500} minLength={3} name="descricaoModuloInicial" required rows={2} /></label></fieldset>
-                    <BotaoEnvio>Criar sala</BotaoEnvio>
-                  </form>
-                </div>
-              </details>
-            </div>
           </div>
 
           <GradeSalas salas={salas} />

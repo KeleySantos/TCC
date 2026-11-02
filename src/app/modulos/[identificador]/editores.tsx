@@ -25,6 +25,7 @@ export function EditorModulo({ id, identificador, inicialmenteEditando, titulo, 
     <div className={estilos.tituloEditavel}>
       <div>
         <h1>{titulo}</h1>
+        {!editando && <p className={estilos.descricaoModulo}>{descricao}</p>}
       </div>
     </div>
     {editando && <form action={atualizarModulo} className={estilos.formularioEdicao} id={idFormulario}>

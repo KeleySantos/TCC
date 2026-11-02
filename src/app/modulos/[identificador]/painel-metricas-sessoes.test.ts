@@ -2,6 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FormatoConteudo, MetodoEstudo } from "@/gerado/prisma/enums";
+import { readFileSync } from "node:fs";
 import { PainelMetricasSessoes, type MetricasSessoesExibicao } from "./painel-metricas-sessoes";
 
 const metricas: MetricasSessoesExibicao = {
@@ -17,6 +18,17 @@ const metricas: MetricasSessoesExibicao = {
 };
 
 describe("painel de métricas do módulo", () => {
+  it("usa a paleta azul e amarela aprovada sem preenchimento em degradê", () => {
+    const fonte = readFileSync(new URL("./painel-metricas-sessoes.tsx", import.meta.url), "utf8");
+    expect(fonte).not.toContain("linearGradient");
+    expect(fonte).not.toContain("url(#preenchimento");
+    expect(fonte).toContain("#2E78F6");
+    expect(fonte).toContain("#EF8D4B");
+    expect(fonte).not.toContain("#2C82B5");
+    expect(fonte).not.toContain("#FFDA21");
+    expect(fonte).not.toContain("#95B1EE");
+    expect(fonte).not.toContain("#FCDD9D");
+  });
   it("apresenta somente os indicadores mantidos na composição", () => {
     const html = renderToStaticMarkup(createElement(PainelMetricasSessoes, {
       metricas,
@@ -44,6 +56,7 @@ describe("painel de métricas do módulo", () => {
     expect(html).toContain("Regularidade observada: 3 de 4 semanas com estudo");
     expect(html).toContain("75% das semanas");
     expect(html).toContain("Percepção × evidências ao longo do tempo");
+    expect(html).not.toContain("1 período(s)");
     expect(html).toContain("78%");
     expect(html).not.toContain("Minutos");
     expect(html).not.toContain("Métodos utilizados");

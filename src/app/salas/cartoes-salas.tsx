@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { BookOpenText, UsersRound } from "lucide-react";
+import { TextoCartaoModulo } from "@/componentes/texto-cartao-modulo";
+import { ModalInstanciaVinculada } from "./modal-instancia-vinculada";
 import estilos from "./page.module.css";
 
 type SalaResumo = {
@@ -17,19 +19,22 @@ export function GradeSalas({ salas }: { salas: SalaResumo[] }) {
     {salas.map((sala) => <Link aria-label={`Abrir sala ${sala.nome}`} className={estilos.cartaoSalaBiblioteca} href={`/salas/${sala.identificador}`} key={sala.id}>
       <span className={estilos.iconeCartaoSala}><UsersRound aria-hidden="true" /></span>
       <span className={estilos.conteudoCartaoSala}>
-        <strong>{sala.nome}</strong>
+        <TextoCartaoModulo>{sala.nome}</TextoCartaoModulo>
         <span className={estilos.papelCartaoSala}>{sala.papel === "PROPRIETARIO" ? "Você administra esta sala" : "Você é membro"}{sala.situacao === "ARQUIVADA" ? " · Arquivada" : ""}</span>
       </span>
     </Link>)}
   </div>;
 }
 
-export function CartaoModuloSala({ href, titulo, descricao, resumo }: { href: string; titulo: string; descricao: string; resumo: string }) {
+type InstanciaVinculada = { vinculoId: string; titulo: string; descricao: string };
+
+export function CartaoModuloSala({ href, titulo, resumo, instanciaVinculada }: { href: string; titulo: string; resumo: string; instanciaVinculada?: InstanciaVinculada }) {
+  if (instanciaVinculada) return <ModalInstanciaVinculada {...instanciaVinculada} resumo={resumo} />;
   return <Link aria-label={`Abrir módulo ${titulo}`} className={estilos.cartaoModulo} href={href}>
-    <header>
-      <span className={estilos.iconeModuloSala}><BookOpenText aria-hidden="true" /></span>
-      <div className={estilos.tituloModuloSala}><h3>{titulo}</h3><p>{descricao}</p></div>
-      <span className={estilos.resumoModuloSala}>{resumo}</span>
-    </header>
+    <span className={estilos.iconeModuloSala}><BookOpenText aria-hidden="true" /></span>
+    <span className={estilos.conteudoCartaoSala}>
+      <TextoCartaoModulo variante="claro">{titulo}</TextoCartaoModulo>
+      <span className={`${estilos.papelCartaoSala} ${estilos.resumoModuloSala}`}>{resumo}</span>
+    </span>
   </Link>;
 }

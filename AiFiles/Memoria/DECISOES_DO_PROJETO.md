@@ -105,3 +105,7 @@ Para que a restrição não dependa de um cookie contendo um ID adulterável, as
 ## D-058 — Sala como pasta e autorização estritamente modular (2026-10-28)
 
 Por solicitação explícita do autor, a Sala passa a organizar módulos sem conceder acesso por si mesma. `ParticipacaoModuloSala` é a única fonte ativa de autorização; convite, vínculo, saída, remoção, dashboard e membros pertencem ao módulo. Participantes enxergam somente módulos autorizados, enquanto o proprietário vê a união deduplicada na Sala. Não existe convite nem dashboard consolidado de Sala. `MembroSala`, `ConviteSala` e solicitações anteriores permanecem apenas como legado histórico, sem autorizar operações. Esta decisão substitui D-031, D-032 e D-050 onde definiam ingresso ou agregação no nível da Sala, preservando privacidade, amostra mínima, histórico pseudonimizado e a obrigatoriedade de comparação/IA do vínculo ativo definida em D-055.
+
+## D-059 — `#Subtitulo` como padrão visual reutilizável (2026-10-31)
+
+Por solicitação explícita do autor, o desenho tipográfico atualmente usado em “O que seus registros mostram” passa a ser encapsulado no componente `Subtitulo`. Quando um pedido futuro mencionar `#Subtitulo`, aplicar esse componente — preservando família, tamanho, peso, cor, espaçamento e responsividade — sem copiar o texto original. O conteúdo e o nível semântico continuam definidos pelo contexto de uso.

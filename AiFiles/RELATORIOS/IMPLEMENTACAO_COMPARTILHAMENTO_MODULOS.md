@@ -2,6 +2,37 @@
 
 Data: 18/10/2026.
 
+## Revalidação da especificação — 27/10/2026
+
+A especificação `ESPECIFICACAO_COMPARTILHAMENTO_MODULOS_CODEX.md` foi novamente confrontada com o código atual. A funcionalidade já está implementada e versionada no repositório, incluindo a migração e os testes; não foi necessário recriá-la ou modificar código nesta revalidação. As alterações locais preexistentes nas bibliotecas de Módulos e Salas foram preservadas.
+
+### Evidências atuais
+
+| Verificação executada | Resultado |
+|---|---|
+| `npm run testar -- --maxWorkers=2` | 235 testes aprovados em 67 arquivos. |
+| `npm run testar:compartilhamento-modulos` | 15 testes aprovados em 4 arquivos, com SQLite temporário isolado. |
+| `npm run verificar-estilo` | Aprovado, saída 0. |
+| `npm run verificar-tipos` | Aprovado, saída 0. |
+| `npm run verificar:segredos` | 509 arquivos verificados, nenhum padrão de credencial encontrado. |
+| `npm run compilar` | Build de produção aprovado, saída 0; rotas do proprietário, convidado e IA compartilhada incluídas. |
+| Consulta somente leitura ao banco local | Tabelas `CompartilhamentoModulo` e `AcessoModuloCompartilhado` presentes; migração `20261018210000_compartilhamento_modulos` registrada; zero violações em `foreign_key_check`. |
+
+Os testes dedicados exercitam limite e concorrência na última vaga, adesão repetida, códigos de contextos diferentes, tentativa de adesão pelo proprietário, remoção, encerramento, reinício, arquivamento, exclusão por cascade, métricas do proprietário, isolamento de dados, edição negada e revogação durante geração de IA. Os testes de interface da suíte completa verificam modal, confirmação, falha de cópia, abas por teclado, cards, perda de acesso e descarte de resposta atrasada.
+
+A inspeção confirmou que o dashboard compartilhado reutiliza `ConteudoDashboardModulo` e que a IA utiliza `InterpretacaoAutomatica` com `compacto` e `modalLateral`, assim como o Dashboard principal. O indicador atual nos cards próprios é um ícone discreto com quantidade em texto acessível e tooltip, preservando o refinamento visual posterior à implementação original.
+
+### Alterações desta revalidação e limites
+
+- Atualizados somente este relatório e os registros de acompanhamento e da matriz de requisitos. Nenhum código-fonte, dependência ou estrutura de banco precisou de ajuste.
+- A geração do cliente Prisma e dos arquivos de build foi executada pelos comandos de verificação. Não foram executados migração, reset, seed ou alterações de dados no banco local.
+- Não houve chamada real à Groq nem alteração dos critérios ou do corpus do TCC. A disponibilidade externa da IA não foi testada.
+- Não foi repetida a validação manual em navegador nesta data; os registros de navegador nas seções históricas abaixo pertencem à entrega original. A validação atual de interface foi automatizada.
+- A revogação bloqueia novas solicitações no servidor. A remoção do conteúdo já aberto é feita quando a interface detecta a perda de acesso, por nova solicitação ou retorno de foco/visibilidade; não existe atualização instantânea por WebSocket.
+- A remoção individual não invalida o código ainda ativo. Para impedir nova adesão com um código anteriormente distribuído, encerre o compartilhamento e gere outro.
+
+O roteiro de uso e a relação dos arquivos e estruturas já implementados estão nas seções seguintes.
+
 ## Funcionalidade entregue
 
 O proprietário pode compartilhar o dashboard de um módulo configurado e ativo com até **três convidados**. O módulo continua pertencendo à conta original, sem duplicação de materiais, sessões ou indicadores.

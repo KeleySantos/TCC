@@ -67,15 +67,17 @@ describe("gráficos observacionais do Dashboard", () => {
     expect(html).toContain("Ainda não há métodos com percepção e evidências posteriores suficientes");
   });
 
-  it("usa barras nos comparativos e linhas retas sem degradê na evolução", () => {
+  it("usa barras mais espessas nos comparativos e curvas suaves na evolução", () => {
     expect(fonteGraficos).toContain("<BarChart");
     expect(fonteGraficos).toContain('layout="vertical"');
     expect(fonteGraficos).toMatch(/<XAxis[^>]*type="number"/);
     expect(fonteGraficos).toMatch(/<YAxis[^>]*dataKey="contexto"[^>]*type="category"/);
-    expect(fonteGraficos.match(/maxBarSize=\{14\}/g)).toHaveLength(2);
+    expect(fonteGraficos).toContain('barCategoryGap="22%"');
+    expect(fonteGraficos.match(/maxBarSize=\{22\}/g)).toHaveLength(2);
     expect(fonteGraficos).toContain("<Bar ");
     expect(fonteGraficos).not.toContain("<AreaChart");
     expect(fonteGraficos).not.toContain("linearGradient");
-    expect(fonteGraficos).toContain('type="linear"');
+    expect(fonteGraficos.match(/type="monotone"/g)).toHaveLength(2);
+    expect(fonteGraficos).not.toContain('type="linear"');
   });
 });

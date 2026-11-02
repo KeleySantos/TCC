@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globais.css";
 
 export const metadata: Metadata = {
-  title: "Aprender com Evidências",
+  title: "Learning Lab",
   description: "Plataforma educacional de Learning Analytics.",
 };
 

@@ -60,4 +60,9 @@ describe("cards do Dashboard pessoal", () => {
 
     expect(html).toMatch(/<div[^>]*>\s*<h2[^>]*>O que seus registros mostram<\/h2>\s*<button[^>]*>Ação de teste<\/button>\s*<\/div>/);
   });
+
+  it("usa o padrão visual reutilizável Subtitulo no título da seção", () => {
+    const html = renderToStaticMarkup(createElement(CartoesInsightsDashboard, { dados: dadosComTresSessoes() }));
+    expect(html).toMatch(/<h2[^>]*class="[^"]*subtitulo[^"]*"[^>]*>O que seus registros mostram<\/h2>/);
+  });
 });

@@ -7,17 +7,17 @@ const estilosGraficos = readFileSync(new URL("../../componentes/graficos-dashboa
 const estilosInsights = readFileSync(new URL("../../componentes/cartoes-insights-dashboard.module.css", import.meta.url), "utf8");
 const estilosAnel = readFileSync(new URL("../../componentes/grafico-anel-observacional.module.css", import.meta.url), "utf8");
 const estilosGlobais = readFileSync(new URL("../globais.css", import.meta.url), "utf8");
+const estilosModulo = readFileSync(new URL("../modulos/[identificador]/page.module.css", import.meta.url), "utf8");
+const estilosInterpretacao = readFileSync(new URL("../../componentes/interpretacao-automatica.module.css", import.meta.url), "utf8");
+const filtroPeriodo = readFileSync(new URL("../modulos/[identificador]/filtro-periodo-modulo.tsx", import.meta.url), "utf8");
 
 describe("composição minimalista do Dashboard", () => {
-  it("mantém a saudação e remove os textos introdutórios apontados", () => {
-    expect(pagina).toContain("<h1 id=\"titulo-dashboard\">Olá, {primeiroNome}!</h1>");
+  it("apresenta a saudação pelo primeiro nome acima do título Dashboard", () => {
+    expect(pagina).toContain("<CabecalhoPagina idTitulo=\"titulo-dashboard\" preTitulo={<>Olá, {primeiroNome}!</>} titulo=\"DASHBOARD\" />");
     expect(pagina).not.toContain("SUA JORNADA DE APRENDIZAGEM");
     expect(pagina).not.toContain("Observe como você tem estudado");
     expect(pagina).not.toContain("Leitura recente");
-    expect(estilos).toMatch(/\.boasVindas h1\s*\{[^}]*font-family:\s*Inter/s);
-    expect(estilos).toMatch(/\.boasVindas h1\s*\{[^}]*font-weight:\s*850/s);
-    expect(estilos).toMatch(/\.boasVindas h1\s*\{[^}]*text-transform:\s*uppercase/s);
-    expect(estilos).toMatch(/\.boasVindas h1\s*\{[^}]*font-size:\s*clamp\(2\.4rem,\s*4\.8vw,\s*4rem\)/s);
+    expect(pagina).toContain('import { CabecalhoPagina } from "@/componentes/cabecalho-pagina"');
   });
 
   it("mantém somente as três métricas solicitadas na base", () => {
@@ -45,17 +45,42 @@ describe("composição minimalista do Dashboard", () => {
     expect(estilosInsights).toMatch(/\.cartao\s*\{[^}]*border:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none/s);
     expect(estilosGraficos).toMatch(/\.cartaoGrafico\s*\{[^}]*border:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none/s);
     expect(estilos).toMatch(/\.cartao\s*\{[^}]*border:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none/s);
-    expect(estilos).toMatch(/\.cartaoBase\s*\{[^}]*background:\s*#171717/s);
+    expect(estilos).toMatch(/\.cartaoBase\s*\{[^}]*background:\s*var\(--cor-navegacao\)/s);
     expect(estilos).toMatch(/\.cartaoBase\s+:is\(h2,\s*dt,\s*dd\)\s*\{[^}]*color:\s*#fff/s);
     expect(estilos).toMatch(/\.cartaoBase\s+\.base\s+dt\s*\{[^}]*color:\s*#fff/s);
-    expect(estilos).toMatch(/\.poucosDados\s*\{[^}]*background:\s*#FCDD9D/s);
+    expect(estilos).toMatch(/\.poucosDados\s*\{[^}]*background:\s*#EF8D4B/s);
+  });
+
+  it("usa os tokens de identidade no cabeçalho, na base e no botão de interpretação", () => {
+    expect(estilos).toMatch(/\.paginaDashboard\s+:global\(\[data-trilha-pre-titulo="preenchida"\]\)\s*\{[^}]*color:\s*var\(--cor-dados-azul\)/s);
+    expect(estilos).toMatch(/\.paginaDashboard\s+:global\(#titulo-dashboard\)\s*\{[^}]*color:\s*var\(--cor-navegacao\)/s);
+    expect(estilos).toMatch(/\.cartaoBase\s*\{[^}]*background:\s*var\(--cor-navegacao\)/s);
+    expect(estilosInterpretacao).toMatch(/\.botaoAbrir\s*\{[^}]*border:\s*1px solid var\(--cor-navegacao\)[^}]*background:\s*var\(--cor-navegacao\)[^}]*transition:[^}]*transform[^}]*box-shadow/s);
+    expect(estilosInterpretacao).toMatch(/\.botaoAbrir:hover\s*\{[^}]*transform:\s*translateY\(-2px\)[^}]*box-shadow:/s);
   });
 
   it("aproxima a saudação do cabeçalho dos registros e alinha as ações nele", () => {
     expect(pagina).toContain("<CartoesInsightsDashboard acoes={");
-    expect(estilos).toMatch(/\.areaConteudo\s*\{[^}]*padding:\s*clamp\(77px,\s*9\.6vw,\s*128px\)/s);
-    expect(estilos).toMatch(/\.boasVindas\s*\{[^}]*margin-bottom:\s*8px/s);
+    expect(estilos).toMatch(/\.areaConteudo\s*\{[^}]*padding:\s*clamp\(38px,\s*4\.8vw,\s*64px\)/s);
+    expect(estilos).not.toMatch(/\.boasVindas/);
     expect(estilosInsights).toMatch(/\.cabecalho\s*\{[^}]*padding-bottom:\s*16px[^}]*border-bottom:\s*1px solid var\(--cor-borda\)/s);
+  });
+
+  it("apresenta os nomes da consistência com a mesma tipografia dos valores", () => {
+    expect(estilos).toMatch(/\.tabelaConsistencia tbody th\s*\{[^}]*color:\s*inherit[^}]*font-size:\s*inherit[^}]*font-weight:\s*400/s);
+  });
+
+  it("alinha verticalmente o filtro ao botão de interpretação em todas as telas", () => {
+    expect(estilosModulo).toMatch(/\.botaoFiltroPeriodo\s*\{[^}]*min-height:\s*48px/s);
+    expect(estilosInterpretacao).toMatch(/\.botaoAbrir\s*\{[^}]*min-height:\s*48px/s);
+  });
+
+  it("mantém o painel do filtro legível e usa um CTA curto", () => {
+    expect(filtroPeriodo).toContain(">Filtrar</button>");
+    expect(filtroPeriodo).not.toContain("Concluir filtro");
+    expect(estilosModulo).toMatch(/\.painelFiltroPeriodo\s*\{[^}]*width:\s*min\(510px,\s*calc\(100vw - 32px\)\)[^}]*max-width:\s*none/s);
+    expect(estilosModulo).toMatch(/\.painelFiltroPeriodo form\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(150px,\s*1fr\)\)\s+auto/s);
+    expect(estilosModulo).toMatch(/@media\s*\(max-width:\s*760px\)[\s\S]*?\.painelFiltroPeriodo\s*\{[^}]*width:\s*min\(360px,\s*calc\(100vw - 28px\)\)[^}]*max-width:\s*none/s);
   });
 
   it("separa visualmente os quatro insights sem recriar cards", () => {

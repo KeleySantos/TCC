@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { ClipboardCheck, FileText, Image, NotebookPen, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import estilos from "./page.module.css";
@@ -27,7 +28,9 @@ export function FormularioMaterial({ moduloId }: { moduloId: string }) {
   const [aberto, definirAberto] = useState(false);
   const [funcao, definirFuncao] = useState<FuncaoArquivo>("REFERENCIA");
   const [processando, definirProcessando] = useState(false);
+  const [arquivoSelecionado, definirArquivoSelecionado] = useState<string | null>(null);
   const [mensagem, definirMensagem] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
+  const campoArquivo = useRef<HTMLInputElement>(null);
   const hoje = new Date().toISOString().slice(0, 10);
 
   async function enviarArquivo(evento: FormEvent<HTMLFormElement>) {
@@ -45,6 +48,7 @@ export function FormularioMaterial({ moduloId }: { moduloId: string }) {
       }
       const sucesso = corpo && typeof corpo === "object" ? corpo as { material?: { id?: unknown }; analisar?: unknown } : {};
       formulario.reset();
+      definirArquivoSelecionado(null);
       definirFuncao("REFERENCIA");
       definirMensagem({ tipo: "sucesso", texto: sucesso.analisar ? "Arquivo adicionado. A análise automática foi iniciada." : "Arquivo adicionado ao módulo." });
       roteador.refresh();
@@ -71,7 +75,7 @@ export function FormularioMaterial({ moduloId }: { moduloId: string }) {
       {aberto ? <X aria-hidden="true" /> : <Plus aria-hidden="true" />}
     </button>
 
-    {aberto && <div className={estilos.painelFormularioMaterial} id="formulario-novo-material">
+    {aberto && createPortal(<><div aria-hidden="true" className={estilos.fundoFormularioMaterial} onClick={() => definirAberto(false)} /><div className={estilos.painelFormularioMaterial} id="formulario-novo-material">
       <p className={estilos.instrucaoTipoArquivo}>Que tipo de arquivo você vai adicionar?</p>
       <div className={estilos.seletorTipoMaterial} aria-label="Tipo do arquivo" role="group">
         {FUNCOES_ARQUIVO.map(([valor, rotulo, Icone]) => <button aria-pressed={funcao === valor} key={valor} onClick={() => { definirFuncao(valor); definirMensagem(null); }} type="button"><Icone aria-hidden="true" />{rotulo}</button>)}
@@ -86,14 +90,13 @@ export function FormularioMaterial({ moduloId }: { moduloId: string }) {
           <small>Se não for informada, será usada a data do envio.</small>
         </div>}
         <div className={estilos.campo}>
-          <label htmlFor="arquivo-novo-material">Selecionar arquivo</label>
-          <input accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods" autoFocus id="arquivo-novo-material" name="arquivo" required type="file" />
-          <small>PDF, planilhas, imagens e arquivos de texto. O limite varia conforme o arquivo.</small>
+          <input accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.doc,.docx,.odt,.csv,.xls,.xlsx,.ods" aria-label="Arquivo" className={estilos.arquivoOculto} id="arquivo-novo-material" name="arquivo" onChange={(evento) => definirArquivoSelecionado(evento.target.files?.[0]?.name ?? null)} ref={campoArquivo} required type="file" />
+          <span className={estilos.nomeArquivoSelecionado}>{arquivoSelecionado ?? "Nenhum arquivo selecionado"}</span>
         </div>
-        <button className={estilos.botaoPrimario} disabled={processando} type="submit">{processando ? "Enviando..." : "Enviar arquivo"}</button>
+        <button className={estilos.botaoPrimario} disabled={processando} onClick={arquivoSelecionado ? undefined : () => campoArquivo.current?.click()} type={arquivoSelecionado ? "submit" : "button"}>{processando ? "Enviando..." : arquivoSelecionado ? "Enviar arquivo" : "Escolher arquivo"}</button>
       </form>
 
       {mensagem && <p className={mensagem.tipo === "erro" ? estilos.mensagemErroLocal : estilos.mensagemSucessoLocal} role={mensagem.tipo === "erro" ? "alert" : "status"}>{mensagem.texto}</p>}
-    </div>}
+    </div></>, document.body)}
   </div>;
 }

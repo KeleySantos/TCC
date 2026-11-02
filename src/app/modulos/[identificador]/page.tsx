@@ -16,6 +16,7 @@ import { obterMetricasSessoesModuloPessoal } from "@/servidor/metricas";
 import { obterModuloPessoal } from "@/servidor/modulos";
 import { listarSessoesModuloPessoal } from "@/servidor/sessoes";
 import { obterAprendizagemModuloPessoal } from "@/servidor/aprendizagem-modulo";
+import { obterCompartilhamentoModulo } from "@/servidor/compartilhamento-modulos";
 import { arquivarModulo, atualizarModulo } from "../acoes";
 import { EditorModulo } from "./editores";
 import { ConteudoModuloOrganizado } from "./conteudo-modulo-organizado";
@@ -78,10 +79,11 @@ export default async function PaginaModulo({
   const consultaPeriodo = { inicio: periodo.inicio, fim: periodo.fim };
   const abaSolicitada = Array.isArray(parametros.aba) ? parametros.aba[0] : parametros.aba;
   const abaInicial = abaSolicitada === "linha-do-tempo" || abaSolicitada === "sessoes-materiais" ? abaSolicitada : "dashboard";
-  const [resultadoMetricas, sessoes, aprendizagem] = await Promise.all([
+  const [resultadoMetricas, sessoes, aprendizagem, compartilhamento] = await Promise.all([
     obterMetricasSessoesModuloPessoal(usuario.id, identificador, consultaPeriodo),
     listarSessoesModuloPessoal(usuario.id, modulo.id, { incluirArquivadas: true, ...consultaPeriodo }),
     obterAprendizagemModuloPessoal(usuario.id, modulo.id, consultaPeriodo),
+    obterCompartilhamentoModulo(usuario.id, modulo.id),
   ]);
   if (!resultadoMetricas) notFound();
   const metricas = resultadoMetricas.metricas;
@@ -128,12 +130,10 @@ export default async function PaginaModulo({
         <div className={estilos.barraSuperiorModulo}>
           <Link className={estilos.voltarModulo} href="/modulos"><ArrowLeft aria-hidden="true" />Todos os módulos</Link>
           <div className={estilos.acoesCabecalhoModulo}>
-          <CompartilhamentoModulo identificadorModulo={modulo.identificador} titulo={modulo.titulo} />
+          <CompartilhamentoModulo compartilhadoInicialmente={compartilhamento.quantidadeAtivos > 0} identificadorModulo={modulo.identificador} />
           <details className={estilos.menuModulo}>
             <summary aria-label="Abrir ações do módulo" title="Ações do módulo"><MoreHorizontal aria-hidden="true" /></summary>
             <div className={estilos.conteudoMenuModulo}>
-              <strong>Ações do módulo</strong>
-              <p>Edite a identidade do módulo ou arquive-o preservando conteúdos e registros.</p>
               <Link className={estilos.acaoEditarModulo} href={`/modulos/${encodeURIComponent(modulo.identificador)}?editar=modulo#editor-modulo-${modulo.id}`}><Pencil aria-hidden="true" />Editar nome e descrição</Link>
               <form action={arquivarModulo}><input name="id" type="hidden" value={modulo.id} /><input name="identificadorAtual" type="hidden" value={modulo.identificador} /><button type="submit"><Archive aria-hidden="true" />Arquivar módulo</button></form>
             </div>

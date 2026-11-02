@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   PapelParticipacaoModuloSala,
   PapelMembroSala,
+  SituacaoMembroSala,
   SituacaoParticipacaoModuloSala,
   SituacaoModuloSala,
   SituacaoSala,
@@ -10,6 +11,7 @@ import {
 } from "@/gerado/prisma/enums";
 import type { Prisma } from "@/gerado/prisma/client";
 import { prisma } from "@/biblioteca/prisma";
+import { atualizarModuloPessoalNaTransacao } from "./modulos";
 
 export type CodigoErroSala =
   | "DADOS_INVALIDOS"
@@ -37,8 +39,11 @@ const esquemaCriacaoSala = z.object({
 });
 const esquemaCriacaoModulo = z.object({ salaId: z.string().min(1), titulo: textoTitulo, descricao: textoDescricao });
 const esquemaReferenciaSala = z.object({ salaId: z.string().min(1) });
+const esquemaRemocaoUsuarioSala = esquemaReferenciaSala.extend({ usuarioId: z.string().min(1) });
 const esquemaReferenciaModuloSala = z.object({ moduloSalaId: z.string().min(1) });
 const esquemaReferenciaParticipacao = esquemaReferenciaModuloSala.extend({ participacaoId: z.string().min(1) });
+const esquemaReferenciaVinculo = z.object({ vinculoId: z.string().min(1) });
+const esquemaAtualizacaoInstanciaVinculada = esquemaReferenciaVinculo.extend({ titulo: textoTitulo, descricao: textoDescricao });
 const esquemaCodigo = z.object({ codigo: z.string().trim().min(8).max(80) });
 const esquemaVinculo = z.object({
   moduloSalaId: z.string().min(1),
@@ -219,7 +224,7 @@ export async function obterSalaDaConta(usuarioId: string, identificador: string)
             : { usuarioId, situacao: SituacaoVinculoModuloSala.ATIVO },
           select: {
             id: true, usuarioId: true,
-            moduloPessoal: { select: { id: true, identificador: true, titulo: true } },
+            moduloPessoal: { select: { id: true, identificador: true, titulo: true, descricao: true } },
             usuario: { select: { nome: true } },
           },
         },
@@ -446,16 +451,54 @@ export async function vincularInstanciaModuloSala(usuarioId: string, entrada: un
   });
 }
 
+export async function atualizarInstanciaVinculada(usuarioId: string, entrada: unknown) {
+  const dados = validar(esquemaAtualizacaoInstanciaVinculada.safeParse(entrada));
+  return prisma.$transaction(async (transacao) => {
+    const vinculo = await transacao.vinculoModuloSala.findFirst({
+      where: {
+        id: dados.vinculoId,
+        usuarioId,
+        situacao: SituacaoVinculoModuloSala.ATIVO,
+        moduloPessoal: { usuarioId, arquivado: false },
+        participacaoModuloSala: { usuarioId, situacao: SituacaoParticipacaoModuloSala.ATIVA },
+        moduloSala: { situacao: SituacaoModuloSala.ATIVO, sala: { situacao: { not: SituacaoSala.EXCLUIDA } } },
+      },
+      select: { moduloPessoalId: true },
+    });
+    if (!vinculo) throw new ErroSala("NAO_ENCONTRADO");
+    try {
+      const modulo = await atualizarModuloPessoalNaTransacao(transacao, usuarioId, vinculo.moduloPessoalId, { titulo: dados.titulo, descricao: dados.descricao });
+      return { moduloPessoalId: modulo.id, identificador: modulo.identificador };
+    } catch {
+      throw new ErroSala("DADOS_INVALIDOS");
+    }
+  });
+}
+
+type VinculoParaEncerramento = {
+  id: string;
+  moduloSalaId: string;
+  moduloPessoalId: string;
+  usuarioId: string;
+  dadosDesde: Date | null;
+};
+
 async function encerrarParticipacaoModulo(
   transacao: Prisma.TransactionClient,
   participacao: { id: string; usuarioId: string; moduloSalaId: string; moduloSala: { salaId: string } },
   situacao: typeof SituacaoParticipacaoModuloSala.SAIU | typeof SituacaoParticipacaoModuloSala.REMOVIDA,
   atorId: string,
+  vinculoSelecionado?: VinculoParaEncerramento,
 ) {
-  const vinculo = await transacao.vinculoModuloSala.findFirst({
+  const vinculo = vinculoSelecionado ?? await transacao.vinculoModuloSala.findFirst({
     where: { participacaoModuloSalaId: participacao.id, situacao: SituacaoVinculoModuloSala.ATIVO },
     select: { id: true, moduloSalaId: true, moduloPessoalId: true, usuarioId: true, dadosDesde: true },
   });
+  const participacaoEncerrada = await transacao.participacaoModuloSala.updateMany({
+    where: { id: participacao.id, situacao: SituacaoParticipacaoModuloSala.ATIVA },
+    data: { situacao, encerrouEm: new Date() },
+  });
+  if (participacaoEncerrada.count !== 1) throw new ErroSala("NAO_ENCONTRADO");
   if (vinculo) {
     await preservarEvidenciasHistoricas(transacao, vinculo, participacao.moduloSala.salaId);
     await transacao.vinculoModuloSala.update({
@@ -463,7 +506,6 @@ async function encerrarParticipacaoModulo(
       data: { situacao: SituacaoVinculoModuloSala.DESVINCULADO, compartilharDashboard: false, desvinculadoEm: new Date() },
     });
   }
-  await transacao.participacaoModuloSala.update({ where: { id: participacao.id }, data: { situacao, encerrouEm: new Date() } });
   await transacao.eventoAuditoria.create({
     data: {
       atorId,
@@ -471,6 +513,39 @@ async function encerrarParticipacaoModulo(
       alvo: participacao.id,
       metadados: JSON.stringify({ usuarioId: participacao.usuarioId, moduloSalaId: participacao.moduloSalaId }),
     },
+  });
+  return vinculo?.moduloPessoalId ?? null;
+}
+
+export async function pararCompartilhamentoInstancia(usuarioId: string, entrada: unknown) {
+  const { vinculoId } = validar(esquemaReferenciaVinculo.safeParse(entrada));
+  return prisma.$transaction(async (transacao) => {
+    const vinculo = await transacao.vinculoModuloSala.findFirst({
+      where: {
+        id: vinculoId,
+        usuarioId,
+        situacao: SituacaoVinculoModuloSala.ATIVO,
+        moduloPessoal: { usuarioId },
+        participacaoModuloSala: { usuarioId, papel: PapelParticipacaoModuloSala.PARTICIPANTE, situacao: SituacaoParticipacaoModuloSala.ATIVA },
+        moduloSala: { situacao: SituacaoModuloSala.ATIVO, sala: { situacao: { not: SituacaoSala.EXCLUIDA } } },
+      },
+      select: {
+        id: true, moduloSalaId: true, moduloPessoalId: true, usuarioId: true, dadosDesde: true,
+        participacaoModuloSala: {
+          select: { id: true, usuarioId: true, moduloSalaId: true, moduloSala: { select: { salaId: true } } },
+        },
+      },
+    });
+    if (!vinculo) throw new ErroSala("NAO_ENCONTRADO");
+    const moduloPessoalId = await encerrarParticipacaoModulo(
+      transacao,
+      vinculo.participacaoModuloSala,
+      SituacaoParticipacaoModuloSala.SAIU,
+      usuarioId,
+      vinculo,
+    );
+    if (!moduloPessoalId) throw new ErroSala("NAO_ENCONTRADO");
+    return { moduloPessoalId };
   });
 }
 
@@ -498,6 +573,67 @@ export async function removerParticipanteModuloSala(usuarioId: string, entrada: 
   });
   if (!participacao) throw new ErroSala("NAO_ENCONTRADO");
   await prisma.$transaction((transacao) => encerrarParticipacaoModulo(transacao, participacao, SituacaoParticipacaoModuloSala.REMOVIDA, usuarioId));
+}
+
+export async function removerUsuarioDaSala(proprietarioId: string, entrada: unknown) {
+  const dados = validar(esquemaRemocaoUsuarioSala.safeParse(entrada));
+  return prisma.$transaction(async (transacao) => {
+    const sala = await transacao.sala.findFirst({
+      where: { id: dados.salaId, proprietarioId, situacao: { not: SituacaoSala.EXCLUIDA } },
+      select: { id: true, proprietarioId: true },
+    });
+    if (!sala) throw new ErroSala("NAO_ENCONTRADO");
+    if (dados.usuarioId === sala.proprietarioId) throw new ErroSala("ESTADO_INVALIDO");
+
+    const participacoes = await transacao.participacaoModuloSala.findMany({
+      where: {
+        usuarioId: dados.usuarioId,
+        papel: PapelParticipacaoModuloSala.PARTICIPANTE,
+        situacao: SituacaoParticipacaoModuloSala.ATIVA,
+        moduloSala: { salaId: sala.id },
+      },
+      select: {
+        id: true, usuarioId: true, moduloSalaId: true,
+        moduloSala: { select: { salaId: true } },
+        vinculo: {
+          select: {
+            id: true, moduloSalaId: true, moduloPessoalId: true, usuarioId: true, dadosDesde: true, situacao: true,
+            moduloPessoal: { select: { id: true, identificador: true } },
+          },
+        },
+      },
+    });
+    if (!participacoes.length) throw new ErroSala("NAO_ENCONTRADO");
+
+    const modulosPreservados = new Map<string, { id: string; identificador: string }>();
+    for (const participacao of participacoes) {
+      const vinculoAtivo = participacao.vinculo?.situacao === SituacaoVinculoModuloSala.ATIVO ? participacao.vinculo : undefined;
+      const moduloPessoalId = await encerrarParticipacaoModulo(
+        transacao,
+        participacao,
+        SituacaoParticipacaoModuloSala.REMOVIDA,
+        proprietarioId,
+        vinculoAtivo,
+      );
+      if (moduloPessoalId && vinculoAtivo) modulosPreservados.set(moduloPessoalId, vinculoAtivo.moduloPessoal);
+    }
+    await transacao.membroSala.updateMany({
+      where: { salaId: sala.id, usuarioId: dados.usuarioId, papel: PapelMembroSala.MEMBRO, situacao: SituacaoMembroSala.ATIVO },
+      data: { situacao: SituacaoMembroSala.REMOVIDO, encerrouEm: new Date() },
+    });
+    await transacao.eventoAuditoria.create({
+      data: {
+        atorId: proprietarioId,
+        acao: "USUARIO_REMOVIDO_DA_SALA",
+        alvo: sala.id,
+        metadados: JSON.stringify({ usuarioId: dados.usuarioId, participacoesEncerradas: participacoes.length }),
+      },
+    });
+    return {
+      participacoesEncerradas: participacoes.map((participacao) => participacao.id),
+      modulosPessoaisPreservados: Array.from(modulosPreservados.values()),
+    };
+  });
 }
 
 export async function sairDaSala(usuarioId: string, entrada: unknown) {

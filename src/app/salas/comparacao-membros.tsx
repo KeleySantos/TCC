@@ -1,19 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { normalizarEscalaPercebida } from "@/dominio/analises/aprendizagem-modulo";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { MetricasSessoesExibicao } from "@/app/modulos/[identificador]/painel-metricas-sessoes";
 import estilos from "./dashboard-sala.module.css";
 
-type ParticipanteComparacao = { vinculoId: string; nome: string; metricas: MetricasSessoesExibicao };
+type PontoPercepcaoEvidencia = {
+  quantidadePercepcoes: number;
+  mediaCompreensaoPercebida: number | null;
+  quantidadeEvidencias: number;
+  desempenhoMedioEvidencias: number | null;
+};
+
+export type ParticipanteComparacao = {
+  vinculoId: string;
+  nome: string;
+  evolucaoPercepcaoEvidencia: PontoPercepcaoEvidencia[];
+};
+
+function mediaPonderada(pontos: PontoPercepcaoEvidencia[], quantidade: "quantidadePercepcoes" | "quantidadeEvidencias", valor: "mediaCompreensaoPercebida" | "desempenhoMedioEvidencias") {
+  return pontos.reduce((acumulado, ponto) => {
+    const amostra = ponto[quantidade];
+    const media = ponto[valor];
+    if (amostra <= 0 || media === null) return acumulado;
+    return { soma: acumulado.soma + media * amostra, quantidade: acumulado.quantidade + amostra };
+  }, { soma: 0, quantidade: 0 });
+}
+
+function limitarPercentual(valor: number) {
+  return Math.min(100, Math.max(0, valor));
+}
+
+export function agregarComparacaoMembros(participantes: ParticipanteComparacao[]) {
+  return participantes.map((participante) => {
+    const percepcoes = mediaPonderada(participante.evolucaoPercepcaoEvidencia, "quantidadePercepcoes", "mediaCompreensaoPercebida");
+    const evidencias = mediaPonderada(participante.evolucaoPercepcaoEvidencia, "quantidadeEvidencias", "desempenhoMedioEvidencias");
+    return {
+      vinculoId: participante.vinculoId,
+      nome: participante.nome,
+      percepcao: percepcoes.quantidade ? limitarPercentual(normalizarEscalaPercebida(percepcoes.soma / percepcoes.quantidade)) : null,
+      evidencias: evidencias.quantidade ? limitarPercentual(evidencias.soma / evidencias.quantidade) : null,
+      quantidadePercepcoes: percepcoes.quantidade,
+      quantidadeEvidencias: evidencias.quantidade,
+    };
+  });
+}
+
+function rotuloPercepcao(valor: number | null) {
+  return valor === null ? "Sem percepção no período" : `${valor.toFixed(0)}/100`;
+}
+
+function rotuloEvidencias(valor: number | null) {
+  return valor === null ? "Sem evidências válidas no período" : `${valor.toFixed(0)}%`;
+}
 
 export function ComparacaoMembros({ participantes }: { participantes: ParticipanteComparacao[] }) {
-  const [visivel, definirVisivel] = useState(false);
-  if (participantes.length < 2) return <p className={estilos.avisoPrivacidade}>A comparação exige pelo menos dois membros com dashboards compartilhados.</p>;
-  const dados = participantes.map((item) => ({ nome: item.nome, minutos: item.metricas.tempoEstudo.minutosTotais, sessoes: item.metricas.tempoEstudo.quantidadeSessoesValidas }));
+  const dados = agregarComparacaoMembros(participantes);
+  const descricao = dados.map((item) => `${item.nome}: percepção ${rotuloPercepcao(item.percepcao)}; evidências ${rotuloEvidencias(item.evidencias)}`).join(". ");
+
   return <section aria-labelledby="titulo-comparacao-membros" className={estilos.comparacao}>
-    <div className={estilos.tituloComparacao}><div><p>COMPARAÇÃO DA SALA</p><h3 id="titulo-comparacao-membros">Evolução dos membros da sala</h3></div><button aria-expanded={visivel} onClick={() => definirVisivel((atual) => !atual)} type="button">{visivel ? "Ocultar comparação" : "Mostrar comparação"}</button></div>
-    <p>Leitura descritiva, sem ordem, ranking ou conclusão sobre capacidade. Todos os dashboards compartilhados aparecem.</p>
-    {visivel && <><div aria-label={`Comparação dos membros. ${dados.map((item) => `${item.nome}: ${item.minutos} minutos em ${item.sessoes} sessões`).join("; ")}.`} className={estilos.graficoComparacao} role="img"><ResponsiveContainer height="100%" width="100%"><BarChart accessibilityLayer data={dados}><CartesianGrid stroke="#e8e8f3" strokeDasharray="4 4" vertical={false} /><XAxis axisLine={false} dataKey="nome" tickLine={false} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} yAxisId="minutos" /><YAxis allowDecimals={false} axisLine={false} orientation="right" tickLine={false} yAxisId="sessoes" /><Tooltip /><Legend /><Bar dataKey="minutos" fill="#6847ef" name="Minutos" radius={[7, 7, 0, 0]} yAxisId="minutos" /><Bar dataKey="sessoes" fill="#e17843" name="Sessões" radius={[7, 7, 0, 0]} yAxisId="sessoes" /></BarChart></ResponsiveContainer></div><div className={estilos.tabela}><table><caption>Valores utilizados na comparação dos membros</caption><thead><tr><th scope="col">Membro</th><th scope="col">Sessões</th><th scope="col">Minutos</th><th scope="col">Dificuldade</th><th scope="col">Compreensão</th></tr></thead><tbody>{participantes.map((item) => <tr key={item.vinculoId}><td>{item.nome}</td><td>{item.metricas.tempoEstudo.quantidadeSessoesValidas}</td><td>{item.metricas.tempoEstudo.minutosTotais}</td><td>{item.metricas.percepcoes.mediaDificuldadePercebida?.toFixed(1).replace(".", ",") ?? "—"}</td><td>{item.metricas.percepcoes.mediaCompreensaoPercebida?.toFixed(1).replace(".", ",") ?? "—"}</td></tr>)}</tbody></table></div></>}
+    <div className={estilos.tituloComparacao}><div><p>COMPARAÇÃO DA SALA</p><h3 id="titulo-comparacao-membros">Percepção × evidências por participante</h3></div></div>
+    <p>Comparação descritiva no período atual, sem ordem, ranking ou conclusão sobre capacidade.</p>
+    {dados.length ? <>
+      <div aria-label={`Percepção e evidências por participante. ${descricao}.`} className={estilos.graficoComparacao} role="img">
+        <ResponsiveContainer height="100%" width="100%"><BarChart accessibilityLayer data={dados} margin={{ top: 8, right: 8, left: -8, bottom: 4 }}><CartesianGrid stroke="#e8e8f3" strokeDasharray="4 4" vertical={false} /><XAxis axisLine={false} dataKey="nome" tickLine={false} /><YAxis axisLine={false} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickLine={false} /><Tooltip formatter={(valor, nome) => [valor === null || valor === undefined ? "Sem dado" : `${Number(valor).toFixed(0)}${String(nome) === "Percepção" ? "/100" : "%"}`, nome]} /><Legend /><Bar dataKey="percepcao" fill="var(--cor-dados-azul)" name="Percepção" radius={[7, 7, 0, 0]} /><Bar dataKey="evidencias" fill="var(--cor-dados-amarelo)" name="Evidências" radius={[7, 7, 0, 0]} /></BarChart></ResponsiveContainer>
+      </div>
+      <div className={estilos.tabela}><table aria-label="Percepção e evidências por participante"><caption>Percepção e evidências por participante</caption><thead><tr><th scope="col">Participante</th><th scope="col">Percepção</th><th scope="col">Evidências</th><th scope="col">Amostra</th></tr></thead><tbody>{dados.map((item) => <tr key={item.vinculoId}><td>{item.nome}</td><td>{rotuloPercepcao(item.percepcao)}</td><td>{rotuloEvidencias(item.evidencias)}</td><td>{item.quantidadePercepcoes} percepção(ões) · {item.quantidadeEvidencias} evidência(s)</td></tr>)}</tbody></table></div>
+    </> : <p className={estilos.avisoPrivacidade}>Ainda não há participantes ativos com dashboard compartilhado para comparar.</p>}
   </section>;
 }

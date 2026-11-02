@@ -56,7 +56,7 @@ describe("cadastro de arquivo no módulo", () => {
     const usuario = userEvent.setup();
     render(createElement(FormularioMaterial, { moduloId: "modulo-1" }));
     await usuario.click(screen.getByRole("button", { name: "Adicionar material" }));
-    await usuario.upload(screen.getByLabelText("Selecionar arquivo"), new File(["conteúdo"], "resumo-aula.txt", { type: "text/plain" }));
+    await usuario.upload(screen.getByLabelText("Arquivo"), new File(["conteúdo"], "resumo-aula.txt", { type: "text/plain" }));
     const botaoEnviar = screen.getByRole("button", { name: "Enviar arquivo" });
     fireEvent.submit(botaoEnviar.closest("form")!);
 
@@ -67,5 +67,22 @@ describe("cadastro de arquivo no módulo", () => {
     expect(dados.has("titulo")).toBe(false);
     expect(dados.has("descricao")).toBe(false);
     expect(dados.has("minutosEstimados")).toBe(false);
+  });
+
+  it("simplifica a seleção e só oferece o envio depois de escolher um arquivo", async () => {
+    const usuario = userEvent.setup();
+    render(createElement(FormularioMaterial, { moduloId: "modulo-1" }));
+    await usuario.click(screen.getByRole("button", { name: "Adicionar material" }));
+
+    expect(screen.queryByText(/PDF, planilhas, imagens/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Escolher arquivo" })).toBeInTheDocument();
+    expect(screen.getAllByText("Escolher arquivo")).toHaveLength(1);
+    expect(screen.getByText("Nenhum arquivo selecionado")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Enviar arquivo" })).toBeNull();
+
+    await usuario.upload(screen.getByLabelText("Arquivo"), new File(["conteúdo"], "resumo.txt", { type: "text/plain" }));
+    expect(screen.getByText("resumo.txt")).toBeInTheDocument();
+    expect(screen.queryByText("Nenhum arquivo selecionado")).toBeNull();
+    expect(screen.getByRole("button", { name: "Enviar arquivo" })).toBeInTheDocument();
   });
 });

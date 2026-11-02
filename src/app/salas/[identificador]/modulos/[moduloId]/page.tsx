@@ -35,7 +35,11 @@ export default async function PaginaModuloSala({ params }: { params: Promise<{ i
     if (!dashboardModulo) notFound();
     const individuaisPorVinculo = new Map(dashboardModulo.individuais.map((individual) => [individual.vinculoId, individual]));
     const participantes = modulo.participacoes.filter((participacao) => participacao.papel === "PARTICIPANTE");
-    const comparaveis = dashboardModulo.individuais.map((item) => ({ vinculoId: item.vinculoId, nome: item.nome, metricas: serializarMetricasSala(item.metricas) }));
+    const comparaveis = dashboardModulo.individuais.map((item) => ({
+      vinculoId: item.vinculoId,
+      nome: item.nome,
+      evolucaoPercepcaoEvidencia: item.aprendizagem?.resumoResultados.evolucaoPercepcaoEvidencia ?? [],
+    }));
     const dashboard = <div className={estilosDashboard.conteudoModulo}>
       {dashboardModulo.agregado.disponivel && dashboardModulo.agregado.metricas
         ? <div className={estilosDashboard.painelMetricas}><PainelMetricasSessoes idTitulo={`titulo-agregado-${modulo.id}`} metricas={serializarMetricasSala(dashboardModulo.agregado.metricas)} tituloModulo={modulo.titulo} tituloPainel={`Visão geral de ${modulo.titulo}`} /></div>
@@ -66,8 +70,8 @@ export default async function PaginaModuloSala({ params }: { params: Promise<{ i
         estado: "vinculado" as const,
         conteudo: <div className={estilosDashboard.conteudoIndividual}>
           {individual.aprendizagem
-            ? <ConteudoDashboardModulo aprendizagem={individual.aprendizagem} idTitulo={`titulo-individual-${vinculo.id}`} metricas={metricas} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${participacao.usuario.nome}`} />
-            : <PainelMetricasSessoes idTitulo={`titulo-individual-${vinculo.id}`} metricas={metricas} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${participacao.usuario.nome}`} />}
+            ? <ConteudoDashboardModulo aprendizagem={individual.aprendizagem} idTitulo={`titulo-individual-${vinculo.id}`} metricas={metricas} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${participacao.usuario.nome}`} visualEnxuto />
+            : <PainelMetricasSessoes idTitulo={`titulo-individual-${vinculo.id}`} metricas={metricas} tituloModulo={modulo.titulo} tituloPainel={`Dashboard de ${participacao.usuario.nome}`} visualEnxuto />}
           <InterpretacaoMembroSala identificadorSala={modulo.sala.identificador} vinculoId={vinculo.id} />
           {remocao}
         </div>,
@@ -105,7 +109,7 @@ export default async function PaginaModuloSala({ params }: { params: Promise<{ i
     <main className={estilos.pagina} id="conteudo-principal" tabIndex={-1}>
       <div className={estilos.conteudo}>
         <Link className={estilos.voltar} href={`/salas/${modulo.sala.identificador}`}><ArrowLeft aria-hidden="true" /> Voltar para {modulo.sala.nome}</Link>
-        <header className={estilos.cabecalho}><h1>{modulo.titulo}</h1><p>{modulo.descricao}</p></header>
+        <header className={estilos.cabecalho}><h1>{modulo.titulo}</h1></header>
         {conteudo}
       </div>
     </main>

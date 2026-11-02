@@ -1,15 +1,18 @@
-.botaoAbrir { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; padding: 0; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto); background: var(--cor-superficie); font: inherit; cursor: pointer; }
+.botaoAbrir { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; gap: 7px; padding: 0; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto); background: var(--cor-superficie); font: inherit; font-size: .72rem; font-weight: 800; cursor: pointer; }
+.botaoCompartilhado { width: auto; padding: 0 14px; border-color: var(--cor-navegacao); color: #fff; background: var(--cor-navegacao); }
 .botaoAbrir:focus-visible { outline: 3px solid var(--cor-acao); outline-offset: 3px; }
-.nomeModulo { margin-top: 8px !important; overflow-wrap: anywhere; text-transform: none; }
 .controles { display: grid; gap: 14px; margin-top: 20px !important; }
 .controles > button { display: inline-flex; align-items: center; gap: 8px; }
+.linhaCodigo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.linhaCodigo label { min-width: 0; }
+.linhaCodigo button { display: inline-flex; min-height: 42px; align-items: center; gap: 7px; white-space: nowrap; }
 .convidados { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .convidados li { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .convidados span { overflow-wrap: anywhere; }
 .convidados button { flex-shrink: 0; color: var(--cor-texto) !important; background: var(--cor-fundo, #f4f5f7) !important; }
-.perigo { color: #b42332 !important; background: #fff0f1 !important; }
 .confirmacao { padding: 16px; border: 1px solid var(--cor-borda); border-radius: var(--raio-controle); }
 .confirmacao p { margin-top: 0; }
 .confirmacao > div { display: flex; flex-wrap: wrap; gap: 10px; }
 .confirmacao button { padding: 9px 13px; border: 1px solid var(--cor-borda); border-radius: var(--raio-controle); color: var(--cor-texto); background: var(--cor-superficie); font: inherit; font-size: .8rem; cursor: pointer; }
 .confirmacao button:last-child { color: #fff; background: #b42332; }
+@media (max-width: 520px) { .linhaCodigo { grid-template-columns: 1fr; } .linhaCodigo button { justify-content: center; } }

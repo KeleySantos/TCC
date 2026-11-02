@@ -18,17 +18,16 @@
 .individual { border: 1px solid var(--cor-borda); border-radius: 14px; background: var(--cor-superficie-suave); overflow: hidden; }
 .individual > summary { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; cursor: pointer; font-size: .82rem; font-weight: 800; }
 .individual > summary span { color: #6f7896; font-size: .64rem; font-weight: 650; }
-.conteudoIndividual { display: grid; gap: 14px; padding: 0 16px 16px; }
-.comparacao { display: grid; gap: 10px; padding: 18px; border: 1px solid var(--cor-borda); border-radius: 15px; background: var(--cor-superficie-suave); }
+.conteudoIndividual { display: grid; gap: 16px; }
+.comparacao { display: grid; gap: 16px; }
 .tituloComparacao { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .tituloComparacao p { margin: 0 0 4px; color: var(--cor-acao); font-size: .62rem; font-weight: 850; letter-spacing: .1em; }
 .tituloComparacao h3 { margin: 0; font-size: 1rem; }
-.tituloComparacao button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--cor-borda); border-radius: var(--raio-controle); color: var(--cor-acao); background: var(--cor-superficie); font-weight: 800; cursor: pointer; }
 .comparacao > p { margin: 0; color: #6e7692; font-size: .7rem; line-height: 1.5; }
-.graficoComparacao { height: 260px; }
+.graficoComparacao { height: 300px; }
 .tabela { overflow-x: auto; }
 .tabela table { width: 100%; border-collapse: collapse; }
 .tabela caption { margin-bottom: 7px; color: #747d99; font-size: .65rem; text-align: left; }
 .tabela th, .tabela td { padding: 8px; border-bottom: 1px solid #e2e2ee; font-size: .68rem; text-align: left; white-space: nowrap; }
-.areaDashboards summary:focus-visible, .tituloComparacao button:focus-visible { outline: 3px solid #f0a528; outline-offset: 2px; }
+.areaDashboards summary:focus-visible { outline: 3px solid #EF8D4B; outline-offset: 2px; }
 @media (max-width: 640px) { .cabecalho, .tituloComparacao, .modulo > summary, .individual > summary { align-items: flex-start; flex-direction: column; } .painelMetricas, .conteudoModulo { padding: 14px; } .graficoComparacao { height: 220px; } }

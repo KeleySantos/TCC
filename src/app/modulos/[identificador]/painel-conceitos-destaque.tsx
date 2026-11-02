@@ -4,7 +4,35 @@ import estilos from "./page.module.css";
 function escala(valor: number | null) { return valor === null ? "—" : `${valor.toFixed(1).replace(".", ",")}/5`; }
 function ListaConceitos({ itens }: { itens: ClassificacaoConceitoAprendizagem[] }) {
   if (!itens.length) return <div className={estilos.estadoVazioAnalise}><p>Ainda não há dados suficientes para classificar conceitos.</p><small>São necessárias pelo menos duas observações recentes.</small></div>;
-  return <ul className={estilos.listaConceitosDestaque}>{itens.map((item) => <li key={item.chave}><strong>{item.nome}</strong><span>Dificuldade percebida: {escala(item.dificuldadeMedia)} (n={item.quantidadeDificuldades})</span><span>Compreensão percebida: {escala(item.compreensaoMedia)} (n={item.quantidadeCompreensoes})</span><span>Desempenho médio: {item.desempenhoMedio === null ? "—" : `${item.desempenhoMedio.toFixed(0)}%`}</span><span>Índice exploratório: {item.indice.toFixed(1)}/100</span><small>{item.sessoes} sessões com percepção · {item.evidencias} evidências válidas{item.evidencias === 0 ? " · Baseado em percepções" : ""}{!item.evidenciasSuficientes ? " · Evidências ainda insuficientes" : ""}</small></li>)}</ul>;
+  return (
+    <ul className={estilos.listaConceitosDestaque}>
+      {itens.map((item) => (
+        <li key={item.chave}>
+          <div className={estilos.cabecalhoConceito}>
+            <strong>{item.nome}</strong>
+            <span className={estilos.indiceConceito}>
+              <small>Índice exploratório</small>
+              {item.indice.toFixed(1)}/100
+            </span>
+          </div>
+          <dl className={estilos.metricasConceito}>
+            <div>
+              <dt>Dificuldade percebida</dt>
+              <dd>{escala(item.dificuldadeMedia)} <small>n={item.quantidadeDificuldades}</small></dd>
+            </div>
+            <div>
+              <dt>Compreensão percebida</dt>
+              <dd>{escala(item.compreensaoMedia)} <small>n={item.quantidadeCompreensoes}</small></dd>
+            </div>
+            <div>
+              <dt>Desempenho médio</dt>
+              <dd>{item.desempenhoMedio === null ? "—" : `${item.desempenhoMedio.toFixed(0)}%`}</dd>
+            </div>
+          </dl>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function PainelConceitosDestaque({ maiorDificuldade, maiorCompreensao, visualEnxuto = false }: { maiorDificuldade: ClassificacaoConceitoAprendizagem[]; maiorCompreensao: ClassificacaoConceitoAprendizagem[]; visualEnxuto?: boolean }) {

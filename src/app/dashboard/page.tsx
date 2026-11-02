@@ -1,4 +1,5 @@
 import { CartoesInsightsDashboard } from "@/componentes/cartoes-insights-dashboard";
+import { CabecalhoPagina } from "@/componentes/cabecalho-pagina";
 import { ConsistenciaMetodosDashboard } from "@/componentes/consistencia-metodos-dashboard";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { GraficosDashboard } from "@/componentes/graficos-dashboard";
@@ -23,7 +24,7 @@ export default async function PaginaDashboard({ searchParams }: { searchParams: 
 
   return <EstruturaAutenticada usuarioNome={usuario.nome} administradorIa={usuario.administradorIa} usuarioFotoVersao={usuario.fotoPerfilAtualizadaEm?.toISOString()}><main className={estilos.paginaDashboard} id="conteudo-principal" tabIndex={-1}>
     <div className={estilos.areaConteudo}>
-      <section aria-labelledby="titulo-dashboard" className={estilos.boasVindas}><h1 id="titulo-dashboard">Olá, {primeiroNome}!</h1></section>
+      <CabecalhoPagina idTitulo="titulo-dashboard" preTitulo={<>Olá, {primeiroNome}!</>} titulo="DASHBOARD" />
       <CartoesInsightsDashboard acoes={<div className={estilos.acoesDashboard}>
         <FiltroPeriodoModulo periodo={{ inicio: periodo.inicioTexto, fim: periodo.fimTexto, hoje: periodo.hoje, ativo: periodo.ativo, erro: periodo.erro }} />
         <InterpretacaoAutomatica compacto fim={periodo.ativo ? periodo.fimTexto : undefined} inicio={periodo.ativo ? periodo.inicioTexto : undefined} modalLateral />

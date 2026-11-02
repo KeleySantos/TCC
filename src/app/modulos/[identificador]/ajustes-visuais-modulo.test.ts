@@ -9,16 +9,18 @@ import { ConteudoModuloOrganizado } from "./conteudo-modulo-organizado";
 import { ConteudoDashboardModulo } from "./conteudo-dashboard-modulo";
 import { InterpretacaoAutomatica, type PropriedadesInterpretacao } from "@/componentes/interpretacao-automatica";
 import { calcularMetricasSessoes } from "@/dominio/analises/metricas-sessoes";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 const periodo = { inicio: "2026-10-01", fim: "2026-10-18", ativo: true, erro: null, hoje: "2026-10-18" };
 
-it("cabeçalho mostra somente o nome, sem perder a descrição no formulário de edição", () => {
+it("cabeçalho mostra o nome e a descrição, sem perder a descrição no formulário de edição", () => {
   const propriedades = { id: "m", identificador: "javascript", titulo: "JavaScript", descricao: "Descrição armazenada", inicialmenteEditando: false };
   const tela = render(createElement(EditorModulo, propriedades));
   expect(screen.getByRole("heading", { name: "JavaScript", level: 1 })).toBeTruthy();
   expect(screen.queryByText("MÓDULO DE APRENDIZAGEM")).toBeNull();
-  expect(screen.queryByText("Descrição armazenada")).toBeNull();
+  expect(screen.getByText("Descrição armazenada")).toBeTruthy();
   tela.rerender(createElement(EditorModulo, { ...propriedades, inicialmenteEditando: true, key: "editar" }));
   expect((screen.getByLabelText("Descrição") as HTMLTextAreaElement).value).toBe("Descrição armazenada");
 });
@@ -58,4 +60,19 @@ it("versão simplificada mantém os indicadores e gráficos sem os cabeçalhos e
   for (const texto of ["MÉTRICAS DAS SESSÕES", "EVOLUÇÃO SEMANAL", "REGULARIDADE", "PERCEPÇÕES", "PERCEPÇÃO E EVIDÊNCIAS", "Como estas métricas são calculadas", "Ver dados em tabela"]) expect(screen.queryByText(texto)).toBeNull();
   expect(screen.queryByRole("heading", { name: "Seu ritmo em JavaScript" })).toBeNull();
   expect(screen.queryByRole("heading", { name: "Resultados associados às formas de estudo" })).toBeNull();
+});
+
+it("aplica a composição visual aprovada à área operacional do módulo", () => {
+  const diretorio = resolve(process.cwd(), "src/app/modulos/[identificador]");
+  const pagina = readFileSync(resolve(diretorio, "page.module.css"), "utf8");
+  const sessoes = readFileSync(resolve(diretorio, "painel-sessoes.module.css"), "utf8");
+
+  expect(pagina).toMatch(/\.paginaModulo\s*\{[^}]*background:\s*var\(--cor-fundo\)/is);
+  expect(pagina).toMatch(/\.painelMateriais\s*\{[^}]*background:\s*var\(--cor-navegacao\)/is);
+  expect(pagina).toMatch(/scrollbar-color:\s*#34383d transparent/i);
+  expect(pagina).toMatch(/\.tituloEditavel h1\s*\{[^}]*color:\s*var\(--cor-navegacao\)/is);
+  expect(sessoes).toMatch(/\.cabecalho h2\s*\{[^}]*font-weight:\s*800/is);
+  expect(sessoes).toMatch(/\.duracaoSessao\s*\{[^}]*color:\s*var\(--cor-texto\)[^}]*font-size:\s*1rem/is);
+  expect(sessoes).toMatch(/data-situacao="CONCLUIDA"\]\s*\{\s*color:\s*#fff;\s*background:\s*var\(--cor-navegacao\)/is);
+  expect(sessoes).toMatch(/\.painel \.primario\s*\{[^}]*background:\s*var\(--cor-navegacao\)/is);
 });

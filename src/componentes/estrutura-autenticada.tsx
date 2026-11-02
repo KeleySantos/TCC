@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LogOut,
   Settings2,
-  Sparkles,
   UsersRound,
 } from "lucide-react";
 import { sairDaConta } from "@/app/acoes-sessao";
@@ -24,8 +23,8 @@ const EVENTO_PREFERENCIA = "learning-lab:preferencia-barra-lateral";
 const ITENS_NAVEGACAO = [
   { href: "/dashboard", rotulo: "Dashboard", Icone: LayoutDashboard },
   { href: "/modulos", rotulo: "Módulos", Icone: BookOpenText },
+  { href: "/desafios", rotulo: "Métodos", Icone: FlaskConical },
   { href: "/salas", rotulo: "Salas", Icone: UsersRound },
-  { href: "/desafios", rotulo: "Desafios", Icone: FlaskConical },
   { href: "/configuracoes/ia", rotulo: "Configurações IA", Icone: Settings2 },
 ] as const;
 
@@ -73,21 +72,34 @@ export function EstruturaAutenticada({
     <div className={`${estilos.estrutura} ${barraRecolhida ? estilos.estruturaRecolhida : ""}`}>
       <aside className={estilos.barraLateral} aria-label="Navegação principal">
         <div className={estilos.cabecalhoBarra}>
-          <Link className={estilos.marcaProduto} href="/dashboard" aria-label="Ir ao Dashboard">
-            <span className={estilos.simboloMarca}><FlaskConical aria-hidden="true" /></span>
-            <span className={estilos.identidadeMarca}><strong>Learning Lab</strong><small>Laboratório Pessoal de Aprendizagem</small></span>
-          </Link>
-          <button
-            aria-controls="menu-principal-autenticado"
-            aria-expanded={!barraRecolhida}
-            className={estilos.botaoAlternar}
-            onClick={alternarBarra}
-            title={barraRecolhida ? "Expandir barra lateral" : "Recolher barra lateral"}
-            type="button"
-          >
-            {barraRecolhida ? <ChevronRight aria-hidden="true" /> : <ChevronLeft aria-hidden="true" />}
-            <span className={estilos.textoAcessivel}>{barraRecolhida ? "Expandir barra lateral" : "Recolher barra lateral"}</span>
-          </button>
+          {barraRecolhida ? <button
+              aria-controls="menu-principal-autenticado"
+              aria-expanded="false"
+              className={`${estilos.botaoAlternar} ${estilos.botaoMarcaRecolhida}`}
+              onClick={alternarBarra}
+              title="Expandir barra lateral"
+              type="button"
+            >
+              <span className={estilos.simboloMarca}><FlaskConical aria-hidden="true" /></span>
+              <span className={estilos.iconeExpandirMarca}><ChevronRight aria-hidden="true" /></span>
+              <span className={estilos.textoAcessivel}>Expandir barra lateral</span>
+            </button> : <>
+              <Link className={estilos.marcaProduto} href="/dashboard" aria-label="Ir ao Dashboard">
+                <span className={estilos.simboloMarca}><FlaskConical aria-hidden="true" /></span>
+                <span className={estilos.identidadeMarca}><strong>Learning Lab</strong><small>Laboratório Pessoal de Aprendizagem</small></span>
+              </Link>
+              <button
+                aria-controls="menu-principal-autenticado"
+                aria-expanded="true"
+                className={estilos.botaoAlternar}
+                onClick={alternarBarra}
+                title="Recolher barra lateral"
+                type="button"
+              >
+                <ChevronLeft aria-hidden="true" />
+                <span className={estilos.textoAcessivel}>Recolher barra lateral</span>
+              </button>
+            </>}
         </div>
 
         <nav className={estilos.menuPrincipal} id="menu-principal-autenticado">
@@ -102,19 +114,14 @@ export function EstruturaAutenticada({
           })}
         </nav>
 
-        <div className={estilos.fraseLateral}>
-          <Sparkles aria-hidden="true" />
-          <p>“Aprender bem hoje constrói caminhos melhores amanhã.”</p>
-        </div>
-
         <div className={estilos.rodapeBarra}>
-          <PerfilUsuario classeAvatar={estilos.avatar} classeNome={estilos.nomeConta} className={estilos.botaoPerfil} fotoVersao={usuarioFotoVersao} nome={usuarioNome} />
           <form action={sairDaConta} className={estilos.formularioSair}>
             <button type="submit" title={barraRecolhida ? "Sair da conta" : undefined}>
               <LogOut aria-hidden="true" />
               <span className={estilos.rotuloItem}>Sair</span>
             </button>
           </form>
+          <PerfilUsuario classeAvatar={estilos.avatar} classeNome={estilos.nomeConta} className={estilos.botaoPerfil} fotoVersao={usuarioFotoVersao} nome={usuarioNome} />
         </div>
       </aside>
       <div className={estilos.conteudo}>{children}</div>

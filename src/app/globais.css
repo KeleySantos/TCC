@@ -12,7 +12,11 @@
   --cor-acao-forte: #000000;
   --cor-acao-suave: #f1f2f3;
   --cor-borda: #e3e4e6;
-  --cor-foco: #f0a528;
+  --cor-borda-estrutural: #d3d5d8;
+  --espessura-borda-estrutural: 1.5px;
+  --cor-foco: #EF8D4B;
+  --cor-dados-azul: #2E78F6;
+  --cor-dados-amarelo: #EF8D4B;
   --espaco-1: 4px;
   --espaco-2: 8px;
   --espaco-3: 12px;
@@ -49,7 +53,7 @@ button, input, select, textarea { font: inherit; }
 .cabecalho h1 { margin: 0; color: var(--cor-texto); font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.045em; }
 .marca { margin: 0 0 var(--espaco-2); font-size: .72rem; font-weight: 800; color: var(--cor-acao); letter-spacing: .1em; }
 .grade { display: grid; gap: var(--espaco-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.cartao { background: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: var(--raio-cartao); padding: var(--espaco-6); box-shadow: var(--sombra-suave); }
+.cartao { background: var(--cor-superficie); border: var(--espessura-borda-estrutural) solid var(--cor-borda-estrutural); border-radius: var(--raio-cartao); padding: var(--espaco-6); box-shadow: var(--sombra-suave); }
 .rotulo { color: var(--cor-texto-secundario); font-size: .86rem; margin: 0 0 7px; line-height: 1.55; }
 .valor { font-size: 1.75rem; font-weight: 800; margin: 0; }
 .botao { background: var(--cor-acao); color: white; border: 0; min-height: 42px; padding: 10px 16px; border-radius: var(--raio-controle); font-weight: 750; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }

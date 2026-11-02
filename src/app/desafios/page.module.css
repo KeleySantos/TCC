@@ -10,7 +10,7 @@
   align-items: center;
 }
 
-.areaConteudo { width: min(100%, 1540px); margin: 0 auto; padding: 28px clamp(20px, 3vw, 46px) 60px; }
+.areaConteudo { width: min(100%, var(--largura-conteudo)); margin: 0 auto; padding: clamp(38px, 4.8vw, 64px) clamp(20px, 3vw, 46px) 60px; }
 
 .apresentacao {
   position: relative;
@@ -39,15 +39,15 @@
 .mensagemSucesso { gap: 8px; color: #1d613e; border: 1px solid #a4d7b7; background: #eaf8ef; }
 .mensagemSucesso svg { width: 18px; height: 18px; flex: 0 0 auto; }
 
-.catalogoMetodos { margin-top: 28px; }
+.catalogoMetodos { margin-top: 0; }
 .cabecalhoSecao, .cabecalhoLista, .cabecalhoDesafio { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
-.cabecalhoSecao h2, .cabecalhoLista h2 { margin: 4px 0 0; font-size: 1.28rem; letter-spacing: -0.035em; }
+.cabecalhoSecao h2, .cabecalhoLista h2 { margin: 0; font-size: 1.28rem; letter-spacing: -0.035em; }
 .cabecalhoSecao > p { max-width: 510px; margin: 0; color: var(--laboratorio-texto); font-size: 0.76rem; line-height: 1.5; text-align: right; }
 .gradeMetodos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
-.metodo { display: grid; min-width: 0; gap: 12px; padding: 15px; border: 1px solid var(--laboratorio-borda); border-radius: 16px; background: rgb(255 255 255 / 92%); box-shadow: 0 8px 24px rgb(39 43 98 / 4%); }
+.metodo { display: grid; min-width: 0; gap: 12px; padding: 15px; border: var(--espessura-borda-estrutural) solid var(--cor-borda-estrutural); border-radius: 16px; background: rgb(255 255 255 / 92%); box-shadow: 0 8px 24px rgb(39 43 98 / 4%); }
 .iconeMetodo { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 11px; color: #6544e6; background: #f0edff; }
 .iconeMetodo svg { width: 18px; height: 18px; }
-.metodo h3 { margin: 0; font-size: 0.76rem; line-height: 1.25; }
+.metodo h3 { margin: 0; font-size: .86rem; font-weight: 800; line-height: 1.25; }
 .metodo p { margin: 5px 0 0; color: #75809f; font-size: 0.62rem; line-height: 1.45; }
 .metodoInterativo { display: block; padding: 0; }
 .areaInformativaMetodo {
@@ -76,18 +76,21 @@
   margin: auto;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--cor-borda);
+  border: 0;
   border-radius: var(--raio-grande);
   color: var(--cor-texto);
   background: transparent;
   box-shadow: 0 28px 90px rgb(15 23 42 / 24%);
 }
 .dialogoMetodo::backdrop { background: rgb(15 23 42 / 42%); backdrop-filter: blur(2px); }
-.conteudoDialogoMetodo { max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: inherit; background: var(--cor-superficie); }
+.conteudoDialogoMetodo { max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: inherit; color: #fff; scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 34%) transparent; background: var(--cor-navegacao); }
+.conteudoDialogoMetodo::-webkit-scrollbar { width: 6px; }
+.conteudoDialogoMetodo::-webkit-scrollbar-track { background: transparent; }
+.conteudoDialogoMetodo::-webkit-scrollbar-thumb { border: 1px solid transparent; border-radius: 999px; background: rgb(255 255 255 / 34%); background-clip: padding-box; }
 .cabecalhoDialogoMetodo { position: sticky; z-index: 2; top: 0; display: grid; grid-template-columns: 42px minmax(0, 1fr) 34px; gap: 12px; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--cor-borda); background: rgb(255 255 255 / 96%); }
 .iconeDialogoMetodo { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: var(--cor-acao); background: var(--cor-acao-suave); }
 .iconeDialogoMetodo svg { width: 21px; height: 21px; }
-.cabecalhoDialogoMetodo h2 { margin: 0; font-size: 1.25rem; letter-spacing: -0.035em; }
+.cabecalhoDialogoMetodo h2 { margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.035em; }
 .cabecalhoDialogoMetodo p { margin: 3px 0 0; color: var(--cor-texto-secundario); font-size: 0.72rem; }
 .fecharDialogoMetodo { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid var(--cor-borda); border-radius: 50%; color: var(--cor-texto); background: var(--cor-superficie); cursor: pointer; }
 .fecharDialogoMetodo:hover { background: var(--cor-acao-suave); }
@@ -114,22 +117,22 @@
 .sequenciaCiclos, .linhaTempoExemplo, .sessoesDistribuidas { display: grid; gap: 8px; margin-top: 14px; }
 .itemSequencia { display: grid; grid-template-columns: minmax(78px, auto) minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--cor-borda); border-radius: 11px; background: var(--cor-superficie); }
 .itemSequencia > span { color: var(--cor-acao); font-size: 0.62rem; font-weight: 820; }
-.itemSequencia p { margin: 0; color: var(--cor-texto-secundario); font-size: 0.7rem; line-height: 1.4; }
+.itemSequencia p { margin: 0; color: rgb(255 255 255 / 78%) !important; font-size: 0.7rem; line-height: 1.4; }
 .itemSequencia > strong { font-size: 0.68rem; white-space: nowrap; }
 .botaoRevelar { margin-top: 12px; padding: 9px 12px; border: 1px solid var(--cor-acao); border-radius: 9px; color: #fff; background: var(--cor-acao); font: inherit; font-size: 0.68rem; font-weight: 780; cursor: pointer; }
 .linhaTempoExemplo { padding: 0; list-style: none; }
-.linhaTempoExemplo li { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px 10px 16px; border-left: 2px solid #bfdbfe; background: var(--cor-superficie); }
+.linhaTempoExemplo li { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px 10px 16px; border-left: 2px solid #2E78F6; color: #fff; background: #2D2D2D; }
 .linhaTempoExemplo strong { color: var(--cor-acao); font-size: 0.66rem; }
-.linhaTempoExemplo span { color: var(--cor-texto-secundario); font-size: 0.7rem; line-height: 1.45; }
+.linhaTempoExemplo span { color: rgb(255 255 255 / 78%); font-size: 0.7rem; line-height: 1.45; }
 .introducaoExemplo, .conclusaoExemplo { margin: 13px 0 0; color: var(--cor-texto-secundario); font-size: 0.72rem; line-height: 1.55; }
 .sequenciaIntercalada { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; padding: 0; counter-reset: exercicio; list-style: none; }
 .sequenciaIntercalada li { padding: 11px 12px; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto); background: var(--cor-superficie); font-size: 0.7rem; font-weight: 730; line-height: 1.4; }
 .comparacaoPratica { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 14px; }
 .comparacaoPratica p { margin: 0; padding: 12px; border: 1px solid var(--cor-borda); border-radius: 11px; color: var(--cor-texto-secundario); background: var(--cor-superficie); font-size: 0.7rem; line-height: 1.5; }
 .sessoesDistribuidas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.sessoesDistribuidas > div { display: grid; align-content: start; gap: 6px; padding: 12px; border: 1px solid var(--cor-borda); border-radius: 11px; background: var(--cor-superficie); }
+.sessoesDistribuidas > div { display: grid; align-content: start; gap: 6px; padding: 12px; border: 1px solid rgb(255 255 255 / 14%); border-radius: 11px; color: #fff; background: #2D2D2D; }
 .sessoesDistribuidas strong { color: var(--cor-acao); font-size: 0.66rem; }
-.sessoesDistribuidas p { margin: 0; color: var(--cor-texto-secundario); font-size: 0.68rem; line-height: 1.45; }
+.sessoesDistribuidas p { margin: 0; color: rgb(255 255 255 / 78%); font-size: 0.68rem; line-height: 1.45; }
 .sessoesDistribuidas span { font-size: 0.66rem; font-weight: 780; }
 
 .gradePrincipal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(310px, 360px); gap: 20px; align-items: start; margin-top: 32px; }
@@ -223,7 +226,7 @@
   color: var(--cor-texto);
   background: var(--cor-fundo);
 }
-.areaConteudo { width: min(100%, var(--largura-conteudo)); padding-block: 34px 72px; }
+.areaConteudo { width: min(100%, var(--largura-conteudo)); padding-block: clamp(38px, 4.8vw, 64px) 72px; }
 
 .apresentacao {
   padding: 30px;
@@ -247,12 +250,44 @@
 .metodo {
   grid-template-columns: 40px minmax(0, 1fr);
   align-items: start;
-  border-color: var(--cor-borda);
+  border-color: var(--cor-borda-estrutural);
   border-radius: var(--raio-medio);
   background: var(--cor-superficie);
   box-shadow: none;
 }
-.iconeMetodo { color: var(--cor-acao); background: var(--cor-acao-suave); }
+.iconeMetodo { color: #fff; background: var(--cor-navegacao); }
+
+.cabecalhoDialogoMetodo { border-bottom-color: rgb(255 255 255 / 14%); background: rgb(31 35 38 / 96%); }
+.iconeDialogoMetodo { color: #fff; background: rgb(255 255 255 / 10%); }
+.cabecalhoDialogoMetodo h2,
+.corpoDialogoMetodo h3,
+.cabecalhoExemploMetodo h3 { color: #fff; }
+.cabecalhoDialogoMetodo p,
+.corpoDialogoMetodo section > p,
+.passosMetodo p,
+.cabecalhoExemploMetodo div > p:last-child:not(.sobretituloExemplo),
+.orientacaoExemplo,
+.introducaoExemplo,
+.conclusaoExemplo { color: rgb(255 255 255 / 72%) !important; }
+.fecharDialogoMetodo { border-color: rgb(255 255 255 / 18%); color: #fff; background: transparent; }
+.fecharDialogoMetodo:hover { background: rgb(255 255 255 / 10%); }
+.passosMetodo li > span { color: #fff; background: rgb(255 255 255 / 10%); }
+.exemploMetodo,
+.itemSequencia,
+.sequenciaIntercalada li,
+.comparacaoPratica p,
+.sessoesDistribuidas li { border-color: rgb(255 255 255 / 14%); color: #fff; background: rgb(255 255 255 / 5%); }
+.perguntaDestaque,
+.explicacaoDestaque,
+.respostaRecuperacao { border-color: rgb(255 255 255 / 14%); background: rgb(255 255 255 / 8%); }
+.perguntaDestaque p,
+.explicacaoDestaque p,
+.respostaRecuperacao p { color: rgb(255 255 255 / 78%); }
+.sobretituloExemplo,
+.itemSequencia > span,
+.linhaTempoExemplo strong { color: #fff !important; }
+.cabecalhoExemploMetodo > svg { color: rgb(255 255 255 / 72%); }
+.botaoRevelar { border-color: #fff; color: var(--cor-navegacao); background: #fff; }
 
 .gradePrincipal { grid-template-columns: minmax(0, 1fr) minmax(320px, 360px); gap: 24px; }
 .cabecalhoLista > span { color: var(--cor-acao); background: var(--cor-acao-suave); }
@@ -299,7 +334,7 @@
 }
 
 @media (max-width: 720px) {
-  .areaConteudo { padding: 20px 14px 44px; }
+  .areaConteudo { padding: 38px 14px 44px; }
   .apresentacao { padding: 23px 20px; border-radius: 19px; }
   .textoApresentacao h1 { font-size: clamp(1.8rem, 10vw, 2.5rem); }
   .cabecalhoSecao { display: grid; }

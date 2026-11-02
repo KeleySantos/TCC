@@ -48,6 +48,7 @@
 .cabecalho h2 {
   margin-top: 3px;
   font-size: 1.35rem;
+  font-weight: 800;
 }
 
 .cabecalho > div > span {
@@ -98,14 +99,14 @@
 
 .painel .primario {
   color: #fff;
-  border-color: var(--cor-acao);
-  background: var(--cor-acao);
+  border-color: var(--cor-navegacao);
+  background: var(--cor-navegacao);
 }
 
 .painel .primario:hover:not(:disabled) {
   color: #fff;
-  border-color: var(--cor-acao-forte);
-  background: var(--cor-acao-forte);
+  border-color: var(--cor-navegacao-elevada);
+  background: var(--cor-navegacao-elevada);
 }
 
 .mensagemErro,
@@ -164,8 +165,7 @@
 }
 
 .campoLargo,
-.gradeDatas label,
-.gradeEscalas label {
+.gradeDatas label {
   display: grid;
   gap: 6px;
   color: #46415e;
@@ -174,8 +174,7 @@
 }
 
 .campoLargo textarea,
-.gradeDatas input,
-.gradeEscalas select {
+.gradeDatas input {
   width: 100%;
   padding: 10px 11px;
   color: #262139;
@@ -199,12 +198,61 @@
   font-weight: 500;
 }
 
-.gradeDatas,
+.gradeDatas {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .gradeEscalas {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
+
+.escalaPercebida {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.escalaPercebida legend {
+  margin-bottom: 7px;
+  color: #46415e;
+  font-size: .7rem;
+  font-weight: 740;
+}
+
+.opcoesEscala {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.escalaPercebida label { position: relative; cursor: pointer; }
+.escalaPercebida input { position: absolute; opacity: 0; }
+.escalaPercebida span {
+  display: grid;
+  min-height: 48px;
+  place-content: center;
+  padding: 5px 3px;
+  border: 1px solid #d7d4e5;
+  border-radius: 10px;
+  color: #625c7b;
+  background: #fff;
+  text-align: center;
+}
+.escalaPercebida b { font-size: .76rem; }
+.legendasEscala {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  color: #777f99;
+}
+.legendasEscala small { font-size: .52rem; font-weight: 600; line-height: 1.1; }
+.escalaPercebida input:checked + span { color: #fff; border-color: var(--cor-acao); background: var(--cor-acao); }
+.escalaPercebida input:focus-visible + span { outline: 3px solid #EF8D4B; outline-offset: 2px; }
 
 .avisoPlanejamento {
   margin: -7px 0 0;
@@ -269,7 +317,7 @@
 }
 
 .opcoes input:focus-visible + span {
-  outline: 3px solid #f0a528;
+  outline: 3px solid #EF8D4B;
   outline-offset: 2px;
 }
 
@@ -344,65 +392,79 @@
 
 .lista {
   display: grid;
-  gap: 10px;
+  gap: 0;
   margin-top: 12px;
 }
 
 .cartao {
-  padding: 15px;
-  border: 1px solid #e3e2eb;
-  border-radius: 14px;
-  background: #fff;
+  position: relative;
+  padding: 3px 0;
+  border-bottom: 1px solid #e3e2eb;
 }
 
+.cartao:last-child { border-bottom: 0; }
+
 .cartaoArquivado {
-  background: #f7f7fa;
   opacity: .78;
 }
 
-.linhaPrincipal {
-  align-items: flex-start;
-  gap: 15px;
+.painel .linhaPrincipal {
+  display: grid;
+  width: 100%;
+  min-height: 0;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 54px 16px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
 }
 
-.dataSessao {
-  flex: 0 0 120px;
-  padding-right: 14px;
-  border-right: 1px solid #e8e7ef;
+.painel .linhaPrincipal:hover:not(:disabled) {
+  color: inherit;
+  background: #f8f8fa;
 }
 
-.dataSessao span,
-.dataSessao strong {
-  display: block;
+.duracaoSessao {
+  color: var(--cor-texto);
+  font-size: 1rem;
+  font-weight: 820;
 }
 
-.dataSessao span {
-  color: #6e7690;
-  font-size: .63rem;
-  line-height: 1.4;
+.resumoTemporalSessao {
+  display: grid;
+  gap: 4px;
 }
 
-.dataSessao strong {
-  margin-top: 5px;
-  color: #342b57;
-  font-size: .82rem;
+.resumoTemporalSessao small {
+  color: #777f99;
+  font-size: .58rem;
+  line-height: 1.25;
 }
 
 .descricaoSessao {
+  display: block;
   min-width: 0;
 }
 
-.descricaoSessao h3 {
+.tituloSessao {
+  display: block;
   margin-top: 7px;
   font-size: .82rem;
+  font-weight: 760;
   overflow-wrap: anywhere;
 }
 
-.descricaoSessao p {
-  margin-top: 4px;
+.indicadorExpansao {
+  width: 17px;
+  height: 17px;
   color: #7b8299;
-  font-size: .62rem;
+  transition: transform .18s ease;
 }
+
+.linhaPrincipal[aria-expanded="true"] .indicadorExpansao { transform: rotate(180deg); }
 
 .selose {
   flex-wrap: wrap;
@@ -419,7 +481,7 @@
   letter-spacing: .05em;
 }
 
-.selose span[data-situacao="CONCLUIDA"] { color: #19704b; background: #e7f7ef; }
+.selose span[data-situacao="CONCLUIDA"] { color: #fff; background: var(--cor-navegacao); }
 .selose span[data-situacao="ATIVA"] { color: #236aaf; background: #e4f2ff; }
 .selose span[data-situacao="PLANEJADA"] { color: #6647cf; background: #efebff; }
 .selose span[data-situacao="INVALIDADA"] { color: #9a5c16; background: #fff1dc; }
@@ -428,7 +490,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  margin-top: 11px;
+  margin-top: 7px;
   color: #6f7790;
   font-size: .62rem;
   line-height: 1.45;
@@ -438,11 +500,52 @@
   color: #4f4969;
 }
 
-.acoesCartao {
-  justify-content: flex-end;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #eeedf3;
+.detalhesSessao {
+  padding: 0 54px 15px 94px;
+}
+
+.periodoSessao {
+  margin: 0;
+  color: #7b8299;
+  font-size: .62rem;
+}
+
+.acoesSessao {
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  right: 2px;
+}
+
+.painel .botaoMenuSessao {
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.botaoMenuSessao svg { width: 18px; height: 18px; }
+
+.menuAcoesSessao {
+  position: absolute;
+  z-index: 5;
+  top: 38px;
+  right: 0;
+  display: grid;
+  min-width: 145px;
+  padding: 6px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 11px;
+  background: var(--cor-superficie);
+  box-shadow: 0 14px 34px rgb(15 23 42 / 14%);
+}
+
+.painel .menuAcoesSessao button {
+  justify-content: flex-start;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
 }
 
 .formularioConclusao h4 {
@@ -481,7 +584,7 @@
 }
 
 .painel :is(button, textarea, input, select):focus-visible {
-  outline: 3px solid #f0a528;
+  outline: 3px solid #EF8D4B;
   outline-offset: 2px;
 }
 
@@ -493,10 +596,9 @@
   .gradeDatas, .gradeEscalas { grid-template-columns: 1fr; }
   .sessaoAtiva { grid-template-columns: auto minmax(0, 1fr); }
   .sessaoAtiva > button { grid-column: 1 / -1; }
-  .linhaPrincipal { flex-direction: column; }
-  .dataSessao { width: 100%; padding: 0 0 9px; border-right: 0; border-bottom: 1px solid #e8e7ef; }
-  .acoesCartao { flex-wrap: wrap; justify-content: stretch; }
-  .acoesCartao button { flex: 1; }
+  .painel .linhaPrincipal { grid-template-columns: 64px minmax(0, 1fr); padding-right: 48px; }
+  .indicadorExpansao { display: none; }
+  .detalhesSessao { padding-left: 78px; }
 }
 
 @media (max-width: 420px) {

@@ -4,7 +4,11 @@ import { createElement, type ComponentType, type PropsWithChildren } from "react
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { EstruturaAutenticada } from "./estrutura-autenticada";
+
+const estilos = readFileSync(resolve(process.cwd(), "src/componentes/estrutura-autenticada.module.css"), "utf8");
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard",
@@ -18,8 +22,8 @@ vi.mock("@/app/acoes-sessao", () => ({
 const destinos = [
   ["Dashboard", "/dashboard"],
   ["Módulos", "/modulos"],
+  ["Métodos", "/desafios"],
   ["Salas", "/salas"],
-  ["Desafios", "/desafios"],
 ] as const;
 
 function montarEstrutura(administradorIa = false) {
@@ -41,11 +45,18 @@ describe("sistema visual autenticado", () => {
   it("inicia compacto sem remover destinos nem a saída", () => {
     render(montarEstrutura());
 
-    expect(screen.getByRole("button", { name: "Expandir barra lateral" }).getAttribute("aria-expanded")).toBe("false");
+    const expandir = screen.getByRole("button", { name: "Expandir barra lateral" });
+    expect(expandir.getAttribute("aria-expanded")).toBe("false");
+    expect(expandir.querySelector(".lucide-flask-conical")).toBeTruthy();
+    expect(expandir.querySelector(".lucide-chevron-right")).toBeTruthy();
     for (const [rotulo, href] of destinos) {
       expect(screen.getByRole("link", { name: rotulo }).getAttribute("href")).toBe(href);
     }
+    const metodos = screen.getByRole("link", { name: "Métodos" });
+    const salas = screen.getByRole("link", { name: "Salas" });
+    expect(metodos.compareDocumentPosition(salas) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("button", { name: "Sair" })).toBeTruthy();
+    expect(estilos).toMatch(/\.botaoMarcaRecolhida\s+\.simboloMarca\s*\{[^}]*color:\s*#111[^}]*background:\s*#fff/s);
   });
 
   it("expande a navegação e preserva a preferência local", async () => {
@@ -56,6 +67,7 @@ describe("sistema visual autenticado", () => {
 
     expect(screen.getByRole("button", { name: "Recolher barra lateral" }).getAttribute("aria-expanded")).toBe("true");
     expect(window.localStorage.getItem("learning-lab:barra-lateral-recolhida")).toBe("nao");
+    expect(screen.queryByText(/Aprender bem hoje/)).toBeNull();
   });
 
   it("oculta as configurações de IA para contas comuns", () => {
@@ -66,7 +78,9 @@ describe("sistema visual autenticado", () => {
   it("substitui o destino Perfil pelo acesso às configurações no rodapé", () => {
     render(montarEstrutura());
     expect(screen.queryByRole("link", { name: "Perfil" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Abrir configurações do perfil de Diego" })).toBeTruthy();
+    const sair = screen.getByRole("button", { name: "Sair" });
+    const perfil = screen.getByRole("button", { name: "Abrir configurações do perfil de Diego" });
+    expect(sair.compareDocumentPosition(perfil) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("disponibiliza as configurações de IA para ADMIN", () => {

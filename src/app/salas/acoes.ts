@@ -5,13 +5,16 @@ import { redirect } from "next/navigation";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import {
   arquivarSala,
+  atualizarInstanciaVinculada,
   criarModuloSala,
   criarSala,
   entrarModuloSalaComCodigo,
   ErroSala,
   excluirSala,
   gerarConviteModuloSala,
+  pararCompartilhamentoInstancia,
   removerParticipanteModuloSala,
+  removerUsuarioDaSala,
   revogarConviteModuloSala,
   sairDaSala,
   sairDoModuloSala,
@@ -19,6 +22,7 @@ import {
 } from "@/servidor/salas";
 
 export type EstadoGeracaoConvite = { codigo?: string; link?: string; expiraEm?: string; erro?: string };
+export type EstadoInstanciaVinculada = { sucesso?: boolean; erro?: string };
 
 function texto(formulario: FormData, campo: string) {
   const valor = formulario.get(campo);
@@ -127,6 +131,35 @@ export async function aderirModuloSala(formulario: FormData) {
   redirect(`${caminho}?sucesso=vinculo`);
 }
 
+export async function editarInstanciaVinculada(_: EstadoInstanciaVinculada, formulario: FormData): Promise<EstadoInstanciaVinculada> {
+  const usuario = await exigirUsuario();
+  try {
+    const modulo = await atualizarInstanciaVinculada(usuario.id, {
+      vinculoId: texto(formulario, "vinculoId"),
+      titulo: texto(formulario, "titulo"),
+      descricao: texto(formulario, "descricao"),
+    });
+    revalidatePath("/modulos", "layout");
+    revalidatePath("/salas", "layout");
+    revalidatePath(`/modulos/${encodeURIComponent(modulo.identificador)}`);
+    return { sucesso: true };
+  } catch (erro) {
+    return { erro: codigoErro(erro) };
+  }
+}
+
+export async function pararCompartilhamentoDaInstancia(_: EstadoInstanciaVinculada, formulario: FormData): Promise<EstadoInstanciaVinculada> {
+  const usuario = await exigirUsuario();
+  try {
+    await pararCompartilhamentoInstancia(usuario.id, { vinculoId: texto(formulario, "vinculoId") });
+    revalidatePath("/modulos", "layout");
+    revalidatePath("/salas", "layout");
+    return { sucesso: true };
+  } catch (erro) {
+    return { erro: codigoErro(erro) };
+  }
+}
+
 export async function sairModulo(formulario: FormData) {
   const usuario = await exigirUsuario();
   const caminho = `${caminhoSala(formulario)}/modulos/${encodeURIComponent(texto(formulario, "moduloSalaId"))}`;
@@ -153,6 +186,25 @@ export async function removerParticipanteModulo(formulario: FormData) {
   }
   revalidatePath(caminho);
   revalidatePath(caminhoSala(formulario));
+  redirect(`${caminho}?sucesso=participante-removido`);
+}
+
+export async function removerParticipanteDaSala(formulario: FormData) {
+  const usuario = await exigirUsuario();
+  const caminho = caminhoSala(formulario);
+  let resultado: Awaited<ReturnType<typeof removerUsuarioDaSala>>;
+  try {
+    resultado = await removerUsuarioDaSala(usuario.id, {
+      salaId: texto(formulario, "salaId"),
+      usuarioId: texto(formulario, "usuarioId"),
+    });
+  } catch (erro) {
+    redirect(`${caminho}?erro=${codigoErro(erro)}`);
+  }
+  revalidatePath("/salas", "layout");
+  revalidatePath(caminho);
+  revalidatePath("/modulos", "layout");
+  for (const modulo of resultado.modulosPessoaisPreservados) revalidatePath(`/modulos/${encodeURIComponent(modulo.identificador)}`);
   redirect(`${caminho}?sucesso=participante-removido`);
 }
 

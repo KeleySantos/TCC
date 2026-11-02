@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 const obterModulo = vi.fn();
 const obterDashboards = vi.fn();
@@ -18,10 +19,12 @@ vi.mock("@/servidor/paineis-salas", () => ({
 vi.mock("../../../gerador-convite", () => ({ GeradorConvite: () => createElement("button", null, "Gerar convite do módulo") }));
 vi.mock("@/app/modulos/[identificador]/painel-metricas-sessoes", () => ({ PainelMetricasSessoes: ({ tituloPainel }: { tituloPainel: string }) => createElement("section", null, tituloPainel) }));
 vi.mock("@/app/modulos/[identificador]/conteudo-dashboard-modulo", () => ({ ConteudoDashboardModulo: ({ tituloPainel }: { tituloPainel: string }) => createElement("section", null, tituloPainel) }));
-vi.mock("../../../comparacao-membros", () => ({ ComparacaoMembros: () => createElement("section", null, "Comparação dos participantes") }));
+vi.mock("../../../comparacao-membros", () => ({ ComparacaoMembros: ({ participantes }: { participantes: unknown[] }) => createElement("section", null, "Comparação dos participantes", JSON.stringify(participantes)) }));
 vi.mock("../../../interpretacao-membro", () => ({ InterpretacaoMembroSala: () => createElement("section", null, "Interpretação por IA") }));
 
 import PaginaModuloSala from "./page";
+const estilos = readFileSync(new URL("./page.module.css", import.meta.url), "utf8");
+const fontePagina = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
 
 const moduloAdministrado = {
   id: "modulo-1",
@@ -44,25 +47,38 @@ beforeEach(() => {
   obterModulo.mockResolvedValue(moduloAdministrado);
   obterDashboards.mockResolvedValue({
     agregado: { disponivel: true, quantidadeContribuidores: 1, metricas: { tempoEstudo: { quantidadeSessoesValidas: 3 } } },
-    individuais: [{ vinculoId: "v-ana", nome: "Ana", usuarioId: "ana", metricas: { tempoEstudo: { quantidadeSessoesValidas: 3 } }, aprendizagem: {} }],
+    individuais: [{
+      vinculoId: "v-ana", nome: "Ana", usuarioId: "ana", metricas: { tempoEstudo: { quantidadeSessoesValidas: 3 } },
+      aprendizagem: { resumoResultados: { evolucaoPercepcaoEvidencia: [{ quantidadePercepcoes: 2, mediaCompreensaoPercebida: 4, quantidadeEvidencias: 1, desempenhoMedioEvidencias: 75 }] } },
+    }],
   });
 });
 
-it("oferece Dashboard, Membros e convite contextual ao administrador", async () => {
+it("oferece Dashboard, Participantes e convite contextual ao administrador sem descrição sob o título", async () => {
   const pagina = await PaginaModuloSala({ params: Promise.resolve({ identificador: "grupo-js", moduloId: "modulo-1" }) });
   const html = renderToStaticMarkup(createElement(() => pagina));
 
   expect(obterModulo).toHaveBeenCalledWith("admin", "grupo-js", "modulo-1");
   expect(html).toContain('role="tab"');
   expect(html).toContain("Dashboard");
-  expect(html).toContain("Membros");
+  expect(html).toContain("Participantes");
+  expect(html).not.toContain(">Membros<");
   expect(html).toContain("Gerar convite do módulo");
   expect(html).toContain("Ana");
   expect(html).toContain("Bruno");
   expect(html).toContain("Aguardando vínculo");
   expect(html).not.toContain(">Admin<");
   expect(html).toContain("Comparação dos participantes");
-  expect(html).toContain('name="participacaoId" value="p-ana"');
+  expect(html).toContain('&quot;quantidadePercepcoes&quot;:2');
+  expect(html).toContain("<h1>Fundamentos</h1>");
+  expect(html).not.toContain("Base compartilhada");
+  expect(html).not.toContain('name="participacaoId" value="p-ana"');
+  expect(fontePagina).toContain('<input name="participacaoId" type="hidden" value={participacao.id} />');
+  expect(estilos).toMatch(/\.cabecalho h1\s*\{[^}]*font-size:\s*clamp\(2\.4rem,\s*4\.8vw,\s*4rem\)[^}]*font-weight:\s*850/s);
+  expect(estilos).toMatch(/\.cabecalho\s*\{[^}]*border-bottom:\s*1px solid var\(--cor-borda\)/s);
+  expect(fontePagina).toMatch(/<ConteudoDashboardModulo[^>]*visualEnxuto\s*\/>/s);
+  expect(fontePagina).toMatch(/<PainelMetricasSessoes[^>]*visualEnxuto\s*\/>/s);
+  expect(fontePagina).toContain("item.aprendizagem?.resumoResultados.evolucaoPercepcaoEvidencia ?? []");
 });
 
 it("nega acesso direto a módulo não autorizado", async () => {

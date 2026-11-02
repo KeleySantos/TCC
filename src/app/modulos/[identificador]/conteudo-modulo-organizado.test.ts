@@ -20,7 +20,7 @@ describe("composição da página do módulo", () => {
     expect(html).toContain(">Filtro<");
     expect(html).toContain('name="inicio"');
     expect(html).toContain('name="fim"');
-    expect(html).toContain("Concluir filtro");
+    expect(html).toContain("Filtrar");
     expect(html).toContain("Período filtrado");
   });
 });

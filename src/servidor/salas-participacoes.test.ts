@@ -42,6 +42,71 @@ function servicosCicloParticipacao() {
   return modulo;
 }
 
+function servicosInstanciaVinculada() {
+  const modulo = salas as typeof salas & {
+    atualizarInstanciaVinculada: (usuarioId: string, entrada: { vinculoId: string; titulo: string; descricao: string }) => Promise<{ moduloPessoalId: string; identificador: string }>;
+    pararCompartilhamentoInstancia: (usuarioId: string, entrada: { vinculoId: string }) => Promise<{ moduloPessoalId: string }>;
+  };
+  for (const nome of ["atualizarInstanciaVinculada", "pararCompartilhamentoInstancia"] as const) {
+    expect(typeof modulo[nome], `${nome} deve existir`).toBe("function");
+  }
+  return modulo;
+}
+
+function servicosRemocaoDaSala() {
+  const modulo = salas as typeof salas & {
+    removerUsuarioDaSala: (proprietarioId: string, entrada: { salaId: string; usuarioId: string }) => Promise<{
+      participacoesEncerradas: string[];
+      modulosPessoaisPreservados: { id: string; identificador: string }[];
+    }>;
+  };
+  expect(typeof modulo.removerUsuarioDaSala, "removerUsuarioDaSala deve existir").toBe("function");
+  return modulo;
+}
+
+let sequenciaConcorrencia = 0;
+
+async function criarInstanciaParaConcorrencia() {
+  sequenciaConcorrencia += 1;
+  const usuario = await banco.usuario.create({ data: {
+    nome: `Concorrente ${sequenciaConcorrencia}`,
+    nomeUsuario: `concorrente-${sequenciaConcorrencia}`,
+    senhaHash: "sintetica",
+  } });
+  const [moduloOriginal, moduloReativado] = await Promise.all([
+    banco.moduloAprendizagem.create({ data: {
+      usuarioId: usuario.id,
+      identificador: `original-${sequenciaConcorrencia}`,
+      titulo: `Original ${sequenciaConcorrencia}`,
+      descricao: "Instância vista pela requisição antes da intercalação.",
+    } }),
+    banco.moduloAprendizagem.create({ data: {
+      usuarioId: usuario.id,
+      identificador: `reativado-${sequenciaConcorrencia}`,
+      titulo: `Reativado ${sequenciaConcorrencia}`,
+      descricao: "Instância ligada por uma reentrada concorrente.",
+    } }),
+  ]);
+  const participacao = await banco.participacaoModuloSala.create({ data: { moduloSalaId: moduloAId, usuarioId: usuario.id, papel: "PARTICIPANTE" } });
+  const vinculo = await banco.vinculoModuloSala.create({ data: {
+    moduloSalaId: moduloAId,
+    participacaoModuloSalaId: participacao.id,
+    usuarioId: usuario.id,
+    moduloPessoalId: moduloOriginal.id,
+  } });
+  return { usuario, moduloOriginal, moduloReativado, participacao, vinculo };
+}
+
+function intercalarAntesDaProximaTransacao(mutacao: () => Promise<void>) {
+  type ClienteTransacionavel = { $transaction: <T>(operacao: (transacao: unknown) => Promise<T>) => Promise<T> };
+  const cliente = banco as unknown as ClienteTransacionavel;
+  const executarTransacao = cliente.$transaction.bind(cliente);
+  return vi.spyOn(cliente, "$transaction").mockImplementationOnce(async (operacao) => {
+    await mutacao();
+    return executarTransacao(operacao);
+  });
+}
+
 beforeAll(async () => {
   const [proprietario, ana, bruno, carla, daniel, eva] = await Promise.all([
     banco.usuario.create({ data: { nome: "Proprietário", nomeUsuario: "proprietario-participacoes", senhaHash: "sintetica" } }),
@@ -170,6 +235,46 @@ describe.sequential("autorização modular das Salas", () => {
     await expect(salas.vincularInstanciaModuloSala(danielId, { moduloSalaId: moduloAId, moduloPessoalId: pessoalDaniel.id, criarInstancia: false })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
   });
 
+  it("edita somente a instância vinculada ativa pertencente ao usuário", async () => {
+    const servicos = servicosInstanciaVinculada();
+    const vinculo = await banco.vinculoModuloSala.findUniqueOrThrow({ where: { moduloSalaId_usuarioId: { moduloSalaId: moduloAId, usuarioId: anaId } } });
+
+    await expect(servicos.atualizarInstanciaVinculada(brunoId, {
+      vinculoId: vinculo.id,
+      titulo: "Instância indevida",
+      descricao: "Outro participante não pode alterar este módulo.",
+    })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+
+    await expect(servicos.atualizarInstanciaVinculada(anaId, {
+      vinculoId: vinculo.id,
+      titulo: "Cálculo aplicado",
+      descricao: "Instância pessoal atualizada pela participante.",
+    })).resolves.toEqual({ moduloPessoalId: moduloPessoalAnaId, identificador: "calculo-aplicado" });
+    expect(await banco.moduloAprendizagem.findUnique({ where: { id: moduloPessoalAnaId }, select: { titulo: true, descricao: true } })).toEqual({
+      titulo: "Cálculo aplicado",
+      descricao: "Instância pessoal atualizada pela participante.",
+    });
+  });
+
+  it("não edita a instância quando o vínculo deixa de estar ativo antes da autorização transacional", async () => {
+    const servicos = servicosInstanciaVinculada();
+    const cenario = await criarInstanciaParaConcorrencia();
+    const transacao = intercalarAntesDaProximaTransacao(async () => {
+      await banco.vinculoModuloSala.update({ where: { id: cenario.vinculo.id }, data: { situacao: "DESVINCULADO", compartilharDashboard: false, desvinculadoEm: new Date() } });
+      await banco.participacaoModuloSala.update({ where: { id: cenario.participacao.id }, data: { situacao: "SAIU", encerrouEm: new Date() } });
+    });
+    try {
+      await expect(servicos.atualizarInstanciaVinculada(cenario.usuario.id, {
+        vinculoId: cenario.vinculo.id,
+        titulo: "Edição obsoleta",
+        descricao: "Não pode alcançar o módulo depois do desligamento intercalado.",
+      })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+    } finally {
+      transacao.mockRestore();
+    }
+    expect(await banco.moduloAprendizagem.findUniqueOrThrow({ where: { id: cenario.moduloOriginal.id }, select: { titulo: true } })).toEqual({ titulo: cenario.moduloOriginal.titulo });
+  });
+
   it("sair do último módulo remove o acesso à Sala, mas sair de um preserva os demais", async () => {
     const servicos = servicosCicloParticipacao();
     await servicos.sairDoModuloSala(brunoId, { moduloSalaId: moduloAId });
@@ -187,6 +292,154 @@ describe.sequential("autorização modular das Salas", () => {
     expect((await banco.participacaoModuloSala.findUniqueOrThrow({ where: { id: participacao.id } })).situacao).toBe("REMOVIDA");
     expect((await banco.vinculoModuloSala.findUniqueOrThrow({ where: { id: vinculo.id } })).situacao).toBe("DESVINCULADO");
     expect(await banco.moduloAprendizagem.findUnique({ where: { id: vinculo.moduloPessoalId } })).not.toBeNull();
+  });
+
+  it("para o compartilhamento preservando módulo e evidências da instância", async () => {
+    const servicos = servicosInstanciaVinculada();
+    const vinculo = await banco.vinculoModuloSala.findUniqueOrThrow({ where: { moduloSalaId_usuarioId: { moduloSalaId: moduloAId, usuarioId: anaId } } });
+    const iniciadaEm = new Date("2026-10-20T12:00:00.000Z");
+    await banco.sessaoEstudo.create({
+      data: {
+        usuarioId: anaId,
+        moduloId: moduloPessoalAnaId,
+        descricao: "Sessão preservada após o desligamento.",
+        iniciadaEm,
+        encerradaEm: new Date("2026-10-20T12:30:00.000Z"),
+        duracaoMinutos: 30,
+        situacao: "CONCLUIDA",
+      },
+    });
+
+    await expect(servicos.pararCompartilhamentoInstancia(brunoId, { vinculoId: vinculo.id })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+    await expect(servicos.pararCompartilhamentoInstancia(anaId, { vinculoId: vinculo.id })).resolves.toEqual({ moduloPessoalId: moduloPessoalAnaId });
+    expect(await banco.moduloAprendizagem.findUnique({ where: { id: moduloPessoalAnaId } })).not.toBeNull();
+    expect(await banco.vinculoModuloSala.findUnique({ where: { id: vinculo.id }, select: { situacao: true, compartilharDashboard: true } })).toEqual({
+      situacao: "DESVINCULADO",
+      compartilharDashboard: false,
+    });
+    expect(await banco.evidenciaHistoricaModuloSala.count({ where: { moduloSalaId: moduloAId } })).toBeGreaterThan(0);
+    await expect(servicos.atualizarInstanciaVinculada(anaId, {
+      vinculoId: vinculo.id,
+      titulo: "Edição após saída",
+      descricao: "Vínculos inativos não podem mais editar pelo contexto da Sala.",
+    })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+  });
+
+  it("retorna o módulo realmente encerrado após uma reentrada intercalada", async () => {
+    const servicos = servicosInstanciaVinculada();
+    const cenario = await criarInstanciaParaConcorrencia();
+    const transacao = intercalarAntesDaProximaTransacao(async () => {
+      await banco.vinculoModuloSala.update({
+        where: { id: cenario.vinculo.id },
+        data: { moduloPessoalId: cenario.moduloReativado.id, vinculadoEm: new Date(), dadosDesde: null },
+      });
+    });
+    try {
+      await expect(servicos.pararCompartilhamentoInstancia(cenario.usuario.id, { vinculoId: cenario.vinculo.id })).resolves.toEqual({ moduloPessoalId: cenario.moduloReativado.id });
+    } finally {
+      transacao.mockRestore();
+    }
+    expect(await banco.vinculoModuloSala.findUniqueOrThrow({ where: { id: cenario.vinculo.id }, select: { moduloPessoalId: true, situacao: true } })).toEqual({
+      moduloPessoalId: cenario.moduloReativado.id,
+      situacao: "DESVINCULADO",
+    });
+  });
+
+  it("não sobrescreve uma remoção intercalada com uma saída obsoleta", async () => {
+    const servicos = servicosInstanciaVinculada();
+    const cenario = await criarInstanciaParaConcorrencia();
+    const transacao = intercalarAntesDaProximaTransacao(async () => {
+      await banco.vinculoModuloSala.update({ where: { id: cenario.vinculo.id }, data: { situacao: "DESVINCULADO", compartilharDashboard: false, desvinculadoEm: new Date() } });
+      await banco.participacaoModuloSala.update({ where: { id: cenario.participacao.id }, data: { situacao: "REMOVIDA", encerrouEm: new Date() } });
+    });
+    try {
+      await expect(servicos.pararCompartilhamentoInstancia(cenario.usuario.id, { vinculoId: cenario.vinculo.id })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+    } finally {
+      transacao.mockRestore();
+    }
+    expect(await banco.participacaoModuloSala.findUniqueOrThrow({ where: { id: cenario.participacao.id }, select: { situacao: true } })).toEqual({ situacao: "REMOVIDA" });
+  });
+
+  it("remove o usuário da Sala inteira, preserva instâncias/evidências e protege autorização", async () => {
+    const servicos = servicosRemocaoDaSala();
+    const salaId = (await banco.moduloSala.findUniqueOrThrow({ where: { id: moduloAId }, select: { salaId: true } })).salaId;
+    const alvo = await banco.usuario.create({ data: { nome: "Alvo da remoção", nomeUsuario: "alvo-remocao-sala", senhaHash: "sintetica" } });
+    const [pessoalA, pessoalB] = await Promise.all([
+      banco.moduloAprendizagem.create({ data: { usuarioId: alvo.id, identificador: "preservado-a", titulo: "Preservado A", descricao: "Instância do primeiro módulo." } }),
+      banco.moduloAprendizagem.create({ data: { usuarioId: alvo.id, identificador: "preservado-b", titulo: "Preservado B", descricao: "Instância do segundo módulo." } }),
+    ]);
+    const [participacaoA, participacaoB] = await Promise.all([
+      banco.participacaoModuloSala.create({ data: { moduloSalaId: moduloAId, usuarioId: alvo.id, papel: "PARTICIPANTE" } }),
+      banco.participacaoModuloSala.create({ data: { moduloSalaId: moduloBId, usuarioId: alvo.id, papel: "PARTICIPANTE" } }),
+    ]);
+    const [vinculoA, vinculoB] = await Promise.all([
+      banco.vinculoModuloSala.create({ data: { moduloSalaId: moduloAId, participacaoModuloSalaId: participacaoA.id, usuarioId: alvo.id, moduloPessoalId: pessoalA.id } }),
+      banco.vinculoModuloSala.create({ data: { moduloSalaId: moduloBId, participacaoModuloSalaId: participacaoB.id, usuarioId: alvo.id, moduloPessoalId: pessoalB.id } }),
+    ]);
+    await Promise.all([
+      banco.sessaoEstudo.create({ data: { usuarioId: alvo.id, moduloId: pessoalA.id, descricao: "Evidência A", iniciadaEm: new Date("2026-10-21T10:00:00.000Z"), encerradaEm: new Date("2026-10-21T10:30:00.000Z"), duracaoMinutos: 30, situacao: "CONCLUIDA" } }),
+      banco.sessaoEstudo.create({ data: { usuarioId: alvo.id, moduloId: pessoalB.id, descricao: "Evidência B", iniciadaEm: new Date("2026-10-22T10:00:00.000Z"), encerradaEm: new Date("2026-10-22T10:40:00.000Z"), duracaoMinutos: 40, situacao: "CONCLUIDA" } }),
+    ]);
+
+    await expect(servicos.removerUsuarioDaSala(anaId, { salaId, usuarioId: alvo.id })).rejects.toMatchObject({ codigo: "NAO_ENCONTRADO" });
+    await expect(servicos.removerUsuarioDaSala(proprietarioId, { salaId, usuarioId: proprietarioId })).rejects.toMatchObject({ codigo: "ESTADO_INVALIDO" });
+    await expect(servicos.removerUsuarioDaSala(proprietarioId, { salaId, usuarioId: alvo.id })).resolves.toEqual({
+      participacoesEncerradas: expect.arrayContaining([participacaoA.id, participacaoB.id]),
+      modulosPessoaisPreservados: expect.arrayContaining([
+        { id: pessoalA.id, identificador: pessoalA.identificador },
+        { id: pessoalB.id, identificador: pessoalB.identificador },
+      ]),
+    });
+    expect(await banco.participacaoModuloSala.findMany({ where: { id: { in: [participacaoA.id, participacaoB.id] } }, select: { situacao: true } })).toEqual([
+      { situacao: "REMOVIDA" },
+      { situacao: "REMOVIDA" },
+    ]);
+    expect(await banco.vinculoModuloSala.findMany({ where: { id: { in: [vinculoA.id, vinculoB.id] } }, select: { situacao: true, compartilharDashboard: true } })).toEqual([
+      { situacao: "DESVINCULADO", compartilharDashboard: false },
+      { situacao: "DESVINCULADO", compartilharDashboard: false },
+    ]);
+    expect(await banco.moduloAprendizagem.count({ where: { id: { in: [pessoalA.id, pessoalB.id] } } })).toBe(2);
+    expect(await banco.sessaoEstudo.count({ where: { usuarioId: alvo.id, moduloId: { in: [pessoalA.id, pessoalB.id] } } })).toBe(2);
+    expect(await banco.evidenciaHistoricaModuloSala.count({ where: { contribuinteAnonimoHash: salas.criarReferenciaContribuinteAnonimo(salaId, alvo.id) } })).toBe(2);
+    expect(await salas.obterSalaDaConta(alvo.id, identificadorSala)).toBeNull();
+    const salaAposRemocao = await salas.obterSalaDaConta(proprietarioId, identificadorSala);
+    if (salaAposRemocao?.papel !== "PROPRIETARIO") throw new Error("Sala deveria estar disponível ao proprietário.");
+    expect(salaAposRemocao.participantes.some((participante) => participante.usuarioId === alvo.id)).toBe(false);
+  });
+
+  it("encerra também participações sem instância e preserva a participação em outra Sala", async () => {
+    const cenario = await criarInstanciaParaConcorrencia();
+    const salaId = (await banco.moduloSala.findUniqueOrThrow({ where: { id: moduloAId } })).salaId;
+    const semInstancia = await banco.participacaoModuloSala.create({ data: { moduloSalaId: moduloBId, usuarioId: cenario.usuario.id } });
+    const outraSala = await salas.criarSala(proprietarioId, { nome: "Outra Sala da remoção", descricao: "Contexto que deve permanecer autorizado.", tituloModuloInicial: "Outro módulo", descricaoModuloInicial: "Fora do escopo da remoção." });
+    const outroModulo = await banco.moduloSala.findFirstOrThrow({ where: { salaId: outraSala.id } });
+    const outraParticipacao = await banco.participacaoModuloSala.create({ data: { moduloSalaId: outroModulo.id, usuarioId: cenario.usuario.id } });
+    const resultado = await salas.removerUsuarioDaSala(proprietarioId, { salaId, usuarioId: cenario.usuario.id });
+    expect(resultado.participacoesEncerradas).toHaveLength(2);
+    expect(resultado.participacoesEncerradas).toContain(semInstancia.id);
+    expect(resultado.modulosPessoaisPreservados).toEqual([{ id: cenario.moduloOriginal.id, identificador: cenario.moduloOriginal.identificador }]);
+    expect(await banco.participacaoModuloSala.findUniqueOrThrow({ where: { id: semInstancia.id } })).toMatchObject({ situacao: "REMOVIDA" });
+    expect(await banco.participacaoModuloSala.findUniqueOrThrow({ where: { id: outraParticipacao.id } })).toMatchObject({ situacao: "ATIVA", encerrouEm: null });
+  });
+
+  it("reverte participações, vínculos, membro e evidências se a transação falhar ao auditar", async () => {
+    const cenario = await criarInstanciaParaConcorrencia();
+    const salaId = (await banco.moduloSala.findUniqueOrThrow({ where: { id: moduloAId } })).salaId;
+    const membro = await banco.membroSala.create({ data: { salaId, usuarioId: cenario.usuario.id } });
+    await banco.sessaoEstudo.create({ data: { usuarioId: cenario.usuario.id, moduloId: cenario.moduloOriginal.id, descricao: "Evidência preservada após falha", iniciadaEm: new Date("2026-10-21T10:00:00.000Z"), encerradaEm: new Date("2026-10-21T10:30:00.000Z"), duracaoMinutos: 30, situacao: "CONCLUIDA" } });
+    // Falha real no SQLite de teste, depois das alterações e antes do commit.
+    await banco.$executeRawUnsafe(`CREATE TRIGGER impedir_auditoria_remocao BEFORE INSERT ON "EventoAuditoria" WHEN NEW."acao" = 'USUARIO_REMOVIDO_DA_SALA' BEGIN SELECT RAISE(ABORT, 'falha sintética de auditoria'); END`);
+    try {
+      await expect(salas.removerUsuarioDaSala(proprietarioId, { salaId, usuarioId: cenario.usuario.id })).rejects.toThrow();
+    } finally {
+      await banco.$executeRawUnsafe("DROP TRIGGER impedir_auditoria_remocao");
+    }
+    expect(await banco.participacaoModuloSala.findUniqueOrThrow({ where: { id: cenario.participacao.id } })).toMatchObject({ situacao: "ATIVA", encerrouEm: null });
+    expect(await banco.vinculoModuloSala.findUniqueOrThrow({ where: { id: cenario.vinculo.id } })).toMatchObject({ situacao: "ATIVO", compartilharDashboard: true, desvinculadoEm: null });
+    expect(await banco.membroSala.findUniqueOrThrow({ where: { id: membro.id } })).toMatchObject({ situacao: "ATIVO", encerrouEm: null });
+    expect(await banco.evidenciaHistoricaModuloSala.count({ where: { contribuinteAnonimoHash: salas.criarReferenciaContribuinteAnonimo(salaId, cenario.usuario.id) } })).toBe(0);
+    expect(await banco.eventoAuditoria.count({ where: { alvo: cenario.participacao.id } })).toBe(0);
+    expect(await banco.sessaoEstudo.count({ where: { usuarioId: cenario.usuario.id } })).toBe(1);
   });
 
   it("sair da Sala encerra todas as participações modulares do participante", async () => {

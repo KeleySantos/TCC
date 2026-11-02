@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { BookOpenText, Plus, Share2 } from "lucide-react";
 import { AtualizarAoRetomar } from "@/componentes/atualizar-ao-retomar";
+import { CabecalhoPagina } from "@/componentes/cabecalho-pagina";
 import { criarRascunhoModulo } from "@/app/modulos/acoes";
 import { EstruturaAutenticada } from "@/componentes/estrutura-autenticada";
 import { exigirUsuario } from "@/servidor/autenticacao";
 import { listarModulosPessoais } from "@/servidor/modulos";
-import { obterPainelPessoal } from "@/servidor/paineis";
 import estilos from "./page.module.css";
 
 export default async function PaginaModulos({
@@ -14,10 +14,7 @@ export default async function PaginaModulos({
   searchParams: Promise<{ erro?: string; sucesso?: string }>;
 }) {
   const [usuario, parametros] = await Promise.all([exigirUsuario(), searchParams]);
-  const [resumo, modulosBiblioteca] = await Promise.all([
-    obterPainelPessoal(usuario.id),
-    listarModulosPessoais(usuario.id, { incluirRascunhos: true }),
-  ]);
+  const modulosBiblioteca = await listarModulosPessoais(usuario.id, { incluirRascunhos: true });
   const erro = parametros.erro === "duplicado"
     ? "Já existe um módulo com este título na sua conta."
     : parametros.erro
@@ -30,33 +27,24 @@ export default async function PaginaModulos({
         <AtualizarAoRetomar />
 
         <div className={estilos.areaConteudo}>
-          <header className={estilos.apresentacaoPagina}>
-            <div><p className={estilos.sobretitulo}>SEUS ESPAÇOS DE ESTUDO</p><h1>Módulos</h1><p>Organize conteúdos, materiais e sessões sem misturar seus contextos de aprendizagem.</p></div>
-            <dl className={estilos.resumoPagina}>
-              <div><dt>Módulos ativos</dt><dd>{resumo.modulos.length}</dd></div>
-              <div><dt>Sessões concluídas</dt><dd>{resumo.quantidadeSessoesValidas}</dd></div>
-            </dl>
-          </header>
+          <CabecalhoPagina acoes={<form action={criarRascunhoModulo}>
+              <button className={estilos.botaoAdicionar} type="submit">
+                <Plus aria-hidden="true" />
+                <span>Adicionar módulo</span>
+              </button>
+            </form>} descricao="Organize seus conteúdos, materiais e sessões de estudo em espaços separados." titulo="MÓDULOS" />
 
           {parametros.sucesso === "arquivado" && <p className="mensagem-sucesso" role="status">Módulo arquivado sem apagar seus registros.</p>}
 
           <div className={estilos.gradePrincipal}>
-            <section aria-labelledby="titulo-lista-modulos">
-              <div className={estilos.cabecalhoSecao}>
-                <div><p className={estilos.sobretitulo}>BIBLIOTECA PESSOAL</p><h2 id="titulo-lista-modulos">Continue de onde parou</h2></div>
-                <form action={criarRascunhoModulo}>
-                  <button className={estilos.botaoAdicionar} title="Criar novo módulo" type="submit">
-                    <Plus aria-hidden="true" />
-                    <span className={estilos.textoAcessivel}>Criar novo módulo</span>
-                  </button>
-                </form>
-              </div>
-
+            <section aria-label="Módulos pessoais">
+              <h2 className={estilos.tituloSecao}>Módulos registrados</h2>
               {erro && <p className="mensagem-erro" role="alert">{erro}</p>}
 
               <div className={estilos.gradeModulos}>
                 {modulosBiblioteca.map((modulo) => (
                   <Link
+                    aria-describedby={modulo.vinculoSalaAtivo ? `compartilhamento-${modulo.id}` : undefined}
                     aria-label={`${modulo.rascunho ? "Continuar configuração de" : "Abrir módulo"} ${modulo.rascunho ? "Módulo sem nome" : modulo.titulo}`}
                     className={estilos.cartaoModulo}
                     href={`/modulos/${modulo.identificador}`}
@@ -64,7 +52,7 @@ export default async function PaginaModulos({
                   >
                     <span className={estilos.iconeModulo}><BookOpenText aria-hidden="true" /></span>
                     <h3>{modulo.rascunho ? "Módulo sem nome" : modulo.titulo}</h3>
-                    {modulo.quantidadeCompartilhamentosAtivos > 0 && <span className={estilos.indicadorCompartilhamento}><Share2 aria-hidden="true" size={14} />Compartilhado · {modulo.quantidadeCompartilhamentosAtivos}/3</span>}
+                    {modulo.vinculoSalaAtivo && <span aria-label={`Instância compartilhada com a sala ${modulo.vinculoSalaAtivo.moduloSala.sala.nome}`} className={estilos.indicadorCompartilhamento} id={`compartilhamento-${modulo.id}`} role="img" title={`Instância compartilhada com a sala ${modulo.vinculoSalaAtivo.moduloSala.sala.nome}`}><Share2 aria-hidden="true" size={16} /></span>}
                   </Link>
                 ))}
               </div>

@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 import { PainelSessoes } from "@/app/modulos/[identificador]/painel-sessoes";
 import { CronometroEstudo } from "./cronometro-estudo";
 
-const rotulosEsperados = [
+const rotulosEsperadosSelect = [
   "Selecione",
   "1 — Muito baixa",
   "2 — Baixa",
@@ -17,6 +17,14 @@ const rotulosEsperados = [
   "4 — Boa",
   "5 — Muito boa",
 ];
+
+const rotulosEsperadosEscala = ["1 Muito baixa", "2", "3", "4", "5 Muito boa"];
+
+function rotulosEscalaCompreensao() {
+  return within(screen.getByRole("group", { name: "Compreensão percebida" }))
+    .getAllByRole("radio")
+    .map((opcao) => opcao.getAttribute("aria-label"));
+}
 
 const sessaoConcluida = {
   id: "s1",
@@ -49,8 +57,7 @@ describe("opções de compreensão percebida", () => {
       agoraIso: "2026-09-26T12:00:00.000Z",
     }));
     fireEvent.click(screen.getByRole("button", { name: "Registrar sessão" }));
-    const opcoes = within(screen.getByLabelText("Compreensão percebida")).getAllByRole("option").map((opcao) => opcao.textContent);
-    expect(opcoes).toEqual(rotulosEsperados);
+    expect(rotulosEscalaCompreensao()).toEqual(rotulosEsperadosEscala);
   });
 
   it("mantém a escala completa ao editar uma sessão", () => {
@@ -60,9 +67,9 @@ describe("opções de compreensão percebida", () => {
       materiais: [],
       agoraIso: "2026-09-26T12:00:00.000Z",
     }));
+    fireEvent.click(screen.getByRole("button", { name: "Ações da sessão Revisão da sessão" }));
     fireEvent.click(screen.getByRole("button", { name: "Editar" }));
-    const opcoes = within(screen.getByLabelText("Compreensão percebida")).getAllByRole("option").map((opcao) => opcao.textContent);
-    expect(opcoes).toEqual(rotulosEsperados);
+    expect(rotulosEscalaCompreensao()).toEqual(rotulosEsperadosEscala);
   });
 
   it("mantém a escala completa ao concluir uma sessão ativa", () => {
@@ -81,8 +88,7 @@ describe("opções de compreensão percebida", () => {
       agoraIso: "2026-09-26T12:00:00.000Z",
     }));
     fireEvent.click(screen.getByRole("button", { name: "Encerrar sessão" }));
-    const opcoes = within(screen.getByLabelText("Compreensão percebida")).getAllByRole("option").map((opcao) => opcao.textContent);
-    expect(opcoes).toEqual(rotulosEsperados);
+    expect(rotulosEscalaCompreensao()).toEqual(rotulosEsperadosEscala);
   });
 
   it("usa a mesma escala ao concluir o cronômetro legado", async () => {
@@ -90,6 +96,6 @@ describe("opções de compreensão percebida", () => {
     render(createElement(CronometroEstudo, { recursoId: "r1" }));
     fireEvent.click(screen.getByRole("button", { name: "Iniciar sessão de estudo" }));
     const opcoes = within(await screen.findByLabelText("Compreensão percebida")).getAllByRole("option").map((opcao) => opcao.textContent);
-    expect(opcoes).toEqual(rotulosEsperados);
+    expect(opcoes).toEqual(rotulosEsperadosSelect);
   });
 });

@@ -205,7 +205,7 @@
 .salvar:focus-visible,
 .voltar:focus-visible,
 .arquivarRascunho button:focus-visible {
-  outline: 3px solid #f0a528;
+  outline: 3px solid #EF8D4B;
   outline-offset: 3px;
 }
 
@@ -308,9 +308,7 @@
   min-height: 100vh;
   padding: 26px clamp(18px, 3vw, 42px) 64px;
   color: var(--laboratorio-tinta);
-  background:
-    radial-gradient(circle at 72% 0%, rgb(122 92 244 / 8%), transparent 28rem),
-    #f7f7fc;
+  background: #f7f7f7;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -416,23 +414,13 @@
   z-index: 12;
   top: 45px;
   right: 0;
-  width: 250px;
-  padding: 16px;
+  display: grid;
+  width: 230px;
+  padding: 6px;
   border: 1px solid #dfe1ee;
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 18px 45px rgb(31 29 79 / 14%);
-}
-
-.conteudoMenuModulo strong {
-  font-size: 0.84rem;
-}
-
-.conteudoMenuModulo p {
-  margin: 6px 0 13px;
-  color: #737c9b;
-  font-size: 0.7rem;
-  line-height: 1.45;
 }
 
 .conteudoMenuModulo button,
@@ -441,28 +429,32 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  width: 100%;
+  min-height: 36px;
+  justify-content: flex-start;
   padding: 8px 10px;
   border: 0;
   border-radius: 9px;
-  color: #8a3150;
-  background: #fff0f4;
+  color: var(--cor-texto);
+  background: transparent;
   font-size: 0.72rem;
   font-weight: 750;
   cursor: pointer;
 }
 
 .conteudoMenuModulo form {
-  margin-top: 7px;
+  margin: 0;
 }
 
 .acaoEditarModulo {
-  color: #5540bb;
-  background: #f1efff;
+  color: var(--cor-texto);
+  background: transparent;
 }
 
-.acaoEditarModulo:hover {
-  color: #432ba9;
-  background: #e9e5ff;
+.acaoEditarModulo:hover,
+.conteudoMenuModulo button:hover {
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
 }
 
 .conteudoMenuModulo button svg,
@@ -493,8 +485,18 @@
 }
 
 .tituloEditavel h1 {
+  color: var(--cor-navegacao);
   font-size: clamp(2rem, 4vw, 3.3rem);
   line-height: 1.02;
+}
+
+.descricaoModulo {
+  max-width: 760px;
+  margin: 12px 0 0;
+  color: var(--cor-texto-secundario);
+  font-size: .9rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .tituloEditavel h3 {
@@ -690,9 +692,13 @@
   padding: 17px;
 }
 
+.painelMateriais:has(.painelFormularioMaterial) {
+  z-index: 50;
+}
+
 .cabecalhoPainelLateral {
   display: grid;
-  grid-template-columns: 39px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
 }
@@ -735,18 +741,27 @@
 }
 
 .painelFormularioMaterial {
-  position: absolute;
-  z-index: 15;
-  top: 44px;
-  right: 0;
-  width: min(360px, calc(100vw - 48px));
-  max-height: min(690px, calc(100vh - 90px));
-  padding: 16px;
+  position: fixed;
+  z-index: 41;
+  top: 50%;
+  left: 50%;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  margin: 0;
+  padding: 20px;
   overflow-y: auto;
-  border: 1px solid #d9daeb;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--cor-borda);
   border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 24px 62px rgb(28 25 80 / 20%);
+  background: var(--cor-superficie);
+  box-shadow: 0 24px 62px rgb(15 23 42 / 22%);
+}
+
+.fundoFormularioMaterial {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  background: rgb(15 23 42 / 34%);
 }
 
 .instrucaoTipoArquivo {
@@ -763,7 +778,7 @@
   margin-bottom: 15px;
   padding: 4px;
   border-radius: 11px;
-  background: #f1f1f8;
+  background: var(--cor-fundo);
 }
 
 .seletorTipoMaterial button {
@@ -775,7 +790,7 @@
   padding: 8px 5px;
   border: 0;
   border-radius: 8px;
-  color: #697393;
+  color: var(--cor-texto-secundario);
   background: transparent;
   font-size: 0.65rem;
   font-weight: 750;
@@ -783,8 +798,8 @@
 }
 
 .seletorTipoMaterial button[aria-pressed="true"] {
-  color: #5638d4;
-  background: #fff;
+  color: #fff;
+  background: var(--cor-acao);
   box-shadow: 0 4px 12px rgb(48 45 93 / 8%);
 }
 
@@ -796,6 +811,35 @@
 .formularioMaterial {
   display: grid;
   gap: 12px;
+}
+
+.arquivoOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.campo .arquivoOculto {
+  width: 1px;
+  min-width: 1px;
+  padding: 0;
+  border: 0;
+}
+
+.arquivoOculto:focus-visible + .nomeArquivoSelecionado { outline: 3px solid #8ec5ff; outline-offset: 2px; }
+
+.nomeArquivoSelecionado {
+  color: var(--cor-texto-secundario);
+  font-size: .68rem;
+  overflow-wrap: anywhere;
+}
+
+.painelFormularioMaterial .botaoPrimario {
+  color: #fff;
+  background: var(--cor-acao);
 }
 
 .mensagemErroLocal,
@@ -1436,7 +1480,7 @@
 }
 
 .paginaModulo :is(button, a, summary):focus-visible {
-  outline: 3px solid #f0a528;
+  outline: 3px solid #EF8D4B;
   outline-offset: 3px;
 }
 
@@ -1513,6 +1557,117 @@
   }
 }
 
+/* Biblioteca escura com arquivos planos, sem cartões ou divisores individuais. */
+.painelMateriais {
+  color: #fff;
+  border-color: var(--cor-navegacao);
+  background: var(--cor-navegacao);
+  box-shadow: none;
+}
+
+.painelMateriais .sobretituloPagina,
+.painelMateriais .resumoPainel,
+.painelMateriais .itemMaterial small,
+.painelMateriais .detalheMaterial > p,
+.painelMateriais .acoesArquivoMaterial small {
+  color: rgb(255 255 255 / 68%);
+}
+
+.painelMateriais .iconePainel,
+.painelMateriais .iconeMaterial {
+  color: #fff;
+  background: rgb(255 255 255 / 10%);
+}
+
+.painelMateriais .botaoAdicionar,
+.painelMateriais .botaoAdicionar:hover {
+  border: 1px solid rgb(255 255 255 / 86%);
+  color: var(--cor-acao);
+  background: #fff;
+  box-shadow: none;
+}
+
+.listaMateriais {
+  gap: 0;
+  padding-right: 6px;
+  scrollbar-color: #34383d transparent;
+  scrollbar-width: thin;
+}
+
+.listaMateriais::-webkit-scrollbar { width: 5px; }
+.listaMateriais::-webkit-scrollbar-track { background: transparent; }
+.listaMateriais::-webkit-scrollbar-thumb { border-radius: 999px; background: #34383d; }
+.listaMateriais::-webkit-scrollbar-thumb:hover { background: #41464c; }
+
+.itemMaterial {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.itemMaterial > summary {
+  padding: 10px 4px;
+  border: 0;
+  border-radius: 8px;
+}
+
+.itemMaterial > summary:hover,
+.itemMaterial[open] > summary {
+  border: 0;
+  background: rgb(255 255 255 / 7%);
+}
+
+.itemMaterial strong { color: #fff; }
+
+.itemMaterial .tagFuncaoMaterial {
+  border-color: rgb(255 255 255 / 20%);
+  color: rgb(255 255 255 / 78%);
+  background: rgb(255 255 255 / 9%);
+}
+
+.detalheMaterial {
+  padding: 2px 4px 14px 48px;
+}
+
+.painelMateriais .abrirMaterial,
+.painelMateriais .resultadoAnaliseMaterial summary {
+  color: #fff;
+}
+
+.painelMateriais .textoMaterial,
+.painelMateriais .estadoAnaliseMaterial,
+.painelMateriais .resultadoAnaliseMaterial {
+  color: #fff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.painelMateriais .acoesArquivoMaterial button {
+  border-color: rgb(255 255 255 / 28%);
+  color: #fff;
+}
+
+.painelMateriais .formularioArquivarMaterial button { color: #ffd6df; }
+
+.painelMateriais .estadoVazioLateral {
+  border-color: rgb(255 255 255 / 28%);
+  color: rgb(255 255 255 / 72%);
+  background: transparent;
+}
+
+.painelMateriais .estadoVazioLateral svg { color: #fff; }
+
+.painelMateriais .painelFormularioMaterial {
+  color: var(--cor-texto);
+  border-color: var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.painelMateriais .painelFormularioMaterial .instrucaoTipoArquivo,
+.painelMateriais .painelFormularioMaterial .campo,
+.painelMateriais .painelFormularioMaterial small {
+  color: var(--cor-texto-secundario);
+}
+
 @media (max-width: 420px) {
   .paginaModulo {
     padding-inline: 12px;
@@ -1554,9 +1709,10 @@
 
   .painelFormularioMaterial {
     position: fixed;
-    inset: auto 10px 10px;
+    inset: 50% 12px auto;
     width: auto;
-    max-height: calc(100vh - 20px);
+    max-height: calc(100vh - 24px);
+    transform: translateY(-50%);
   }
 
   .areaGraficoPrincipal {
@@ -1607,14 +1763,14 @@
 .botaoSubaba[aria-selected="true"] { border-bottom-color: #6040ee; color: #382496; }
 .botaoSubaba:focus-visible { border-radius: .35rem; outline: 3px solid #bdb1ff; outline-offset: -3px; }
 .areaFiltroPeriodo { align-items: center; display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; min-width: 0; position: relative; }
-.botaoFiltroPeriodo { align-items: center; background: #fff; border: 1px solid #dcd8ed; border-radius: .7rem; color: #432ca3; cursor: pointer; display: inline-flex; font: inherit; font-size: .82rem; font-weight: 760; gap: .4rem; order: 2; padding: .62rem .8rem; }
+.botaoFiltroPeriodo { align-items: center; min-height: 48px; background: #fff; border: 1px solid #dcd8ed; border-radius: .7rem; color: #432ca3; cursor: pointer; display: inline-flex; font: inherit; font-size: .82rem; font-weight: 760; gap: .4rem; order: 2; padding: 0 14px; }
 .botaoFiltroPeriodo svg { height: 1rem; width: 1rem; }
 .botaoFiltroPeriodo[aria-expanded="true"] svg:last-child { transform: rotate(180deg); }
 .botaoFiltroPeriodo:focus-visible, .concluirFiltroPeriodo:focus-visible, .limparFiltroPeriodo:focus-visible { outline: 3px solid #bdb1ff; outline-offset: 2px; }
 .resumoFiltroPeriodo { color: #686d7e; font-size: .78rem; order: 1; }
-.painelFiltroPeriodo { background: #fff; border: 1px solid #ded9ee; border-radius: .9rem; box-shadow: 0 14px 34px rgb(49 34 100 / 14%); display: grid; gap: .75rem; max-width: 100%; padding: .9rem; position: absolute; right: 0; top: calc(100% + .45rem); width: 510px; z-index: 8; }
+.painelFiltroPeriodo { background: #fff; border: 1px solid #ded9ee; border-radius: .9rem; box-shadow: 0 14px 34px rgb(49 34 100 / 14%); display: grid; gap: .75rem; width: min(510px, calc(100vw - 32px)); max-width: none; padding: .9rem; position: absolute; right: 0; top: calc(100% + .45rem); z-index: 8; }
 .painelFiltroPeriodo[hidden] { display: none; }
-.painelFiltroPeriodo form { align-items: end; display: grid; gap: .7rem; grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
+.painelFiltroPeriodo form { align-items: end; display: grid; gap: .7rem; grid-template-columns: repeat(2, minmax(150px, 1fr)) auto; }
 .painelFiltroPeriodo form > div { display: grid; gap: .3rem; }
 .painelFiltroPeriodo label { color: #50566a; font-size: .75rem; font-weight: 700; }
 .painelFiltroPeriodo input { border: 1px solid #d8d9e4; border-radius: .55rem; color: #25283a; font: inherit; min-width: 0; padding: .58rem .62rem; width: 100%; }
@@ -1627,10 +1783,19 @@
 .blocoResultadosContextuais { display: grid; gap: 1rem; min-width: 0; }
 .blocoResultadosContextuais > header { display: grid; gap: .35rem; }
 .gradeResultadosContextuais, .gradeConceitosDestaque { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
-.listaConceitosDestaque { display: grid; gap: .7rem; list-style: none; margin: .9rem 0 0; padding: 0; }
-.listaConceitosDestaque li { background: #f8f7fc; border: 1px solid #e7e3f3; border-radius: .8rem; display: grid; gap: .35rem; padding: .8rem; }
-.listaConceitosDestaque small { color: #686d7e; font-size: .78rem; }
-.listaConceitosDestaque span { font-size: .85rem; }
+.listaConceitosDestaque { display: grid; gap: 12px; list-style: none; margin: 16px 0 0; padding: 0; }
+.listaConceitosDestaque li { border: 1px solid var(--cor-borda); background: var(--cor-superficie); border-radius: 16px; box-shadow: 0 8px 24px rgb(15 23 42 / 5%); display: grid; gap: 16px; padding: 18px; }
+.cabecalhoConceito { align-items: flex-start; display: flex; gap: 14px; justify-content: space-between; }
+.cabecalhoConceito > strong { color: var(--cor-texto); font-size: 1rem; line-height: 1.3; overflow-wrap: anywhere; }
+.indiceConceito { background: var(--cor-superficie-suave); border-radius: 999px; color: var(--cor-texto); display: grid; flex: 0 0 auto; font-size: .76rem; font-weight: 800; gap: 1px; min-width: 112px; padding: 7px 10px; text-align: right; }
+.indiceConceito small { color: var(--cor-texto-secundario); font-size: .56rem; font-weight: 750; letter-spacing: .02em; }
+.metricasConceito { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+.metricasConceito > div { background: var(--cor-superficie-suave); border-radius: 10px; min-width: 0; padding: 10px; }
+.metricasConceito dt { color: var(--cor-texto-secundario); font-size: .64rem; line-height: 1.3; }
+.metricasConceito dd { color: var(--cor-texto); font-size: .88rem; font-weight: 800; margin: 5px 0 0; }
+.metricasConceito dd small { color: var(--cor-texto-secundario); font-size: .61rem; font-weight: 650; white-space: nowrap; }
+.gradeConceitosDestaque > article:first-child .indiceConceito { background: #fff4dc; color: #7b4b00; }
+.gradeConceitosDestaque > article:last-child .indiceConceito { background: #e8f5f1; color: #245e52; }
 .graficoResultadosContextuais { height: 270px; margin-top: .75rem; min-width: 0; }
 .detalhesResultadosContextuais { border-top: 1px solid #e7e7f0; margin-top: .75rem; padding-top: .65rem; }
 .detalhesResultadosContextuais summary { color: var(--cor-texto); cursor: pointer; font-size: .72rem; font-weight: 760; }
@@ -1642,7 +1807,7 @@
 .estadoVazioAnalise { color: #686d7e; padding: 1rem 0; }
 
 @media (max-width: 760px) {
-  .painelFiltroPeriodo { width: min(100%, 360px); }
+  .painelFiltroPeriodo { width: min(360px, calc(100vw - 28px)); max-width: none; }
   .painelFiltroPeriodo form { grid-template-columns: 1fr; }
   .gradeResultadosContextuais, .gradeConceitosDestaque { grid-template-columns: 1fr; }
   .graficoResultadosContextuais { height: 240px; }
@@ -1650,17 +1815,26 @@
 .blocoAprendizagem { background: #fff; border: 1px solid #e4e6f1; border-radius: 18px; min-width: 0; padding: 1.25rem; }
 .blocoAprendizagem h2, .blocoAprendizagem h3, .blocoAprendizagem h4 { margin: 0 0 .45rem; }
 .blocoAprendizagem p { color: #62677a; line-height: 1.55; margin: 0; }
-.blocoAprendizagem > ul { display: grid; gap: .6rem; list-style: none; margin: .8rem 0 0; padding: 0; }
-.blocoAprendizagem > ul > li { border: 1px solid #ececf3; border-radius: 10px; display: grid; gap: .2rem; padding: .7rem; }
-.blocoAprendizagem > ul > li span, .blocoAprendizagem > ul > li small { color: #686d7e; }
-.linhaTempo { border-left: 2px solid #dcd6ff; display: grid; gap: .8rem; list-style: none; margin: 1rem 0 0 .4rem; padding-left: 1rem; }
-.linhaTempo li { grid-template-columns: 120px 1fr; position: relative; }
-.linhaTempo li::before { background: #6040ee; border-radius: 50%; content: ""; height: .55rem; left: -1.36rem; position: absolute; top: .85rem; width: .55rem; }
-.linhaTempo time { color: #686d7e; font-size: .8rem; }
-.linhaTempo div { display: grid; gap: .15rem; }
+.blocoAprendizagem > ul:not(.listaConceitosDestaque) { display: grid; gap: .6rem; list-style: none; margin: .8rem 0 0; padding: 0; }
+.blocoAprendizagem > ul:not(.listaConceitosDestaque) > li { border: 1px solid #ececf3; border-radius: 10px; display: grid; gap: .2rem; padding: .7rem; }
+.blocoAprendizagem > ul:not(.listaConceitosDestaque) > li span, .blocoAprendizagem > ul:not(.listaConceitosDestaque) > li small { color: #686d7e; }
+.cabecalhoLinhaTempo { border-bottom: 1px solid var(--cor-borda); display: grid; gap: 5px; padding-bottom: 20px; }
+.cabecalhoLinhaTempo h2 { font-size: clamp(1.2rem, 2vw, 1.55rem); letter-spacing: -.035em; }
+.cabecalhoLinhaTempo p { font-size: .82rem; }
+.linhaTempo { list-style: none; margin: 0; padding: 0; }
+.linhaTempo li { align-items: start; border-bottom: 1px solid var(--cor-borda); display: grid; gap: 24px; grid-template-columns: 130px minmax(0, 1fr); padding: 20px 0; }
+.linhaTempo li:last-child { border-bottom: 0; padding-bottom: 0; }
+.linhaTempo time { color: var(--cor-texto-secundario); font-size: .72rem; font-weight: 720; line-height: 1.45; padding-top: 4px; }
+.conteudoEventoLinhaTempo { display: grid; gap: 5px; min-width: 0; }
+.conteudoEventoLinhaTempo > strong { color: var(--cor-texto); font-size: .92rem; line-height: 1.35; overflow-wrap: anywhere; }
+.conteudoEventoLinhaTempo > span { color: var(--cor-texto-secundario); font-size: .78rem; line-height: 1.45; }
+.tipoEventoLinhaTempo { border-radius: 999px; color: #fff; background: var(--cor-navegacao); font-size: .58rem; font-weight: 780; justify-self: start; letter-spacing: .035em; padding: 4px 8px; }
+.conceitosEventoLinhaTempo { color: var(--cor-texto-secundario); font-size: .66rem; line-height: 1.45; margin-top: 2px; }
+.estadoVazioLinhaTempo { padding: 24px 0 0; }
 
 @media (max-width: 720px) {
-  .linhaTempo li { grid-template-columns: 1fr; }
+  .linhaTempo li { gap: 8px; grid-template-columns: 1fr; padding: 17px 0; }
+  .linhaTempo time { padding-top: 0; }
 }
 
 /* Consolidação minimalista das três sub-abas. */
@@ -1672,6 +1846,7 @@
 
 .paginaModulo {
   padding: 32px clamp(20px, 3vw, 48px) 72px;
+  background: var(--cor-fundo);
 }
 
 .cabecalhoModulo {
@@ -1744,20 +1919,10 @@
   color: var(--cor-acao);
 }
 
-.listaConceitosDestaque li,
-.blocoAprendizagem > ul > li {
+.blocoAprendizagem > ul:not(.listaConceitosDestaque) > li {
   border-color: var(--cor-borda);
   background: var(--cor-superficie-suave);
 }
-
-.linhaTempo {
-  border-left-color: var(--cor-borda);
-}
-
-.linhaTempo li::before {
-  background: var(--cor-acao);
-}
-
 
 .editor {
   border-color: var(--cor-borda);
@@ -1778,6 +1943,13 @@
 .painelInsights > :global(.botao) {
   background: var(--cor-acao);
   box-shadow: none;
+}
+
+.painelLinhaTempo {
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+  padding: 24px 0 0;
 }
 
 @media (max-width: 1480px) {
@@ -1843,12 +2015,6 @@
   text-transform: none;
 }
 
-.dashboardEnxuto .listaConceitosDestaque li {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
 .visualmenteOculto {
   position: absolute;
   width: 1px;
@@ -1879,4 +2045,16 @@
   .dashboardEnxuto .blocoAprendizagem {
     padding: 17px 13px;
   }
+
+  .metricasConceito {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Deve permanecer após a consolidação minimalista para manter o painel escuro. */
+.painelMateriais {
+  color: #fff;
+  border-color: var(--cor-navegacao);
+  background: var(--cor-navegacao);
+  box-shadow: none;
 }

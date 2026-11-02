@@ -10,7 +10,7 @@
 .no[data-volume="alto"] { padding: 18px 24px; font-size: 1.16rem; }
 .no[aria-pressed="true"] { border-color: var(--cor-acao); color: #fff; background: var(--cor-acao); }
 .no small { font-size: .65rem; }
-.no:focus-visible, .alternativa summary:focus-visible, .vazio a:focus-visible { outline: 3px solid #e69a00; outline-offset: 3px; }
+.no:focus-visible, .alternativa summary:focus-visible, .vazio a:focus-visible { outline: 3px solid #EF8D4B; outline-offset: 3px; }
 .detalhe { margin-top: 14px; padding: 16px; border-radius: 14px; background: #f7f6fc; }
 .detalhe h3 { margin: 0 0 5px; font-size: 1rem; }
 .detalhe h4 { margin: 0 0 7px; font-size: .77rem; }

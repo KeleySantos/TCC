@@ -4,7 +4,11 @@ import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { CatalogoMetodos } from "./catalogo-metodos";
+
+const estilos = readFileSync(resolve(process.cwd(), "src/app/desafios/page.module.css"), "utf8");
 
 describe("catálogo informativo de métodos", () => {
   beforeEach(() => {
@@ -92,6 +96,17 @@ describe("catálogo informativo de métodos", () => {
 
     fireEvent.click(dialogo);
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("destaca o nome dos métodos nos cards", () => {
+    expect(estilos).toMatch(/\.metodo h3\s*\{[^}]*font-size:\s*\.86rem[^}]*font-weight:\s*800/s);
+  });
+
+  it("usa iconografia escura e um modal coerente com a navegação", () => {
+    expect(estilos).toMatch(/\.iconeMetodo\s*\{[^}]*color:\s*#fff[^}]*background:\s*var\(--cor-navegacao\)/s);
+    expect(estilos).toMatch(/\.conteudoDialogoMetodo\s*\{[^}]*scrollbar-width:\s*thin[^}]*scrollbar-color:\s*rgb\(255 255 255 \/ 34%\) transparent[^}]*background:\s*var\(--cor-navegacao\)/s);
+    expect(estilos).toMatch(/\.conteudoDialogoMetodo::-webkit-scrollbar\s*\{[^}]*width:\s*6px/s);
+    expect(estilos).toMatch(/\.cabecalhoDialogoMetodo h2\s*\{[^}]*font-weight:\s*800/s);
   });
 
 });

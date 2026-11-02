@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { FormatoConteudo, FuncaoMaterial, OrigemMaterial } from "@/gerado/prisma/enums";
+import { FormatoConteudo, FuncaoMaterial, OrigemMaterial, SituacaoVinculoModuloSala } from "@/gerado/prisma/enums";
+import type { Prisma } from "@/gerado/prisma/client";
 import { prisma } from "@/biblioteca/prisma";
 import { criarChaveArmazenamentoArquivo, gravarArquivoMaterial, lerArquivoMaterial, removerArquivoMaterial, validarArquivoMaterial } from "./arquivos-materiais";
 import { EXTENSOES_ANALISAVEIS } from "./extracao-materiais";
@@ -13,7 +14,13 @@ export type ModuloListadoPessoal = {
   titulo: string;
   descricao: string;
   rascunho: boolean;
-  quantidadeCompartilhamentosAtivos: number;
+  quantidadeCompartilhamentosDiretosAtivos: number;
+  vinculoSalaAtivo: {
+    id: string;
+    moduloPessoalId: string;
+    situacao: typeof SituacaoVinculoModuloSala.ATIVO;
+    moduloSala: { id: string; sala: { id: string; identificador: string; nome: string } };
+  } | null;
   _count: { materiais: number; sessoesEstudo: number };
 };
 
@@ -116,11 +123,21 @@ export async function listarModulosPessoais(usuarioId: string, opcoes: { incluir
       titulo: true,
       descricao: true,
       rascunho: true,
+      vinculosSala: {
+        where: { situacao: "ATIVO", participacaoModuloSala: { situacao: "ATIVA" }, moduloSala: { situacao: "ATIVO", sala: { situacao: { not: "EXCLUIDA" } } } },
+        select: { id: true, moduloPessoalId: true, situacao: true, moduloSala: { select: { id: true, sala: { select: { id: true, identificador: true, nome: true } } } } },
+        orderBy: { vinculadoEm: "desc" },
+        take: 1,
+      },
       _count: { select: { materiais: { where: { ativo: true } }, sessoesEstudo: true, acessosCompartilhados: { where: { vaga: { not: null } } } } },
     },
     orderBy: [{ rascunho: "desc" }, { atualizadoEm: "desc" }],
   });
-  return modulos.map((modulo) => ({ ...modulo, quantidadeCompartilhamentosAtivos: modulo._count.acessosCompartilhados }));
+  return modulos.map(({ vinculosSala, ...modulo }) => ({
+    ...modulo,
+    quantidadeCompartilhamentosDiretosAtivos: modulo._count.acessosCompartilhados,
+    vinculoSalaAtivo: vinculosSala[0] ? { ...vinculosSala[0], situacao: SituacaoVinculoModuloSala.ATIVO } : null,
+  }));
 }
 
 export async function obterModuloPessoal(usuarioId: string, identificador: string) {
@@ -162,12 +179,22 @@ export async function criarRascunhoModuloPessoal(usuarioId: string) {
 }
 
 export async function atualizarModuloPessoal(usuarioId: string, id: string, entrada: unknown) {
-  const atual = await exigirModulo(usuarioId, id);
+  return atualizarModuloPessoalNaTransacao(prisma, usuarioId, id, entrada);
+}
+
+export async function atualizarModuloPessoalNaTransacao(
+  cliente: Pick<Prisma.TransactionClient, "moduloAprendizagem">,
+  usuarioId: string,
+  id: string,
+  entrada: unknown,
+) {
+  const atual = await cliente.moduloAprendizagem.findFirst({ where: { id, usuarioId } });
+  if (!atual) throw new ErroModulo("NAO_ENCONTRADO");
   const dados = dadosValidos(esquemaModulo.safeParse(entrada));
   const identificador = criarIdentificador(dados.titulo);
-  const existente = await prisma.moduloAprendizagem.findFirst({ where: { usuarioId, identificador, id: { not: atual.id } } });
+  const existente = await cliente.moduloAprendizagem.findFirst({ where: { usuarioId, identificador, id: { not: atual.id } } });
   if (existente) throw new ErroModulo("IDENTIFICADOR_DUPLICADO");
-  return prisma.moduloAprendizagem.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, rascunho: false } });
+  return cliente.moduloAprendizagem.update({ where: { id: atual.id }, data: { identificador, titulo: dados.titulo, descricao: dados.descricao, rascunho: false } });
 }
 
 export async function arquivarModuloPessoal(usuarioId: string, entrada: unknown) {

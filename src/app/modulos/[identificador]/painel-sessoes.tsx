@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Archive, CalendarClock, CheckCircle2, Pencil, Play, Plus, RotateCcw, Timer, X } from "lucide-react";
+import { Archive, CalendarClock, CheckCircle2, ChevronDown, MoreHorizontal, Pencil, Play, Plus, RotateCcw, Timer, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { METODOS_ESTUDO } from "@/dominio/sessoes/metodos";
 import { OPCOES_COMPREENSAO_PERCEBIDA } from "@/dominio/sessoes/percepcoes";
@@ -51,6 +51,14 @@ function formatarDataHora(valor: string) {
   return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(valor));
 }
 
+function formatarData(valor: string) {
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(valor));
+}
+
+function formatarHorario(valor: string) {
+  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(valor));
+}
+
 function formatarDuracao(minutos: number | null) {
   if (minutos === null) return "Em andamento";
   if (minutos < 60) return `${minutos} min`;
@@ -62,7 +70,13 @@ function formatarDuracao(minutos: number | null) {
 function paraDataLocal(valor: string) {
   const data = new Date(valor);
   const parte = (numero: number) => String(numero).padStart(2, "0");
-  return `${data.getFullYear()}-${parte(data.getMonth() + 1)}-${parte(data.getDate())}T${parte(data.getHours())}:${parte(data.getMinutes())}`;
+  return `${data.getFullYear()}-${parte(data.getMonth() + 1)}-${parte(data.getDate())}`;
+}
+
+function paraHorarioLocal(valor: string) {
+  const data = new Date(valor);
+  const parte = (numero: number) => String(numero).padStart(2, "0");
+  return `${parte(data.getHours())}:${parte(data.getMinutes())}`;
 }
 
 function obterMensagemErro(dados: unknown) {
@@ -85,12 +99,12 @@ function OpcoesContexto({ materiais, sessao, prefixo, desabilitado }: { materiai
     </fieldset>
     <fieldset className={estilos.grupoOpcoes} disabled={desabilitado}>
       <legend>Formatos utilizados</legend>
-      <p>Informe como o conteúdo foi estudado, mesmo sem material cadastrado.</p>
+      <p>Informe pelo menos um formato utilizado.</p>
       <div className={estilos.opcoes}>{FORMATOS.map(([valor, rotulo]) => <label key={valor} htmlFor={`${prefixo}-formato-${valor}`}><input defaultChecked={formatosAtuais.has(valor)} id={`${prefixo}-formato-${valor}`} name="formatos" type="checkbox" value={valor} /><span>{rotulo}</span></label>)}</div>
     </fieldset>
     {materiais.length > 0 && <fieldset className={estilos.grupoOpcoes} disabled={desabilitado}>
-      <legend>Materiais vinculados <small>opcional</small></legend>
-      <p>A sessão também pode ser registrada sem selecionar materiais.</p>
+      <legend>Materiais vinculados</legend>
+      <p>Opcional.</p>
       <div className={estilos.opcoes}>{materiais.map((material) => <label key={material.id} htmlFor={`${prefixo}-material-${material.id}`}><input defaultChecked={materiaisAtuais.has(material.id)} id={`${prefixo}-material-${material.id}`} name="materialIds" type="checkbox" value={material.id} /><span>{material.titulo}</span></label>)}</div>
     </fieldset>}
   </>;
@@ -98,12 +112,8 @@ function OpcoesContexto({ materiais, sessao, prefixo, desabilitado }: { materiai
 
 function EscalasPercebidas({ prefixo, sessao, obrigatorias = true, desabilitado }: { prefixo: string; sessao?: SessaoModulo; obrigatorias?: boolean; desabilitado: boolean }) {
   return <div className={estilos.gradeEscalas}>
-    <label htmlFor={`${prefixo}-dificuldade`}>Dificuldade percebida
-      <select defaultValue={sessao?.dificuldadePercebida ?? ""} disabled={desabilitado} id={`${prefixo}-dificuldade`} name="dificuldadePercebida" required={obrigatorias}><option value="">Selecione</option>{[1, 2, 3, 4, 5].map((valor) => <option key={valor} value={valor}>{valor} — {valor === 1 ? "muito baixa" : valor === 5 ? "muito alta" : ""}</option>)}</select>
-    </label>
-    <label htmlFor={`${prefixo}-compreensao`}>Compreensão percebida
-      <select defaultValue={sessao?.compreensaoPercebida ?? ""} disabled={desabilitado} id={`${prefixo}-compreensao`} name="compreensaoPercebida" required={obrigatorias}><option value="">Selecione</option>{OPCOES_COMPREENSAO_PERCEBIDA.map((opcao) => <option key={opcao.valor} value={opcao.valor}>{opcao.valor} — {opcao.rotulo}</option>)}</select>
-    </label>
+    <fieldset className={estilos.escalaPercebida} disabled={desabilitado}><legend>Dificuldade percebida</legend><div className={estilos.opcoesEscala}>{[1, 2, 3, 4, 5].map((valor) => { const rotulo = valor === 1 ? "Muito baixa" : valor === 5 ? "Muito alta" : String(valor); const id = `${prefixo}-dificuldade-${valor}`; return <label htmlFor={id} key={valor}><input aria-label={valor === 1 || valor === 5 ? `${valor} ${rotulo}` : String(valor)} defaultChecked={sessao?.dificuldadePercebida === valor} id={id} name="dificuldadePercebida" required={obrigatorias} type="radio" value={valor} /><span><b>{valor}</b></span></label>; })}</div><div aria-hidden="true" className={estilos.legendasEscala}><small>Muito baixa</small><small>Muito alta</small></div></fieldset>
+    <fieldset className={estilos.escalaPercebida} disabled={desabilitado}><legend>Compreensão percebida</legend><div className={estilos.opcoesEscala}>{OPCOES_COMPREENSAO_PERCEBIDA.map((opcao) => { const id = `${prefixo}-compreensao-${opcao.valor}`; return <label htmlFor={id} key={opcao.valor}><input aria-label={opcao.valor === 1 || opcao.valor === 5 ? `${opcao.valor} ${opcao.rotulo}` : String(opcao.valor)} defaultChecked={sessao?.compreensaoPercebida === opcao.valor} id={id} name="compreensaoPercebida" required={obrigatorias} type="radio" value={opcao.valor} /><span><b>{opcao.valor}</b></span></label>; })}</div><div aria-hidden="true" className={estilos.legendasEscala}><small>{OPCOES_COMPREENSAO_PERCEBIDA[0].rotulo}</small><small>{OPCOES_COMPREENSAO_PERCEBIDA[4].rotulo}</small></div></fieldset>
   </div>;
 }
 
@@ -119,9 +129,12 @@ function FormularioRegistro({ tipo, moduloId, materiais, sessao, processando, ag
 }) {
   const prefixo = `${tipo.toLowerCase()}-${sessao?.id ?? "nova"}`;
   const foco = useRef<HTMLTextAreaElement>(null);
-  const [inicio, definirInicio] = useState(sessao ? paraDataLocal(sessao.iniciadaEm) : "");
-  const [fim, definirFim] = useState(sessao?.encerradaEm ? paraDataLocal(sessao.encerradaEm) : "");
-  const planejada = tipo !== "CRONOMETRO" && Boolean(inicio && fim && (new Date(inicio).getTime() > agora || new Date(fim).getTime() > agora));
+  const [dataSessao, definirDataSessao] = useState(sessao ? paraDataLocal(sessao.iniciadaEm) : "");
+  const [horarioInicio, definirHorarioInicio] = useState(sessao ? paraHorarioLocal(sessao.iniciadaEm) : "");
+  const [horarioFim, definirHorarioFim] = useState(sessao?.encerradaEm ? paraHorarioLocal(sessao.encerradaEm) : "");
+  const inicioComposto = dataSessao && horarioInicio ? new Date(`${dataSessao}T${horarioInicio}`) : null;
+  const fimComposto = dataSessao && horarioFim ? new Date(`${dataSessao}T${horarioFim}`) : null;
+  const planejada = tipo !== "CRONOMETRO" && Boolean(inicioComposto && fimComposto && (inicioComposto.getTime() > agora || fimComposto.getTime() > agora));
 
   useEffect(() => { foco.current?.focus(); }, []);
 
@@ -136,11 +149,12 @@ function FormularioRegistro({ tipo, moduloId, materiais, sessao, processando, ag
     };
     if (tipo !== "EDICAO") entrada.moduloId = moduloId;
     if (tipo !== "CRONOMETRO") {
-      const inicioInformado = formulario.get("iniciadaEm");
-      const fimInformado = formulario.get("encerradaEm");
-      if (typeof inicioInformado !== "string" || typeof fimInformado !== "string" || !inicioInformado || !fimInformado) return aoSalvar({ erroLocal: "Informe o início e o fim da sessão." });
-      const inicioUtc = new Date(inicioInformado);
-      const fimUtc = new Date(fimInformado);
+      const dataInformada = formulario.get("dataSessao");
+      const inicioInformado = formulario.get("horarioInicio");
+      const fimInformado = formulario.get("horarioFim");
+      if (typeof dataInformada !== "string" || typeof inicioInformado !== "string" || typeof fimInformado !== "string" || !dataInformada || !inicioInformado || !fimInformado) return aoSalvar({ erroLocal: "Informe a data e os horários da sessão." });
+      const inicioUtc = new Date(`${dataInformada}T${inicioInformado}`);
+      const fimUtc = new Date(`${dataInformada}T${fimInformado}`);
       if (Number.isNaN(inicioUtc.getTime()) || Number.isNaN(fimUtc.getTime())) return aoSalvar({ erroLocal: "Informe um período válido." });
       entrada.iniciadaEm = inicioUtc.toISOString();
       entrada.encerradaEm = fimUtc.toISOString();
@@ -154,16 +168,17 @@ function FormularioRegistro({ tipo, moduloId, materiais, sessao, processando, ag
   };
 
   return <form className={estilos.formulario} onSubmit={enviar}>
-    <div className={estilos.cabecalhoFormulario}><div><span>{tipo === "CRONOMETRO" ? "CRONÔMETRO" : tipo === "EDICAO" ? "CORREÇÃO" : "REGISTRO MANUAL"}</span><h3>{tipo === "CRONOMETRO" ? "Iniciar uma sessão agora" : tipo === "EDICAO" ? "Editar sessão" : "Registrar ou planejar sessão"}</h3></div><button aria-label="Fechar formulário" disabled={processando} onClick={aoCancelar} type="button"><X aria-hidden="true" /></button></div>
+    <div className={estilos.cabecalhoFormulario}><div>{tipo !== "MANUAL" && <span>{tipo === "CRONOMETRO" ? "CRONÔMETRO" : "CORREÇÃO"}</span>}<h3>{tipo === "CRONOMETRO" ? "Iniciar uma sessão agora" : tipo === "EDICAO" ? "Editar sessão" : "Registrar ou planejar sessão"}</h3></div><button aria-label="Fechar formulário" disabled={processando} onClick={aoCancelar} type="button"><X aria-hidden="true" /></button></div>
     <label className={estilos.campoLargo} htmlFor={`${prefixo}-descricao`}>O que você está estudando?
       <textarea defaultValue={sessao?.descricao} disabled={processando} id={`${prefixo}-descricao`} maxLength={2000} minLength={3} name="descricao" placeholder="Descreva os conteúdos ou atividades desta sessão." ref={foco} required rows={4} />
       <small>Entre 3 e 2.000 caracteres.</small>
     </label>
     {tipo !== "CRONOMETRO" && <div className={estilos.gradeDatas}>
-      <label htmlFor={`${prefixo}-inicio`}>Início<input defaultValue={inicio} disabled={processando} id={`${prefixo}-inicio`} name="iniciadaEm" onChange={(evento) => definirInicio(evento.target.value)} required type="datetime-local" /></label>
-      <label htmlFor={`${prefixo}-fim`}>Fim<input defaultValue={fim} disabled={processando} id={`${prefixo}-fim`} name="encerradaEm" onChange={(evento) => definirFim(evento.target.value)} required type="datetime-local" /></label>
+      <label htmlFor={`${prefixo}-data`}>Data da sessão<input disabled={processando} id={`${prefixo}-data`} name="dataSessao" onChange={(evento) => definirDataSessao(evento.target.value)} required type="date" value={dataSessao} /></label>
+      <label htmlFor={`${prefixo}-inicio`}>Horário de início<input disabled={processando} id={`${prefixo}-inicio`} name="horarioInicio" onChange={(evento) => definirHorarioInicio(evento.target.value)} required type="time" value={horarioInicio} /></label>
+      <label htmlFor={`${prefixo}-fim`}>Horário de término<input disabled={processando} id={`${prefixo}-fim`} name="horarioFim" onChange={(evento) => definirHorarioFim(evento.target.value)} required type="time" value={horarioFim} /></label>
     </div>}
-    {tipo !== "CRONOMETRO" && <p className={estilos.avisoPlanejamento}>{planejada ? "Como o período está no futuro, a sessão será salva como planejada e as percepções serão preenchidas na conclusão." : "A duração será calculada automaticamente. Sessões concluídas exigem as duas percepções."}</p>}
+    {tipo !== "CRONOMETRO" && planejada && <p className={estilos.avisoPlanejamento}>Como o período está no futuro, a sessão será salva como planejada e as percepções serão preenchidas na conclusão.</p>}
     <OpcoesContexto desabilitado={processando} materiais={materiais} prefixo={prefixo} sessao={sessao} />
     {tipo !== "CRONOMETRO" && !planejada && <EscalasPercebidas desabilitado={processando} prefixo={prefixo} sessao={sessao} />}
     <div className={estilos.acoesFormulario}><button disabled={processando} onClick={aoCancelar} type="button">Cancelar</button><button aria-busy={processando} className={estilos.primario} disabled={processando} type="submit">{processando ? "Salvando..." : tipo === "CRONOMETRO" ? "Iniciar agora" : tipo === "EDICAO" ? "Salvar alterações" : planejada ? "Planejar sessão" : "Registrar sessão"}</button></div>
@@ -189,6 +204,8 @@ export function PainelSessoes({ moduloId, sessoesIniciais, materiais, agoraIso }
   const [formulario, definirFormulario] = useState<"MANUAL" | "CRONOMETRO" | null>(null);
   const [edicaoId, definirEdicaoId] = useState<string | null>(null);
   const [conclusaoId, definirConclusaoId] = useState<string | null>(null);
+  const [sessaoAbertaId, definirSessaoAbertaId] = useState<string | null>(null);
+  const [menuAcoesId, definirMenuAcoesId] = useState<string | null>(null);
   const [mostrarArquivadas, definirMostrarArquivadas] = useState(false);
   const [processando, definirProcessando] = useState<string | null>(null);
   const [mensagem, definirMensagem] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
@@ -245,7 +262,7 @@ export function PainelSessoes({ moduloId, sessoesIniciais, materiais, agoraIso }
 
   return <section className={estilos.painel} aria-labelledby="titulo-sessoes-modulo">
     <header className={estilos.cabecalho}>
-      <div><p>ROTINA DE ESTUDO</p><h2 id="titulo-sessoes-modulo">Sessões de estudo</h2><span>Registre o que estudou, como estudou e por quanto tempo.</span></div>
+      <div><h2 id="titulo-sessoes-modulo">Sessões de estudo</h2><span>Registre o que estudou, como estudou e por quanto tempo.</span></div>
       <div className={estilos.acoesPrincipais}>
         <button disabled={Boolean(sessaoAtiva) || processando !== null} onClick={() => { definirFormulario("CRONOMETRO"); definirEdicaoId(null); }} type="button"><Play aria-hidden="true" />Iniciar agora</button>
         <button className={estilos.primario} disabled={processando !== null} onClick={() => { definirFormulario("MANUAL"); definirEdicaoId(null); }} type="button"><Plus aria-hidden="true" />Registrar sessão</button>
@@ -262,16 +279,26 @@ export function PainelSessoes({ moduloId, sessoesIniciais, materiais, agoraIso }
       {conclusaoId === sessaoAtiva.id && <FormularioConclusao aoCancelar={() => definirConclusaoId(null)} aoConcluir={(entrada) => concluir(sessaoAtiva, entrada)} processando={processando === `concluir-${sessaoAtiva.id}`} sessao={sessaoAtiva} />}
     </article>}
 
-    <div className={estilos.barraHistorico}><div><h3>Histórico do módulo</h3><p>{sessoesVisiveis.length} sessão(ões) exibida(s)</p></div>{arquivadas > 0 && <label><input checked={mostrarArquivadas} onChange={(evento) => definirMostrarArquivadas(evento.target.checked)} type="checkbox" />Mostrar arquivadas ({arquivadas})</label>}</div>
+    <div className={estilos.barraHistorico}><p>{sessoesVisiveis.length} sessão(ões) exibida(s)</p>{arquivadas > 0 && <label><input checked={mostrarArquivadas} onChange={(evento) => definirMostrarArquivadas(evento.target.checked)} type="checkbox" />Mostrar arquivadas ({arquivadas})</label>}</div>
 
     {sessoesVisiveis.length === 0 ? <div className={estilos.estadoVazio}><CalendarClock aria-hidden="true" /><h3>{sessaoAtiva ? "Sua primeira sessão está em andamento" : "Registre sua primeira sessão"}</h3><p>{sessaoAtiva ? "Ao encerrar o cronômetro, esta sessão aparecerá no histórico do módulo." : "Você pode informar uma sessão já concluída, planejar uma data futura ou iniciar o cronômetro agora."}</p>{!sessaoAtiva && <button className={estilos.primario} onClick={() => definirFormulario("MANUAL")} type="button"><Plus aria-hidden="true" />Criar primeira sessão</button>}</div> : <div className={estilos.lista}>
       {sessoesVisiveis.map((sessao) => <article className={`${estilos.cartao} ${sessao.arquivada ? estilos.cartaoArquivado : ""}`} key={sessao.id}>
-        <div className={estilos.linhaPrincipal}><div className={estilos.dataSessao}><span>{formatarDataHora(sessao.iniciadaEm)}</span><strong>{formatarDuracao(sessao.duracaoMinutos)}</strong></div><div className={estilos.descricaoSessao}><div className={estilos.selose}><span data-situacao={sessao.situacao}>{ROTULOS_SITUACAO[sessao.situacao]}</span><span>{sessao.modoRegistro === "CRONOMETRO" ? "Cronômetro" : "Manual"}</span>{sessao.arquivada && <span>Arquivada</span>}</div><h3>{sessao.descricao}</h3><p>{sessao.encerradaEm ? `${formatarDataHora(sessao.iniciadaEm)} — ${formatarDataHora(sessao.encerradaEm)}` : `Iniciada em ${formatarDataHora(sessao.iniciadaEm)}`}</p></div></div>
-        <div className={estilos.contextos}><span><b>Métodos:</b> {sessao.metodos.map((item) => METODOS_ESTUDO.find((metodo) => metodo.valor === item.metodo)?.rotulo ?? item.metodo).join(", ")}</span><span><b>Formatos:</b> {sessao.formatos.map((item) => FORMATOS.find(([valor]) => valor === item.formato)?.[1] ?? item.formato).join(", ")}</span>{sessao.materiais.length > 0 && <span><b>Materiais:</b> {sessao.materiais.map((item) => item.recurso.titulo).join(", ")}</span>}{sessao.dificuldadePercebida !== null && <span><b>Percepções:</b> dificuldade {sessao.dificuldadePercebida}/5 · compreensão {sessao.compreensaoPercebida}/5</span>}</div>
-        {sessao.situacao !== "ATIVA" && <div className={estilos.acoesCartao}>
-          {(sessao.situacao === "PLANEJADA" || sessao.situacao === "CONCLUIDA" || sessao.situacao === "INVALIDADA") && <button disabled={processando !== null} onClick={() => { definirEdicaoId(edicaoId === sessao.id ? null : sessao.id); definirFormulario(null); }} type="button"><Pencil aria-hidden="true" />Editar</button>}
-          {sessao.situacao === "PLANEJADA" && sessao.encerradaEm && new Date(sessao.encerradaEm).getTime() <= agora && <button disabled={processando !== null} onClick={() => definirConclusaoId(conclusaoId === sessao.id ? null : sessao.id)} type="button"><CheckCircle2 aria-hidden="true" />Concluir</button>}
-          <button disabled={processando !== null} onClick={() => arquivar(sessao, !sessao.arquivada)} type="button">{sessao.arquivada ? <RotateCcw aria-hidden="true" /> : <Archive aria-hidden="true" />}{sessao.arquivada ? "Restaurar" : "Arquivar"}</button>
+        <button aria-expanded={sessaoAbertaId === sessao.id} aria-label={`${sessaoAbertaId === sessao.id ? "Fechar" : "Abrir"} detalhes da sessão ${sessao.descricao}`} className={estilos.linhaPrincipal} onClick={() => definirSessaoAbertaId((atual) => atual === sessao.id ? null : sessao.id)} type="button">
+          <span className={estilos.resumoTemporalSessao}><strong className={estilos.duracaoSessao}>{formatarDuracao(sessao.duracaoMinutos)}</strong><small>{formatarData(sessao.iniciadaEm)}</small></span>
+          <span className={estilos.descricaoSessao}><span className={estilos.selose}><span data-situacao={sessao.situacao}>{ROTULOS_SITUACAO[sessao.situacao]}</span><span>{sessao.modoRegistro === "CRONOMETRO" ? "Cronômetro" : "Manual"}</span>{sessao.arquivada && <span>Arquivada</span>}</span><span className={estilos.tituloSessao}>{sessao.descricao}</span></span>
+          <ChevronDown aria-hidden="true" className={estilos.indicadorExpansao} />
+        </button>
+        <div className={estilos.acoesSessao}>
+          <button aria-expanded={menuAcoesId === sessao.id} aria-label={`Ações da sessão ${sessao.descricao}`} className={estilos.botaoMenuSessao} onClick={() => definirMenuAcoesId((atual) => atual === sessao.id ? null : sessao.id)} type="button"><MoreHorizontal aria-hidden="true" /></button>
+          {menuAcoesId === sessao.id && <div className={estilos.menuAcoesSessao}>
+            {(sessao.situacao === "PLANEJADA" || sessao.situacao === "CONCLUIDA" || sessao.situacao === "INVALIDADA") && <button disabled={processando !== null} onClick={() => { definirMenuAcoesId(null); definirEdicaoId(edicaoId === sessao.id ? null : sessao.id); definirFormulario(null); }} type="button"><Pencil aria-hidden="true" />Editar</button>}
+            {sessao.situacao === "PLANEJADA" && sessao.encerradaEm && new Date(sessao.encerradaEm).getTime() <= agora && <button disabled={processando !== null} onClick={() => { definirMenuAcoesId(null); definirConclusaoId(conclusaoId === sessao.id ? null : sessao.id); }} type="button"><CheckCircle2 aria-hidden="true" />Concluir</button>}
+            <button disabled={processando !== null} onClick={() => { definirMenuAcoesId(null); void arquivar(sessao, !sessao.arquivada); }} type="button">{sessao.arquivada ? <RotateCcw aria-hidden="true" /> : <Archive aria-hidden="true" />}{sessao.arquivada ? "Restaurar" : "Arquivar"}</button>
+          </div>}
+        </div>
+        {sessaoAbertaId === sessao.id && <div className={estilos.detalhesSessao} id={`detalhes-sessao-${sessao.id}`}>
+          <p className={estilos.periodoSessao}>{sessao.encerradaEm ? `${formatarHorario(sessao.iniciadaEm)} — ${formatarHorario(sessao.encerradaEm)}` : `Iniciada às ${formatarHorario(sessao.iniciadaEm)}`}</p>
+          <div className={estilos.contextos}><span><b>Métodos:</b> {sessao.metodos.map((item) => METODOS_ESTUDO.find((metodo) => metodo.valor === item.metodo)?.rotulo ?? item.metodo).join(", ")}</span><span><b>Formatos:</b> {sessao.formatos.map((item) => FORMATOS.find(([valor]) => valor === item.formato)?.[1] ?? item.formato).join(", ")}</span>{sessao.materiais.length > 0 && <span><b>Materiais:</b> {sessao.materiais.map((item) => item.recurso.titulo).join(", ")}</span>}{sessao.dificuldadePercebida !== null && <span><b>Percepções:</b> dificuldade {sessao.dificuldadePercebida}/5 · compreensão {sessao.compreensaoPercebida}/5</span>}</div>
         </div>}
         {conclusaoId === sessao.id && <FormularioConclusao aoCancelar={() => definirConclusaoId(null)} aoConcluir={(entrada) => concluir(sessao, entrada)} processando={processando === `concluir-${sessao.id}`} sessao={sessao} />}
         {edicaoId === sessao.id && <FormularioRegistro agora={agora} aoCancelar={() => definirEdicaoId(null)} aoSalvar={(entrada) => salvarEdicao(sessao, entrada)} materiais={materiais} moduloId={moduloId} processando={processando === `editar-${sessao.id}`} sessao={sessao} tipo="EDICAO" />}

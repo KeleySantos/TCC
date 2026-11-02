@@ -103,6 +103,50 @@
   height: 17px;
 }
 
+.botaoMarcaRecolhida {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.botaoMarcaRecolhida .simboloMarca,
+.iconeExpandirMarca {
+  position: absolute;
+  inset: 0;
+  transition: opacity 150ms ease;
+}
+
+.botaoMarcaRecolhida .simboloMarca {
+  color: #111;
+  border-color: #fff;
+  background: #fff;
+}
+
+.iconeExpandirMarca {
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
+  color: #111;
+  background: #fff;
+}
+
+.botaoMarcaRecolhida:hover .simboloMarca,
+.botaoMarcaRecolhida:focus-visible .simboloMarca {
+  opacity: 0;
+}
+
+.botaoMarcaRecolhida:hover .iconeExpandirMarca,
+.botaoMarcaRecolhida:focus-visible .iconeExpandirMarca {
+  opacity: 1;
+}
+
 .textoAcessivel {
   position: absolute;
   width: 1px;
@@ -165,9 +209,27 @@
 }
 
 .menuPrincipal .itemAtivo {
-  color: #fff;
-  background: #3b4147;
-  box-shadow: inset 3px 0 0 #fff;
+  position: relative;
+  color: #bdc5cf;
+  background: transparent;
+  box-shadow: none;
+}
+
+.menuPrincipal .itemAtivo::before {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #fff;
+  content: "";
+}
+
+.menuPrincipal .itemAtivo:hover {
+  color: #bdc5cf;
+  background: transparent;
+  transform: none;
 }
 
 .rotuloItem {
@@ -175,28 +237,11 @@
   white-space: nowrap;
 }
 
-.fraseLateral {
-  margin-top: auto;
-  padding: 22px 13px;
-  color: #aeb7c2;
-}
-
-.fraseLateral svg {
-  width: 23px;
-  height: 23px;
-  color: #f8fafc;
-}
-
-.fraseLateral p {
-  margin: 11px 0 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.82rem;
-  font-style: italic;
-  line-height: 1.55;
-}
-
 .rodapeBarra {
+  flex-direction: column;
+  align-items: stretch;
   gap: 9px;
+  margin-top: auto;
   min-height: 47px;
   padding-top: 12px;
   border-top: 1px solid rgb(255 255 255 / 10%);
@@ -231,8 +276,9 @@
 }
 
 .formularioSair button {
-  min-height: 38px;
-  padding: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
 }
 
 .formularioSair button svg {
@@ -281,6 +327,8 @@
 }
 
 .estruturaRecolhida .botaoPerfil { flex: 0; justify-content: center; }
+
+.estruturaRecolhida .formularioSair button { width: 100%; }
 
 @media (max-width: 960px) {
   .estrutura {

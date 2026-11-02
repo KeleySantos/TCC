@@ -16,7 +16,7 @@ export function FiltroPeriodoModulo({ aba, hrefLimpar = "?", periodo }: { aba?: 
         {aba && <input name="aba" type="hidden" value={aba} />}
         <div><label htmlFor="inicio-filtro-modulo">Data de início</label><input defaultValue={periodo.inicio} id="inicio-filtro-modulo" max={periodo.hoje} name="inicio" required type="date" /></div>
         <div><label htmlFor="fim-filtro-modulo">Data de fim</label><input defaultValue={periodo.fim} id="fim-filtro-modulo" max={periodo.hoje} name="fim" required type="date" /></div>
-        <button className={estilos.concluirFiltroPeriodo} type="submit">Concluir filtro</button>
+          <button className={estilos.concluirFiltroPeriodo} type="submit">Filtrar</button>
       </form>
       {periodo.ativo && <a className={estilos.limparFiltroPeriodo} href={hrefLimpar === "?" && aba ? `?aba=${encodeURIComponent(aba)}` : hrefLimpar}><X aria-hidden="true" />Limpar filtro</a>}
       {periodo.erro && <p className="mensagem-erro" role="alert">{periodo.erro}</p>}
