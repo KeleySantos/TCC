@@ -1,0 +1,377 @@
+{
+  "versaoFormato": "revisao-documental-avaliacao-ia-tcc-v1",
+  "id": "revisao-documental-20261028-r01",
+  "natureza": "REVISAO_DOCUMENTAL_AUTORIZADA_SEM_NOVA_EXECUCAO",
+  "dataCivilRevisao": "2026-10-28",
+  "fusoApresentacao": "America/Sao_Paulo",
+  "conferenciaEm": "2026-10-28T19:40:59.637Z",
+  "registrosRevisadosEm": [
+    {
+      "id": "S3-2",
+      "registradoEm": "2026-10-28T19:39:50.807Z"
+    },
+    {
+      "id": "S1-3",
+      "registradoEm": "2026-10-28T19:39:52.050Z"
+    }
+  ],
+  "autorizacao": {
+    "origem": "Solicitação atual do autor: faça o que se pede no prompt, com decisões explicitamente aprovadas para S3-2 e S1-3.",
+    "documento": "C:/Users/keley/Downloads/PROMPT_CODEX_REVISAO_AVALIACAO_IA_TCC.md",
+    "sha256": "3756cccb9f71b2af7d2c874493a532e972fb0492a35121089ae7e9fecaec291d",
+    "revisaoHumanaAutorizada": true,
+    "identidadeNominalDoAutorNestaSolicitacao": null,
+    "avaliadorDasDuasRevisoes": null,
+    "esclarecimento": "As decisões foram fornecidas e autorizadas pelo autor. A aplicação técnica do registro foi executada por Codex; não se atribui uma nova avaliação ou assinatura à avaliadora original. Os nomes e datas presentes nas avaliações anteriores são preservados apenas como histórico."
+  },
+  "experimentoOriginal": {
+    "id": "real-2026-10-18T16-52-33-625Z",
+    "corpus": "AiFiles/RELATORIOS/avaliacao-ia-tcc/real-groq-gpt-oss-120b-20261018-165231.json",
+    "sha256": "8fd8f93897ff523237ec3314c6e26a02641b5bb7a7d934ba311dcd37ce89d853",
+    "criadoEm": "2026-10-18T16:52:33.625Z",
+    "atualizadoEmOriginal": "2026-10-18T21:45:26.945Z",
+    "provedor": "GROQ",
+    "modelo": "openai/gpt-oss-120b",
+    "idMantidoNoCorpusRevisado": true,
+    "justificativaId": "O identificador do experimento identifica a geração original. A revisão possui identificador próprio neste manifesto e nos nomes/etiquetas das exportações; não foi criado um novo experimento de IA."
+  },
+  "referencias": {
+    "auditoria": "AiFiles/RELATORIOS/AUDITORIA_DOCUMENTAL_S3_2_S1_3_TCC.md",
+    "evidencias": "RELATORIO_EVIDENCIAS_TCC_4_6.md",
+    "relatorioFinal": "RELATORIO_REVISAO_FINAL_AVALIACAO_IA_TCC.md"
+  },
+  "metodo": {
+    "registro": "scripts/registrar-avaliacao-manual-ia-tcc.ts, aplicado exclusivamente à cópia revisada, primeiro S3-2 e depois S1-3",
+    "consolidacao": "scripts/gerar-relatorio-avaliacao-ia-tcc.ts, aplicado exclusivamente à cópia revisada",
+    "regras": [
+      "src/dominio/avaliacao-ia-tcc.ts:calcularAvaliacaoManual",
+      "src/dominio/avaliacao-ia-tcc.ts:calcularResumoAvaliacaoIaTcc",
+      "src/dominio/avaliacao-ia-tcc.ts:normalizarDocumentoAvaliacaoIaTcc"
+    ],
+    "regraIndividual": "ATENDIDOS >= 4; C3 e C4 obrigatoriamente ATENDIDO",
+    "regraGeral": "15 respostas externas válidas e 15 avaliações completas; satisfatórias >= 14",
+    "ajustesDeIdentificacao": "Somente nas novas exportações: cabeçalho explicativo no Markdown e três colunas de proveniência no CSV. Valores e decisões derivados não foram editados manualmente.",
+    "limitacaoFormato": "O schema existente não possui campo de versão de revisão/proveniência. Este manifesto é o vínculo explícito com os originais; não foram adicionados campos incompatíveis ao corpus nem alterado o código. Uma futura reexportação pelo script genérico não conserva os rótulos editoriais adicionados às exportações, que devem continuar acompanhadas deste manifesto."
+  },
+  "idsRevisados": [
+    "S3-2",
+    "S1-3"
+  ],
+  "revisoes": [
+    {
+      "id": "S3-2",
+      "anterior": {
+        "avaliador": "Keley",
+        "avaliadaEm": "2026-10-18T21:45:16.589Z",
+        "criterios": {
+          "C1": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora confirmou que as métricas e os valores citados correspondem aos dados de entrada da execução."
+          },
+          "C2": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora considerou a interpretação coerente com o cenário, o período e os registros apresentados."
+          },
+          "C3": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora não identificou informações inventadas ou afirmações factuais sem apoio nos dados fornecidos."
+          },
+          "C4": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora confirmou que a resposta evitou classificações fixas sobre o perfil ou a capacidade de aprendizagem."
+          },
+          "C5": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora considerou as reflexões e recomendações compatíveis com as evidências e limitações disponíveis."
+          }
+        },
+        "situacao": "SATISFATORIA",
+        "satisfatoria": true
+      },
+      "nova": {
+        "avaliador": null,
+        "avaliadaEm": "2026-10-28T19:39:50.807Z",
+        "criterios": {
+          "C1": {
+            "resultado": "NAO_ATENDIDO",
+            "justificativa": "Revisão documental autorizada pelo autor em 28/10/2026, sem nova geração: a resposta reproduz médias semanais de 35% e 85%, mas afirma que 85% permanece abaixo de uma suposta referência esperada de 55%. O DTO registra 55% como média observada do período, não como meta, e 85% é superior a 55%. O uso e a interpretação das métricas estão incorretos."
+          },
+          "C2": {
+            "resultado": "NAO_ATENDIDO",
+            "justificativa": "A conclusão de que o resultado permanece abaixo da referência contradiz a evolução semanal de 35% para 85% e confunde a média global de 55% com referência normativa. O estado agregado PONTO_DE_ATENCAO e a tendência EVOLUCAO_POSITIVA podem coexistir; a resposta não os distingue adequadamente, comprometendo a coerência contextual. Revisão documental autorizada pelo autor em 28/10/2026."
+          },
+          "C3": {
+            "resultado": "NAO_ATENDIDO",
+            "justificativa": "A entrada não fornece uma meta ou referência esperada de 55%; esse valor é a média observada do conceito no período. Embora o número exista no DTO, o papel normativo atribuído a ele e a comparação de inferioridade são informações sem suporte nos dados. Revisão documental autorizada pelo autor em 28/10/2026; não se trata de novo julgamento registrado em nome da avaliadora original."
+          },
+          "C4": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: a resposta não atribui ao usuário um estilo fixo, incapacidade ou perfil permanente de aprendizagem. A ressalva sobre possível extrapolação causal não equivale, por si só, à classificação fixa vedada por C4."
+          },
+          "C5": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: as propostas futuras de comparar compreensão percebida com evidências e explorar contextos de estudo permanecem relacionadas aos registros para fins da rubrica aplicada. A distribuição sugerida de oito e duas sessões, a confiança forte e a explicação de consolidação exigem ressalvas sobre causalidade e desenho da comparação; não constituem comprovação de eficácia."
+          }
+        },
+        "situacao": "INSATISFATORIA",
+        "satisfatoria": false
+      }
+    },
+    {
+      "id": "S1-3",
+      "anterior": {
+        "avaliador": "Keley",
+        "avaliadaEm": "2026-10-18T21:45:10.140Z",
+        "criterios": {
+          "C1": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora confirmou que as métricas e os valores citados correspondem aos dados de entrada da execução."
+          },
+          "C2": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora considerou a interpretação coerente com o cenário, o período e os registros apresentados."
+          },
+          "C3": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora não identificou informações inventadas ou afirmações factuais sem apoio nos dados fornecidos."
+          },
+          "C4": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora confirmou que a resposta evitou classificações fixas sobre o perfil ou a capacidade de aprendizagem."
+          },
+          "C5": {
+            "resultado": "ATENDIDO",
+            "justificativa": "A avaliadora considerou as reflexões e recomendações compatíveis com as evidências e limitações disponíveis."
+          }
+        },
+        "situacao": "SATISFATORIA",
+        "satisfatoria": true
+      },
+      "nova": {
+        "avaliador": null,
+        "avaliadaEm": "2026-10-28T19:39:52.050Z",
+        "criterios": {
+          "C1": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: 73% é aproximação compatível de 73,33333333333333%; 40%, 80%, compreensão média 3 e as contagens citadas correspondem ao DTO. A apresentação ambígua da data não demonstra atribuição incorreta das métricas aos agrupamentos semanais."
+          },
+          "C2": {
+            "resultado": "NAO_ATENDIDO",
+            "justificativa": "Revisão documental autorizada pelo autor em 28/10/2026: a data 09/07 é ambígua em português brasileiro. Em MM/DD corresponde a 7 de setembro, início do segundo agrupamento do DTO, mas em DD/MM sugere 9 de julho, sem registros correspondentes. A apresentação temporal ambígua e o emprego impreciso de alinhada, confundindo constância do autorrelato com alinhamento entre percepção e desempenho, comprometem a clareza contextual."
+          },
+          "C3": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: a leitura MM/DD de 09/07 coincide exatamente com 7 de setembro no DTO. Não há evidência conclusiva de que o modelo tenha inventado um registro de julho. Os 45 minutos são uma proposta futura, não relato de resultado passado já observado."
+          },
+          "C4": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: a resposta não define estilo fixo, incapacidade ou perfil permanente do usuário. As observações se referem aos registros e aos métodos daquele contexto."
+          },
+          "C5": {
+            "resultado": "ATENDIDO",
+            "justificativa": "Mantido conforme decisão autorizada: comparar autorrelato e evidências e testar uma variação são sugestões prospectivas relacionadas aos registros. A mudança para 45 minutos e a variação conjunta de método, formato e período impedem afirmar eficácia ou causalidade e não representam desenho controlado comprovado; essas ressalvas não alteram o atendimento decidido para a rubrica aplicada."
+          }
+        },
+        "situacao": "SATISFATORIA",
+        "satisfatoria": true
+      }
+    }
+  ],
+  "preservacao": {
+    "originais": [
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/real-groq-gpt-oss-120b-20261018-165231-metadados.md",
+        "sha256": "2fe0b4f99306de9b983856c9ab274f46ca9b08c5b2dc882ac3923868b4510b9f"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/real-groq-gpt-oss-120b-20261018-165231.csv",
+        "sha256": "5e22ea6795985dee7a17f5cab868b35870f13618c5a42651aa73338800ce43a1"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/real-groq-gpt-oss-120b-20261018-165231.json",
+        "sha256": "8fd8f93897ff523237ec3314c6e26a02641b5bb7a7d934ba311dcd37ce89d853"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/real-groq-gpt-oss-120b-20261018-165231.md",
+        "sha256": "20591dbf45f59f421f46fda86c6b587802006205b6e8e35ce4f7abec475a1bf1"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S1-1.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S1-2.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S1-3.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S2-1.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S2-2.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S2-3.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S3-1.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S3-2.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S3-3.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S4-1.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S4-2.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S4-3.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S5-1.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S5-2.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/avaliacoes-manuais-real-groq-gpt-oss-120b-20261018-165231/avaliacao-S5-3.json",
+        "sha256": "db876152f551d5c365174f74f3d3505d4a18217170334e824e7da01568d218a8"
+      },
+      {
+        "caminho": "AiFiles/RELATORIOS/AUDITORIA_DOCUMENTAL_S3_2_S1_3_TCC.md",
+        "sha256": "a0ad0bcbe7abc600cc0f0425b1c20a86db0b64e2956b373a5d852c6dfa4840d1"
+      },
+      {
+        "caminho": "RELATORIO_EVIDENCIAS_TCC_4_6.md",
+        "sha256": "a904f0c113c03f2894a49365dc15f06d0200abab6299118db4b82447d8f0ed48"
+      },
+      {
+        "caminho": "C:/Users/keley/Downloads/PROMPT_CODEX_REVISAO_AVALIACAO_IA_TCC.md",
+        "sha256": "3756cccb9f71b2af7d2c874493a532e972fb0492a35121089ae7e9fecaec291d"
+      },
+      {
+        "caminho": "src/dominio/avaliacao-ia-tcc.ts",
+        "sha256": "c67390d6a77e0e1c2d6101ec92234f0ec07737f5f1eaa36efe86915a6a0d4a48"
+      },
+      {
+        "caminho": "scripts/registrar-avaliacao-manual-ia-tcc.ts",
+        "sha256": "611d8c5103f5cb35d8aabcc870f6be0795398be93638aec5bb1ee185696f0a87"
+      },
+      {
+        "caminho": "scripts/gerar-relatorio-avaliacao-ia-tcc.ts",
+        "sha256": "73fc187d7f8623a364df63ac59b5798be456fedcd59be215b4562836ce30054b"
+      }
+    ],
+    "fontesModificadas": [],
+    "outras13AvaliacoesPreservadasIntegralmente": true,
+    "geracoesPreservadasIntegralmente": true,
+    "experimentoPreservadoExcetoAtualizadoEmNaCopia": true,
+    "contagensControlesObservadosPreservados": true,
+    "historicoGeracoesPromptsDtoHashesPreservados": true,
+    "atualizadoEmNaCopia": "2026-10-28T19:39:53.739Z",
+    "novaGeracaoIa": false,
+    "bancoAlterado": false,
+    "codigoAlterado": false
+  },
+  "resultadoAnterior": {
+    "planejadas": 15,
+    "geradas": 15,
+    "validasExperimento": 15,
+    "avaliadas": 15,
+    "satisfatorias": 15,
+    "insatisfatorias": 0,
+    "simuladas": 0,
+    "falhasOuContingencias": 0,
+    "falhasPorCriterio": {
+      "C1": 0,
+      "C2": 0,
+      "C3": 0,
+      "C4": 0,
+      "C5": 0
+    },
+    "resultadoGeral": "SATISFATORIA"
+  },
+  "resultadoRevisado": {
+    "planejadas": 15,
+    "geradas": 15,
+    "validasExperimento": 15,
+    "avaliadas": 15,
+    "satisfatorias": 14,
+    "insatisfatorias": 1,
+    "simuladas": 0,
+    "falhasOuContingencias": 0,
+    "falhasPorCriterio": {
+      "C1": 1,
+      "C2": 2,
+      "C3": 1,
+      "C4": 0,
+      "C5": 0
+    },
+    "resultadoGeral": "SATISFATORIA"
+  },
+  "resultadosPorCriterio": {
+    "C1": {
+      "atendidos": 14,
+      "naoAtendidos": 1
+    },
+    "C2": {
+      "atendidos": 13,
+      "naoAtendidos": 2
+    },
+    "C3": {
+      "atendidos": 14,
+      "naoAtendidos": 1
+    },
+    "C4": {
+      "atendidos": 15,
+      "naoAtendidos": 0
+    },
+    "C5": {
+      "atendidos": 15,
+      "naoAtendidos": 0
+    }
+  },
+  "totalJulgamentos": 75,
+  "julgamentosAtendidos": 71,
+  "julgamentosNaoAtendidos": 4,
+  "arquivosNovosDeDadosEExportacao": [
+    {
+      "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/revisao-documental-20261028-r01/avaliacao-revisada-S1-3.json",
+      "sha256": "6c009cff637092c9ca5cc12ab8909cd5d7665e19175bd0caa546791d9ab05661"
+    },
+    {
+      "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/revisao-documental-20261028-r01/avaliacao-revisada-S3-2.json",
+      "sha256": "713dba7f5f6a76066383395f41007860e8542986986cc9b235b3b71886dfad11"
+    },
+    {
+      "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/revisao-documental-20261028-r01/revisao-documental-20261028-r01.csv",
+      "sha256": "7e69f4c9c6b6a95c98b6a522dd957d4c109fbe86025c9d5d77a1b15e3cc092bb"
+    },
+    {
+      "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/revisao-documental-20261028-r01/revisao-documental-20261028-r01.json",
+      "sha256": "aa3ffbeec4a15257d44f9a4d1c83a44bffcc21d66185e4c2e622feb692c919dc"
+    },
+    {
+      "caminho": "AiFiles/RELATORIOS/avaliacao-ia-tcc/revisao-documental-20261028-r01/revisao-documental-20261028-r01.md",
+      "sha256": "a53bcb8cf1dbb4bbcb075e9a45a36963755b920e2a96aa315d2a2df097d9f89e"
+    }
+  ]
+}

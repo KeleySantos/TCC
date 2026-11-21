@@ -1,0 +1,28 @@
+{
+  "avaliador": null,
+  "avaliadaEm": null,
+  "criterios": {
+    "C1": {
+      "resultado": "NAO_ATENDIDO",
+      "justificativa": "Revisão documental autorizada pelo autor em 28/10/2026, sem nova geração: a resposta reproduz médias semanais de 35% e 85%, mas afirma que 85% permanece abaixo de uma suposta referência esperada de 55%. O DTO registra 55% como média observada do período, não como meta, e 85% é superior a 55%. O uso e a interpretação das métricas estão incorretos."
+    },
+    "C2": {
+      "resultado": "NAO_ATENDIDO",
+      "justificativa": "A conclusão de que o resultado permanece abaixo da referência contradiz a evolução semanal de 35% para 85% e confunde a média global de 55% com referência normativa. O estado agregado PONTO_DE_ATENCAO e a tendência EVOLUCAO_POSITIVA podem coexistir; a resposta não os distingue adequadamente, comprometendo a coerência contextual. Revisão documental autorizada pelo autor em 28/10/2026."
+    },
+    "C3": {
+      "resultado": "NAO_ATENDIDO",
+      "justificativa": "A entrada não fornece uma meta ou referência esperada de 55%; esse valor é a média observada do conceito no período. Embora o número exista no DTO, o papel normativo atribuído a ele e a comparação de inferioridade são informações sem suporte nos dados. Revisão documental autorizada pelo autor em 28/10/2026; não se trata de novo julgamento registrado em nome da avaliadora original."
+    },
+    "C4": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: a resposta não atribui ao usuário um estilo fixo, incapacidade ou perfil permanente de aprendizagem. A ressalva sobre possível extrapolação causal não equivale, por si só, à classificação fixa vedada por C4."
+    },
+    "C5": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: as propostas futuras de comparar compreensão percebida com evidências e explorar contextos de estudo permanecem relacionadas aos registros para fins da rubrica aplicada. A distribuição sugerida de oito e duas sessões, a confiança forte e a explicação de consolidação exigem ressalvas sobre causalidade e desenho da comparação; não constituem comprovação de eficácia."
+    }
+  },
+  "situacao": "PENDENTE",
+  "satisfatoria": null
+}

@@ -1,0 +1,28 @@
+{
+  "avaliador": null,
+  "avaliadaEm": null,
+  "criterios": {
+    "C1": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: 73% é aproximação compatível de 73,33333333333333%; 40%, 80%, compreensão média 3 e as contagens citadas correspondem ao DTO. A apresentação ambígua da data não demonstra atribuição incorreta das métricas aos agrupamentos semanais."
+    },
+    "C2": {
+      "resultado": "NAO_ATENDIDO",
+      "justificativa": "Revisão documental autorizada pelo autor em 28/10/2026: a data 09/07 é ambígua em português brasileiro. Em MM/DD corresponde a 7 de setembro, início do segundo agrupamento do DTO, mas em DD/MM sugere 9 de julho, sem registros correspondentes. A apresentação temporal ambígua e o emprego impreciso de alinhada, confundindo constância do autorrelato com alinhamento entre percepção e desempenho, comprometem a clareza contextual."
+    },
+    "C3": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: a leitura MM/DD de 09/07 coincide exatamente com 7 de setembro no DTO. Não há evidência conclusiva de que o modelo tenha inventado um registro de julho. Os 45 minutos são uma proposta futura, não relato de resultado passado já observado."
+    },
+    "C4": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: a resposta não define estilo fixo, incapacidade ou perfil permanente do usuário. As observações se referem aos registros e aos métodos daquele contexto."
+    },
+    "C5": {
+      "resultado": "ATENDIDO",
+      "justificativa": "Mantido conforme decisão autorizada: comparar autorrelato e evidências e testar uma variação são sugestões prospectivas relacionadas aos registros. A mudança para 45 minutos e a variação conjunta de método, formato e período impedem afirmar eficácia ou causalidade e não representam desenho controlado comprovado; essas ressalvas não alteram o atendimento decidido para a rubrica aplicada."
+    }
+  },
+  "situacao": "PENDENTE",
+  "satisfatoria": null
+}

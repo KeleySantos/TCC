@@ -63,6 +63,7 @@ Não resolva conflitos silenciosamente. Se uma ambiguidade puder alterar escopo,
 - Mantenha banco e cenário sintético reproduzíveis por migrações e seed.
 - Não implemente funcionalidade sem requisito e critério de aceite em `../Memoria/MATRIZ_REQUISITOS_TESTES.md`.
 - Antes de alterar código Next.js, leia a documentação aplicável da versão instalada em `node_modules/next/dist/docs/`.
+- Após toda implementação ou ajuste, deixe o site local iniciado e confirme que responde antes da entrega. Reutilize o servidor existente quando estiver saudável; se precisar pará-lo para compilar ou regenerar dependências, reinicie-o ao final, normalmente com `npm run desenvolver` em `http://localhost:3000`. Evite processos duplicados e informe qualquer impedimento. Preferência explícita do autor em 2026-10-27.
 
 ## Qualidade, memória e rastreabilidade
 
